@@ -11,6 +11,23 @@ namespace WebAPI
     {
         public static void MapClienteEndpoints(this WebApplication app)
         {
+            app.MapGet("/clientes/buscar", async (string? texto, IClienteService clienteService) =>
+            {
+                try
+                {
+                    var criteria = new ClienteCriteriaDTO { Texto = texto };
+                    var clientes = await clienteService.GetByCriteriaAsync(criteria);
+                    return Results.Ok(clientes);
+                }
+                catch (Exception ex)
+                {
+                    return Results.BadRequest(new { error = ex.Message });
+                }
+            })
+            .WithName("GetClientesByCriteria")
+            .Produces<IEnumerable<ClienteDTO>>(StatusCodes.Status200OK)
+            .WithOpenApi();
+
             app.MapGet("/clientes/{id}", async (int id, IClienteService clienteService) =>
             {
                 ClienteDTO? dto = await clienteService.GetAsync(id);
@@ -46,8 +63,7 @@ namespace WebAPI
                 }
                 catch (Exception ex)
                 {
-                    // Si el DNI está repetido, devuelve un error 400
-                    return Results.BadRequest(new { error = ex.Message });
+                    return Results.BadRequest(new { error = ex.Message }); 
                 }
             })
             .WithName("AddCliente")

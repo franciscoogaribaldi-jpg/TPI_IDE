@@ -11,5 +11,6 @@ namespace Application.Services
         Task<ClienteDTO?> GetAsync(int id);
         Task<IEnumerable<ClienteDTO>> GetAllAsync();
         Task<bool> UpdateAsync(ClienteDTO dto);
+        Task<IEnumerable<ClienteDTO>> GetByCriteriaAsync(ClienteCriteriaDTO criteriaDTO);
     }
 }

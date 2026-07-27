@@ -61,7 +61,8 @@ namespace Data
             if (existing != null)
             {
                 existing.SetIdUsuario(cliente.IdUsuario);
-                existing.SetNombreCompleto(cliente.NombreCompleto);
+                existing.SetNombre(cliente.Nombre);
+                existing.SetApellido(cliente.Apellido);
                 existing.SetDni(cliente.Dni);
                 existing.SetTelefono(cliente.Telefono);
                 existing.SetFechaNacimiento(cliente.FechaNacimiento);
@@ -89,6 +90,24 @@ namespace Data
                 query = query.Where(c => c.IdCliente != excludeId.Value);
             }
             return Task.FromResult(query.Any());
+        }
+
+        public Task<IEnumerable<Cliente>> GetByCriteriaAsync(ClienteCriteria criteria)
+        {
+            if (string.IsNullOrWhiteSpace(criteria.Texto))
+            {
+                return Task.FromResult<IEnumerable<Cliente>>(clientes.ToList());
+            }
+
+            string busqueda = criteria.Texto.ToLower();
+
+            var filtrados = clientes.Where(c => 
+                (c.Nombre != null && c.Nombre.ToLower().Contains(busqueda)) ||
+                (c.Apellido != null && c.Apellido.ToLower().Contains(busqueda)) ||
+                (c.Dni != null && c.Dni.ToLower().Contains(busqueda))
+            ).ToList();
+
+            return Task.FromResult<IEnumerable<Cliente>>(filtrados);
         }
     }
 }

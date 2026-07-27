@@ -29,7 +29,8 @@ namespace Application.Services
             var cliente = new Cliente(
                 idCliente: 0, // El Repositorio le va a poner el número de verdad (el nextId)
                 idUsuario: dto.IdUsuario,
-                nombreCompleto: dto.NombreCompleto,
+                nombre: dto.Nombre,
+                apellido: dto.Apellido,
                 dni: dto.Dni,
                 telefono: dto.Telefono,
                 fechaNacimiento: dto.FechaNacimiento,
@@ -58,7 +59,8 @@ namespace Application.Services
             {
                 IdCliente = c.IdCliente,
                 IdUsuario = c.IdUsuario,
-                NombreCompleto = c.NombreCompleto,
+                Nombre = c.Nombre,
+                Apellido = c.Apellido,
                 Dni = c.Dni,
                 Telefono = c.Telefono,
                 FechaNacimiento = c.FechaNacimiento,
@@ -77,7 +79,8 @@ namespace Application.Services
             {
                 IdCliente = cliente.IdCliente,
                 IdUsuario = cliente.IdUsuario,
-                NombreCompleto = cliente.NombreCompleto,
+                Nombre = cliente.Nombre,
+                Apellido = cliente.Apellido,
                 Dni = cliente.Dni,
                 Telefono = cliente.Telefono,
                 FechaNacimiento = cliente.FechaNacimiento,
@@ -100,7 +103,8 @@ namespace Application.Services
             var clienteModificado = new Cliente(
                 idCliente: dto.IdCliente,
                 idUsuario: dto.IdUsuario,
-                nombreCompleto: dto.NombreCompleto,
+                nombre: dto.Nombre,
+                apellido: dto.Apellido,
                 dni: dto.Dni,
                 telefono: dto.Telefono,
                 fechaNacimiento: dto.FechaNacimiento,
@@ -109,6 +113,25 @@ namespace Application.Services
 
             // Se lo damos al Repositorio para que lo reemplace
             return await _repository.UpdateAsync(clienteModificado);
+        }
+
+        public async Task<IEnumerable<ClienteDTO>> GetByCriteriaAsync(ClienteCriteriaDTO criteriaDTO)
+        {
+            var criteria = new ClienteCriteria(criteriaDTO.Texto);
+
+            var clientes = await _repository.GetByCriteriaAsync(criteria);
+
+            return clientes.Select(c => new ClienteDTO
+            {
+                IdCliente = c.IdCliente,
+                IdUsuario = c.IdUsuario,
+                Nombre = c.Nombre,
+                Apellido = c.Apellido,
+                Dni = c.Dni,
+                Telefono = c.Telefono,
+                FechaNacimiento = c.FechaNacimiento,
+                Estado = (int)c.Estado
+            });
         }
     }
 }

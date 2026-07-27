@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <Compile Remove="Class1.cs" />
-    <Compile Remove="ClienteCriteria.cs" />
   </ItemGroup>
 
 </Project>
