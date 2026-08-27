@@ -1,113 +1,119 @@
 using Domain.Model;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 
 namespace Data
 {
     public class ClienteRepository : IClienteRepository
     {
-        // 1. Usa nombres en minúscula como el profe
-        private static readonly List<Cliente> clientes = new List<Cliente>();
+        private readonly TPIContext _context;
 
-        // 2. Simula el Auto-Increment del Id que el profe tenía
-        private static int nextId = 1;
-
-        public Task AddAsync(Cliente cliente)
+        public ClienteRepository(TPIContext context)
         {
-            // Simular auto-increment de ID igual que el profe
-            cliente.SetIdCliente(nextId);
-            nextId++;
-
-            // Aquí el profe actualizaba el País. 
-            // Nosotros haríamos lo mismo con Usuario. 
-            // Lo dejo comentado para que lo veas; cuando creemos UsuarioRepository lo podremos descomentar.
-            /*
-            var usuarioRepo = new UsuarioRepository();
-            var usuario = usuarioRepo.GetAllSync().FirstOrDefault(u => u.IdUsuario == cliente.IdUsuario);
-            if (usuario != null)
-                cliente.SetUsuario(usuario);
-            */
-
-            clientes.Add(cliente);
-            return Task.CompletedTask;
+            _context = context;
         }
 
-        public Task<bool> DeleteAsync(int id)
+        public async Task AddAsync(Cliente cliente)
         {
-            var cliente = clientes.FirstOrDefault(c => c.IdCliente == id);
-            if (cliente != null)
-            {
-                clientes.Remove(cliente);
-                return Task.FromResult(true);
-            }
-            return Task.FromResult(false);
+            _context.Clientes.Add(cliente);
+            await _context.SaveChangesAsync();
         }
 
-        public Task<Cliente?> GetAsync(int id)
+        public async Task<bool> DeleteAsync(int id)
         {
-            return Task.FromResult(clientes.FirstOrDefault(c => c.IdCliente == id));
+            var cliente = await _context.Clientes.FindAsync(id);
+            if (cliente == null) return false;
+
+            _context.Clientes.Remove(cliente);
+            await _context.SaveChangesAsync();
+            return true;
         }
 
-        public Task<IEnumerable<Cliente>> GetAllAsync()
+        public async Task<Cliente?> GetAsync(int id)
         {
-            // El profe usa ToList() para asegurar que devuelve una nueva colección
-            return Task.FromResult<IEnumerable<Cliente>>(clientes.ToList());
+            return await _context.Clientes
+                .Include(c => c.Usuario)
+                .FirstOrDefaultAsync(c => c.IdCliente == id);
         }
 
-        public Task<bool> UpdateAsync(Cliente cliente)
+        public async Task<IEnumerable<Cliente>> GetAllAsync()
         {
-            var existing = clientes.FirstOrDefault(c => c.IdCliente == cliente.IdCliente);
-            if (existing != null)
-            {
-                existing.SetIdUsuario(cliente.IdUsuario);
-                existing.SetNombre(cliente.Nombre);
-                existing.SetApellido(cliente.Apellido);
-                existing.SetDni(cliente.Dni);
-                existing.SetTelefono(cliente.Telefono);
-                existing.SetFechaNacimiento(cliente.FechaNacimiento);
-                existing.SetEstado(cliente.Estado);
-
-                // Igual que en el AddAsync, el profe actualizaba la Navigation Property aquí
-                /*
-                var usuarioRepo = new UsuarioRepository();
-                var usuario = usuarioRepo.GetAllSync().FirstOrDefault(u => u.IdUsuario == cliente.IdUsuario);
-                if (usuario != null)
-                    existing.SetUsuario(usuario);
-                */
-
-                return Task.FromResult(true);
-            }
-            return Task.FromResult(false);
+            return await _context.Clientes
+                .Include(c => c.Usuario)
+                .ToListAsync();
         }
 
-        public Task<bool> DniExistsAsync(string dni, int? excludeId = null)
+        public async Task<bool> UpdateAsync(Cliente cliente)
         {
-            // Copiada exactamente la estructura del EmailExistsAsync del profe
-            var query = clientes.Where(c => c.Dni.ToLower() == dni.ToLower());
+            var existing = await _context.Clientes.FindAsync(cliente.IdCliente);
+            if (existing == null) return false;
+
+            existing.SetNombre(cliente.Nombre);
+            existing.SetApellido(cliente.Apellido);
+            existing.SetDni(cliente.Dni);
+            existing.SetTelefono(cliente.Telefono);
+            existing.SetFechaNacimiento(cliente.FechaNacimiento);
+            existing.SetEstado(cliente.Estado);
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> DniExistsAsync(string dni, int? excludeId = null)
+        {
+            var query = _context.Clientes.Where(c => c.Dni.ToLower() == dni.ToLower());
             if (excludeId.HasValue)
             {
                 query = query.Where(c => c.IdCliente != excludeId.Value);
             }
-            return Task.FromResult(query.Any());
+            return await query.AnyAsync();
         }
 
-        public Task<IEnumerable<Cliente>> GetByCriteriaAsync(ClienteCriteria criteria)
+        /// <summary>
+        /// Requisito técnico de la cátedra: usar ADO.NET puro al menos una vez
+        /// (el resto del acceso a datos usa EF Core). Se aplica acá, en la
+        /// búsqueda con filtros, igual que en el ejemplo resuelto de la cátedra,
+        /// pero con Microsoft.Data.SqlClient (el conector vigente que recomienda
+        /// el material de Unidad 4 - SQL Server; System.Data.SqlClient está en
+        /// modo mantenimiento).
+        /// </summary>
+        public async Task<IEnumerable<Cliente>> GetByCriteriaAsync(ClienteCriteria criteria)
         {
-            if (string.IsNullOrWhiteSpace(criteria.Texto))
+            const string sql = @"
+                SELECT IdCliente, IdUsuario, Nombre, Apellido, Dni, Telefono, FechaNacimiento, Estado
+                FROM Clientes
+                WHERE Nombre LIKE @Busqueda
+                   OR Apellido LIKE @Busqueda
+                   OR Dni LIKE @Busqueda
+                ORDER BY Apellido, Nombre";
+
+            var clientes = new List<Cliente>();
+            string? connectionString = _context.Database.GetConnectionString();
+            string patron = $"%{criteria.Texto}%";
+
+            using var connection = new SqlConnection(connectionString);
+            using var command = new SqlCommand(sql, connection);
+            command.Parameters.AddWithValue("@Busqueda", patron);
+
+            await connection.OpenAsync();
+            using var reader = await command.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
             {
-                return Task.FromResult<IEnumerable<Cliente>>(clientes.ToList());
+                var cliente = new Cliente(
+                    idCliente: reader.GetInt32(0),
+                    idUsuario: reader.GetInt32(1),
+                    nombre: reader.GetString(2),
+                    apellido: reader.GetString(3),
+                    dni: reader.GetString(4),
+                    telefono: reader.IsDBNull(5) ? string.Empty : reader.GetString(5),
+                    fechaNacimiento: reader.GetDateTime(6),
+                    estado: (Estado)reader.GetInt32(7));
+
+                clientes.Add(cliente);
             }
 
-            string busqueda = criteria.Texto.ToLower();
-
-            var filtrados = clientes.Where(c => 
-                (c.Nombre != null && c.Nombre.ToLower().Contains(busqueda)) ||
-                (c.Apellido != null && c.Apellido.ToLower().Contains(busqueda)) ||
-                (c.Dni != null && c.Dni.ToLower().Contains(busqueda))
-            ).ToList();
-
-            return Task.FromResult<IEnumerable<Cliente>>(filtrados);
+            return clientes;
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Data;
+﻿using Application.Services.Exceptions;
+using Data;
 using Domain.Model;
 using DTOs;
 using System;
@@ -33,7 +34,7 @@ namespace Application.Services
             }
             else
             {
-                throw new Exception("Tipo de cancha inválido. Use 'Futbol' o 'Padel'.");
+                throw new ReglaDeNegocioException("Tipo de cancha inválido. Use 'Futbol' o 'Padel'.");
             }
 
             await _repository.AddAsync(cancha);
@@ -124,7 +125,7 @@ namespace Application.Services
             }
             else
             {
-                throw new Exception("Tipo de cancha inválido.");
+                throw new ReglaDeNegocioException("Tipo de cancha inválido.");
             }
 
             return await _repository.UpdateAsync(canchaModificada);

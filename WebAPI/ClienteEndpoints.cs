@@ -1,4 +1,5 @@
 using Application.Services;
+using Application.Services.Exceptions;
 using DTOs;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -61,9 +62,14 @@ namespace WebAPI
                     ClienteDTO clienteDTO = await clienteService.AddAsync(dto);
                     return Results.Created($"/clientes/{clienteDTO.IdCliente}", clienteDTO);
                 }
-                catch (Exception ex)
+                catch (ReglaDeNegocioException ex)
                 {
-                    return Results.BadRequest(new { error = ex.Message }); 
+                    return Results.BadRequest(new { error = ex.Message });
+                }
+                catch (ArgumentException ex)
+                {
+                    // Datos inválidos detectados por el Modelo de Dominio (setters de Cliente/Usuario)
+                    return Results.BadRequest(new { error = ex.Message });
                 }
             })
             .WithName("AddCliente")
@@ -80,7 +86,11 @@ namespace WebAPI
 
                     return Results.NoContent();
                 }
-                catch (Exception ex)
+                catch (ReglaDeNegocioException ex)
+                {
+                    return Results.BadRequest(new { error = ex.Message });
+                }
+                catch (ArgumentException ex)
                 {
                     return Results.BadRequest(new { error = ex.Message });
                 }

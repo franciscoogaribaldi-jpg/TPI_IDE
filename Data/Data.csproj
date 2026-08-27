@@ -7,6 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Persistencia con EF Core sobre SQL Server -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.10" />
+    <!-- Data provider usado directamente para el método con ADO.NET puro (GetByCriteriaAsync) -->
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.2" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Domain.Model\Domain.Model.csproj" />
   </ItemGroup>
 

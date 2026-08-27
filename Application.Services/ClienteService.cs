@@ -1,3 +1,4 @@
+using Application.Services.Exceptions;
 using Data;
 using Domain.Model;
 using DTOs;
@@ -12,7 +13,7 @@ namespace Application.Services
     {
         private readonly IClienteRepository _repository;
 
-        // Aquí inyectamos el repositorio (El chef recibe al cajero)
+        // Aquí inyectamos el repositorio 
         public ClienteService(IClienteRepository repository)
         {
             _repository = repository;
@@ -23,7 +24,7 @@ namespace Application.Services
             // REGLA DE NEGOCIO: Validamos que el DNI no exista
             bool existeDni = await _repository.DniExistsAsync(dto.Dni);
             if (existeDni)
-                throw new Exception("Ya existe un cliente con ese DNI.");
+                throw new ReglaDeNegocioException("Ya existe un cliente con ese DNI.");
 
             // Convertimos DTO (caja de envío) a Modelo (la clase real con validaciones)
             var cliente = new Cliente(
@@ -97,7 +98,7 @@ namespace Application.Services
             // Validamos que el DNI nuevo no le pertenezca a OTRO cliente
             bool existeDni = await _repository.DniExistsAsync(dto.Dni, dto.IdCliente);
             if (existeDni)
-                throw new Exception("El DNI ya pertenece a otro cliente.");
+                throw new ReglaDeNegocioException("El DNI ya pertenece a otro cliente.");
 
             // Convertimos DTO a Modelo
             var clienteModificado = new Cliente(

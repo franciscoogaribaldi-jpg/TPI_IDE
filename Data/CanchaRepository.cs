@@ -1,64 +1,63 @@
-﻿using Domain.Model;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Domain.Model;
+using Microsoft.EntityFrameworkCore;
 
 namespace Data
 {
     public class CanchaRepository : ICanchaRepository
     {
-        private static readonly List<Cancha> canchas = new List<Cancha>();
-        private static int nextId = 1;
+        private readonly TPIContext _context;
 
-        public Task AddAsync(Cancha cancha)
+        public CanchaRepository(TPIContext context)
         {
-            // Simular auto-increment de ID igual que el profe
-            cancha.SetIdCancha(nextId);
-            nextId++;
-
-            canchas.Add(cancha);
-            return Task.CompletedTask;
+            _context = context;
         }
 
-        public Task<bool> DeleteAsync(int id)
+        public async Task AddAsync(Cancha cancha)
         {
-            var cancha = canchas.FirstOrDefault(c => c.IdCancha == id);
-            if (cancha != null)
+            _context.Canchas.Add(cancha);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<bool> DeleteAsync(int id)
+        {
+            var cancha = await _context.Canchas.FindAsync(id);
+            if (cancha == null) return false;
+
+            _context.Canchas.Remove(cancha);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<Cancha?> GetAsync(int id)
+        {
+            return await _context.Canchas.FindAsync(id);
+        }
+
+        public async Task<IEnumerable<Cancha>> GetAllAsync()
+        {
+            return await _context.Canchas.ToListAsync();
+        }
+
+        public async Task<bool> UpdateAsync(Cancha cancha)
+        {
+            var existing = await _context.Canchas.FindAsync(cancha.IdCancha);
+            if (existing == null) return false;
+
+            existing.SetNombre(cancha.Nombre);
+            existing.SetEstado(cancha.Estado);
+            existing.SetPrecioPorHora(cancha.PrecioPorHora);
+
+            // Nota heredada de la Entrega 1: si cambia el TIPO de cancha (Futbol<->Padel)
+            // esto no lo contempla (ni lo contemplaba la versión en memoria). Cambiar el
+            // tipo de una entidad ya persistida en una jerarquía TPH requiere borrar y
+            // recrear la fila; lo dejamos afuera del alcance de la Entrega 2 a propósito.
+            if (existing is CanchaPadel padelExistente && cancha is CanchaPadel padelNueva)
             {
-                canchas.Remove(cancha);
-                return Task.FromResult(true);
+                padelExistente.SetRaquetas(padelNueva.CantidadRaquetas, padelNueva.PrecioTotalRaquetas);
             }
-            return Task.FromResult(false);
-        }
 
-        public Task<Cancha?> GetAsync(int id)
-        {
-            return Task.FromResult(canchas.FirstOrDefault(c => c.IdCancha == id));
-        }
-
-        public Task<IEnumerable<Cancha>> GetAllAsync()
-        {
-            return Task.FromResult<IEnumerable<Cancha>>(canchas.ToList());
-        }
-
-        public Task<bool> UpdateAsync(Cancha cancha)
-        {
-            var existing = canchas.FirstOrDefault(c => c.IdCancha == cancha.IdCancha);
-            if (existing != null)
-            {
-                existing.SetNombre(cancha.Nombre);
-                existing.SetEstado(cancha.Estado);
-                existing.SetPrecioPorHora(cancha.PrecioPorHora);
-
-                // Si la cancha es de padel, actualizamos sus propiedades exclusivas
-                if (existing is CanchaPadel padelExistente && cancha is CanchaPadel padelNueva)
-                {
-                    padelExistente.SetRaquetas(padelNueva.CantidadRaquetas, padelNueva.PrecioTotalRaquetas);
-                }
-
-                return Task.FromResult(true);
-            }
-            return Task.FromResult(false);
+            await _context.SaveChangesAsync();
+            return true;
         }
     }
 }

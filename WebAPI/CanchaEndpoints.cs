@@ -1,4 +1,5 @@
 ﻿using Application.Services;
+using Application.Services.Exceptions;
 using DTOs;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -38,7 +39,11 @@ namespace WebAPI
                     CanchaDTO canchaDTO = await canchaService.AddAsync(dto);
                     return Results.Created($"/canchas/{canchaDTO.IdCancha}", canchaDTO);
                 }
-                catch (Exception ex)
+                catch (ReglaDeNegocioException ex)
+                {
+                    return Results.BadRequest(new { error = ex.Message });
+                }
+                catch (ArgumentException ex)
                 {
                     return Results.BadRequest(new { error = ex.Message });
                 }
@@ -56,7 +61,11 @@ namespace WebAPI
                     if (!found) return Results.NotFound();
                     return Results.NoContent();
                 }
-                catch (Exception ex)
+                catch (ReglaDeNegocioException ex)
+                {
+                    return Results.BadRequest(new { error = ex.Message });
+                }
+                catch (ArgumentException ex)
                 {
                     return Results.BadRequest(new { error = ex.Message });
                 }
