@@ -43,6 +43,10 @@ namespace WebAPI
                 {
                     return Results.BadRequest(new { error = ex.Message });
                 }
+                catch (ArgumentException ex)
+                {
+                    return Results.BadRequest(new { error = ex.Message });
+                }
             })
             .WithName("AddUsuario")
             .Produces<UsuarioDTO>(StatusCodes.Status201Created)
@@ -58,6 +62,10 @@ namespace WebAPI
                     return Results.NoContent();
                 }
                 catch (ReglaDeNegocioException ex)
+                {
+                    return Results.BadRequest(new { error = ex.Message });
+                }
+                catch (ArgumentException ex)
                 {
                     return Results.BadRequest(new { error = ex.Message });
                 }

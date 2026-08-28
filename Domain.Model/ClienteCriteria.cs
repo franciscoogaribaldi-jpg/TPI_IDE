@@ -4,9 +4,11 @@ namespace Domain.Model
     {
         public string Texto { get; private set; }
 
-        public ClienteCriteria(string texto)
+        public ClienteCriteria(string? texto)
         {
-            Texto = texto.Trim();
+            // Sin filtro (texto=null, ej. no mandaron el query param) = traer todos los
+            // clientes, no un error. Antes esto explotaba con NullReferenceException.
+            Texto = (texto ?? string.Empty).Trim();
         }
     }
 }

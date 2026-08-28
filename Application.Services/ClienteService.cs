@@ -12,23 +12,34 @@ namespace Application.Services
     public class ClienteService : IClienteService
     {
         private readonly IClienteRepository _repository;
+        private readonly IUsuarioRepository _usuarioRepository;
 
-        // Aquí inyectamos el repositorio 
-        public ClienteService(IClienteRepository repository)
+        public ClienteService(IClienteRepository repository, IUsuarioRepository usuarioRepository)
         {
             _repository = repository;
+            _usuarioRepository = usuarioRepository;
         }
 
         public async Task<ClienteDTO> AddAsync(ClienteDTO dto)
         {
-            // REGLA DE NEGOCIO: Validamos que el DNI no exista
+            // VALIDACIÓN: antes era un cast directo (Estado)dto.Estado sin chequear rango.
+            if (!Enum.IsDefined(typeof(Estado), dto.Estado))
+                throw new ArgumentException("El estado del cliente no es válido.", nameof(dto.Estado));
+
+            // CORRECCIÓN DE CÁTEDRA: Cliente tiene IdUsuario pero nunca se verificaba que
+            // el Usuario realmente exista. Ahora sí se busca y, si no existe, se corta acá
+            // con un error de negocio claro (antes hubiera fallado más abajo, feo, contra
+            // la restricción de clave foránea de SQL Server).
+            var usuario = await _usuarioRepository.GetAsync(dto.IdUsuario);
+            if (usuario == null)
+                throw new ReglaDeNegocioException("El usuario indicado no existe.");
+
             bool existeDni = await _repository.DniExistsAsync(dto.Dni);
             if (existeDni)
                 throw new ReglaDeNegocioException("Ya existe un cliente con ese DNI.");
 
-            // Convertimos DTO (caja de envío) a Modelo (la clase real con validaciones)
             var cliente = new Cliente(
-                idCliente: 0, // El Repositorio le va a poner el número de verdad (el nextId)
+                idCliente: 0,
                 idUsuario: dto.IdUsuario,
                 nombre: dto.Nombre,
                 apellido: dto.Apellido,
@@ -38,10 +49,12 @@ namespace Application.Services
                 estado: (Estado)dto.Estado
             );
 
-            // Lo guardamos en la "base de datos"
+            // CORRECCIÓN DE CÁTEDRA: SetUsuario no se invocaba nunca; la navigation
+            // property se quedaba siempre en null aunque IdUsuario tuviera un valor válido.
+            cliente.SetUsuario(usuario);
+
             await _repository.AddAsync(cliente);
 
-            // Actualizamos la caja con el ID real que nos dio la base de datos y la devolvemos
             dto.IdCliente = cliente.IdCliente;
             return dto;
         }
@@ -54,53 +67,31 @@ namespace Application.Services
         public async Task<IEnumerable<ClienteDTO>> GetAllAsync()
         {
             var clientes = await _repository.GetAllAsync();
-
-            // Convertimos la lista de Modelos a una lista de DTOs para enviarla por internet
-            var dtos = clientes.Select(c => new ClienteDTO
-            {
-                IdCliente = c.IdCliente,
-                IdUsuario = c.IdUsuario,
-                Nombre = c.Nombre,
-                Apellido = c.Apellido,
-                Dni = c.Dni,
-                Telefono = c.Telefono,
-                FechaNacimiento = c.FechaNacimiento,
-                Estado = (int)c.Estado
-            });
-
-            return dtos;
+            return clientes.Select(MapToDto);
         }
 
         public async Task<ClienteDTO?> GetAsync(int id)
         {
             var cliente = await _repository.GetAsync(id);
-            if (cliente == null) return null;
-
-            return new ClienteDTO
-            {
-                IdCliente = cliente.IdCliente,
-                IdUsuario = cliente.IdUsuario,
-                Nombre = cliente.Nombre,
-                Apellido = cliente.Apellido,
-                Dni = cliente.Dni,
-                Telefono = cliente.Telefono,
-                FechaNacimiento = cliente.FechaNacimiento,
-                Estado = (int)cliente.Estado
-            };
+            return cliente == null ? null : MapToDto(cliente);
         }
 
         public async Task<bool> UpdateAsync(ClienteDTO dto)
         {
-            // Buscamos si de verdad existe el cliente antes de modificarlo
             var clienteExistente = await _repository.GetAsync(dto.IdCliente);
             if (clienteExistente == null) return false;
 
-            // Validamos que el DNI nuevo no le pertenezca a OTRO cliente
+            if (!Enum.IsDefined(typeof(Estado), dto.Estado))
+                throw new ArgumentException("El estado del cliente no es válido.", nameof(dto.Estado));
+
+            var usuario = await _usuarioRepository.GetAsync(dto.IdUsuario);
+            if (usuario == null)
+                throw new ReglaDeNegocioException("El usuario indicado no existe.");
+
             bool existeDni = await _repository.DniExistsAsync(dto.Dni, dto.IdCliente);
             if (existeDni)
                 throw new ReglaDeNegocioException("El DNI ya pertenece a otro cliente.");
 
-            // Convertimos DTO a Modelo
             var clienteModificado = new Cliente(
                 idCliente: dto.IdCliente,
                 idUsuario: dto.IdUsuario,
@@ -111,28 +102,28 @@ namespace Application.Services
                 fechaNacimiento: dto.FechaNacimiento,
                 estado: (Estado)dto.Estado
             );
+            clienteModificado.SetUsuario(usuario);
 
-            // Se lo damos al Repositorio para que lo reemplace
             return await _repository.UpdateAsync(clienteModificado);
         }
 
         public async Task<IEnumerable<ClienteDTO>> GetByCriteriaAsync(ClienteCriteriaDTO criteriaDTO)
         {
             var criteria = new ClienteCriteria(criteriaDTO.Texto);
-
             var clientes = await _repository.GetByCriteriaAsync(criteria);
-
-            return clientes.Select(c => new ClienteDTO
-            {
-                IdCliente = c.IdCliente,
-                IdUsuario = c.IdUsuario,
-                Nombre = c.Nombre,
-                Apellido = c.Apellido,
-                Dni = c.Dni,
-                Telefono = c.Telefono,
-                FechaNacimiento = c.FechaNacimiento,
-                Estado = (int)c.Estado
-            });
+            return clientes.Select(MapToDto);
         }
+
+        private static ClienteDTO MapToDto(Cliente c) => new ClienteDTO
+        {
+            IdCliente = c.IdCliente,
+            IdUsuario = c.IdUsuario,
+            Nombre = c.Nombre,
+            Apellido = c.Apellido,
+            Dni = c.Dni,
+            Telefono = c.Telefono,
+            FechaNacimiento = c.FechaNacimiento,
+            Estado = (int)c.Estado
+        };
     }
 }

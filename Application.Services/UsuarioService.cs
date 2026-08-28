@@ -16,6 +16,9 @@ namespace Application.Services
 
         public async Task<UsuarioDTO> AddAsync(UsuarioDTO dto)
         {
+            if (!Enum.IsDefined(typeof(RolUsuario), dto.Rol))
+                throw new ArgumentException("El rol indicado no es válido.", nameof(dto.Rol));
+
             // REGLAS DE NEGOCIO: usuario y email únicos (pedido explícito de la propuesta)
             if (await _repository.NombreUsuarioExistsAsync(dto.NombreUsuario))
                 throw new ReglaDeNegocioException("Ya existe un usuario con ese nombre de usuario.");
@@ -58,6 +61,12 @@ namespace Application.Services
 
         public async Task<bool> UpdateAsync(UsuarioDTO dto)
         {
+            if (!Enum.IsDefined(typeof(RolUsuario), dto.Rol))
+                throw new ArgumentException("El rol indicado no es válido.", nameof(dto.Rol));
+
+            if (!Enum.IsDefined(typeof(Estado), dto.Estado))
+                throw new ArgumentException("El estado indicado no es válido.", nameof(dto.Estado));
+
             var existente = await _repository.GetAsync(dto.IdUsuario);
             if (existente == null) return false;
 

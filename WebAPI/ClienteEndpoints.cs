@@ -14,16 +14,9 @@ namespace WebAPI
         {
             app.MapGet("/clientes/buscar", async (string? texto, IClienteService clienteService) =>
             {
-                try
-                {
-                    var criteria = new ClienteCriteriaDTO { Texto = texto };
-                    var clientes = await clienteService.GetByCriteriaAsync(criteria);
-                    return Results.Ok(clientes);
-                }
-                catch (Exception ex)
-                {
-                    return Results.BadRequest(new { error = ex.Message });
-                }
+                var criteria = new ClienteCriteriaDTO { Texto = texto };
+                var clientes = await clienteService.GetByCriteriaAsync(criteria);
+                return Results.Ok(clientes);
             })
             .WithName("GetClientesByCriteria")
             .Produces<IEnumerable<ClienteDTO>>(StatusCodes.Status200OK)

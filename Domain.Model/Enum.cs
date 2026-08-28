@@ -25,4 +25,10 @@ namespace Domain.Model
         Cancelada = 3,
         Finalizada = 4
     }
+
+    public enum TipoCancha
+    {
+        Futbol = 1,
+        Padel = 2
+    }
 }
