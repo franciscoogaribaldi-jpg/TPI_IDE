@@ -25,7 +25,7 @@ namespace Domain.Model
 
         public void SetHorarios(TimeSpan horaInicio, TimeSpan horaFin)
         {
-            // Validamos que la hora de inicio sea sí o sí antes que la hora de fin
+            
             if (horaInicio >= horaFin)
                 throw new ArgumentException("La hora de inicio debe ser menor a la hora de fin.");
 

@@ -73,12 +73,12 @@ namespace Domain.Model
 
         public void SetTelefono(string telefono)
         {
-            Telefono = telefono; // Opcionalmente se podría validar que sean solo números
+            Telefono = telefono; 
         }
 
         public void SetFechaNacimiento(DateTime fechaNacimiento)
         {
-            // Validamos que el cliente haya nacido en el pasado
+           
             if (fechaNacimiento >= DateTime.Today)
                 throw new ArgumentException("La fecha de nacimiento debe ser en el pasado.", nameof(fechaNacimiento));
             FechaNacimiento = fechaNacimiento;

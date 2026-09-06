@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace Domain.Model
 {
@@ -9,15 +9,17 @@ namespace Domain.Model
         public int IdUsuario { get; private set; }
         public Usuario? Usuario { get; private set; }
 
-        public string NombreCompleto { get; private set; }
+        public string Nombre { get; private set; }
+        public string Apellido { get; private set; }
         public string Telefono { get; private set; }
         public Estado Estado { get; private set; }
 
-        public Administrador(int idAdministrador, int idUsuario, string nombreCompleto, string telefono, Estado estado)
+        public Administrador(int idAdministrador, int idUsuario, string nombre, string apellido, string telefono, Estado estado)
         {
             SetIdAdministrador(idAdministrador);
             SetIdUsuario(idUsuario);
-            SetNombreCompleto(nombreCompleto);
+            SetNombre(nombre);
+            SetApellido(apellido);
             SetTelefono(telefono);
             SetEstado(estado);
         }
@@ -43,11 +45,18 @@ namespace Domain.Model
             IdUsuario = usuario.IdUsuario;
         }
 
-        public void SetNombreCompleto(string nombreCompleto)
+        public void SetNombre(string nombre)
         {
-            if (string.IsNullOrWhiteSpace(nombreCompleto))
-                throw new ArgumentException("El nombre no puede estar vacío.", nameof(nombreCompleto));
-            NombreCompleto = nombreCompleto;
+            if (string.IsNullOrWhiteSpace(nombre))
+                throw new ArgumentException("El nombre no puede estar vacío.", nameof(nombre));
+            Nombre = nombre;
+        }
+
+        public void SetApellido(string apellido)
+        {
+            if (string.IsNullOrWhiteSpace(apellido))
+                throw new ArgumentException("El apellido no puede estar vacío.", nameof(apellido));
+            Apellido = apellido;
         }
 
         public void SetTelefono(string telefono)

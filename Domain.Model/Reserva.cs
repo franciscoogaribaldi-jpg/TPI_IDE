@@ -6,7 +6,7 @@ namespace Domain.Model
     {
         public int IdReserva { get; private set; }
 
-        // Relaciones (Solo los Ids por ahora para guardarlo fácil en memoria)
+        
         public int IdCliente { get; private set; }
         public Cliente? Cliente { get; private set; }
 
@@ -31,7 +31,7 @@ namespace Domain.Model
             SetFecha(fecha);
             SetEstadoReserva(estadoReserva);
             SetImportes(importeTotal, sena);
-            FechaCreacion = DateTime.Now; // Se asigna automáticamente la fecha y hora actual al crearla
+            FechaCreacion = DateTime.Now; 
         }
 
         public void SetIdReserva(int idReserva)
@@ -60,7 +60,7 @@ namespace Domain.Model
 
         public void SetFecha(DateTime fecha)
         {
-            // Evita que la gente reserve en el pasado
+            
             if (fecha.Date < DateTime.Today)
                 throw new ArgumentException("No se pueden hacer reservas en fechas pasadas.");
             Fecha = fecha.Date; // Asegura que solo se guarde la fecha sin la hora

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Domain.Model
@@ -15,7 +16,7 @@ namespace Domain.Model
         public RolUsuario Rol { get; private set; }
         public Estado Estado { get; private set; }
 
-        // Constructor para obligar a pasar los datos al crear el usuario
+        
         public Usuario(int idUsuario, string nombreUsuario, string contrasena, string email, RolUsuario rol, Estado estado)
         {
             SetIdUsuario(idUsuario);
@@ -45,11 +46,20 @@ namespace Domain.Model
             if (string.IsNullOrWhiteSpace(contrasena))
                 throw new ArgumentException("La contraseña no puede estar vacía.", nameof(contrasena));
             Contrasena = contrasena;
+            // podriamos aniadir una validacion de la contrasenia deber contener cantidad de caracteres especiales o algo asi
+            
+        }
+
+        private static bool EsEmailValido(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+                return false;
+            return Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$");
         }
 
         public void SetEmail(string email)
         {
-            if (string.IsNullOrWhiteSpace(email) || !email.Contains("@"))
+            if (!EsEmailValido(email))
                 throw new ArgumentException("El email no tiene un formato válido.", nameof(email));
             Email = email;
         }
