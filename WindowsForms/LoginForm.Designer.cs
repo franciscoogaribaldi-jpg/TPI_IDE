@@ -17,87 +17,100 @@ namespace WindowsForms
 
         private void InitializeComponent()
         {
-            this.lblUsuario = new System.Windows.Forms.Label();
-            this.txtUsuario = new System.Windows.Forms.TextBox();
-            this.lblContrasena = new System.Windows.Forms.Label();
-            this.txtContrasena = new System.Windows.Forms.TextBox();
-            this.btnIngresar = new System.Windows.Forms.Button();
-            this.btnCancelar = new System.Windows.Forms.Button();
-            this.SuspendLayout();
-            //
+            lblUsuario = new Label();
+            txtUsuario = new TextBox();
+            lblContrasena = new Label();
+            txtContrasena = new TextBox();
+            btnIngresar = new Button();
+            btnCancelar = new Button();
+            label1 = new Label();
+            SuspendLayout();
+            // 
             // lblUsuario
-            //
-            this.lblUsuario.AutoSize = true;
-            this.lblUsuario.Location = new System.Drawing.Point(30, 30);
-            this.lblUsuario.Name = "lblUsuario";
-            this.lblUsuario.Size = new System.Drawing.Size(76, 15);
-            this.lblUsuario.TabIndex = 0;
-            this.lblUsuario.Text = "Usuario:";
-            //
+            // 
+            lblUsuario.AutoSize = true;
+            lblUsuario.Location = new Point(30, 64);
+            lblUsuario.Name = "lblUsuario";
+            lblUsuario.Size = new Size(50, 15);
+            lblUsuario.TabIndex = 0;
+            lblUsuario.Text = "Usuario:";
+            // 
             // txtUsuario
-            //
-            this.txtUsuario.Location = new System.Drawing.Point(130, 27);
-            this.txtUsuario.Name = "txtUsuario";
-            this.txtUsuario.Size = new System.Drawing.Size(180, 23);
-            this.txtUsuario.TabIndex = 1;
-            //
+            // 
+            txtUsuario.Location = new Point(130, 61);
+            txtUsuario.Name = "txtUsuario";
+            txtUsuario.Size = new Size(180, 23);
+            txtUsuario.TabIndex = 1;
+            // 
             // lblContrasena
-            //
-            this.lblContrasena.AutoSize = true;
-            this.lblContrasena.Location = new System.Drawing.Point(30, 70);
-            this.lblContrasena.Name = "lblContrasena";
-            this.lblContrasena.Size = new System.Drawing.Size(84, 15);
-            this.lblContrasena.TabIndex = 2;
-            this.lblContrasena.Text = "Contraseña:";
-            //
+            // 
+            lblContrasena.AutoSize = true;
+            lblContrasena.Location = new Point(30, 104);
+            lblContrasena.Name = "lblContrasena";
+            lblContrasena.Size = new Size(70, 15);
+            lblContrasena.TabIndex = 2;
+            lblContrasena.Text = "Contraseña:";
+            // 
             // txtContrasena
-            //
-            this.txtContrasena.Location = new System.Drawing.Point(130, 67);
-            this.txtContrasena.Name = "txtContrasena";
-            this.txtContrasena.PasswordChar = '*';
-            this.txtContrasena.Size = new System.Drawing.Size(180, 23);
-            this.txtContrasena.TabIndex = 3;
-            this.txtContrasena.KeyDown += new System.Windows.Forms.KeyEventHandler(this.txtContrasena_KeyDown);
-            //
+            // 
+            txtContrasena.Location = new Point(130, 101);
+            txtContrasena.Name = "txtContrasena";
+            txtContrasena.PasswordChar = '*';
+            txtContrasena.Size = new Size(180, 23);
+            txtContrasena.TabIndex = 3;
+            txtContrasena.KeyDown += txtContrasena_KeyDown;
+            // 
             // btnIngresar
-            //
-            this.btnIngresar.Location = new System.Drawing.Point(130, 110);
-            this.btnIngresar.Name = "btnIngresar";
-            this.btnIngresar.Size = new System.Drawing.Size(85, 30);
-            this.btnIngresar.TabIndex = 4;
-            this.btnIngresar.Text = "Ingresar";
-            this.btnIngresar.UseVisualStyleBackColor = true;
-            this.btnIngresar.Click += new System.EventHandler(this.btnIngresar_Click);
-            //
+            // 
+            btnIngresar.Location = new Point(130, 144);
+            btnIngresar.Name = "btnIngresar";
+            btnIngresar.Size = new Size(85, 30);
+            btnIngresar.TabIndex = 4;
+            btnIngresar.Text = "Ingresar";
+            btnIngresar.UseVisualStyleBackColor = true;
+            btnIngresar.Click += btnIngresar_Click;
+            // 
             // btnCancelar
-            //
-            this.btnCancelar.Location = new System.Drawing.Point(225, 110);
-            this.btnCancelar.Name = "btnCancelar";
-            this.btnCancelar.Size = new System.Drawing.Size(85, 30);
-            this.btnCancelar.TabIndex = 5;
-            this.btnCancelar.Text = "Cancelar";
-            this.btnCancelar.UseVisualStyleBackColor = true;
-            this.btnCancelar.Click += new System.EventHandler(this.btnCancelar_Click);
-            //
+            // 
+            btnCancelar.Location = new Point(225, 144);
+            btnCancelar.Name = "btnCancelar";
+            btnCancelar.Size = new Size(85, 30);
+            btnCancelar.TabIndex = 5;
+            btnCancelar.Text = "Cancelar";
+            btnCancelar.UseVisualStyleBackColor = true;
+            btnCancelar.Click += btnCancelar_Click;
+            // 
+            // label1
+            // 
+            label1.AutoSize = true;
+            label1.Font = new Font("Segoe UI", 15F);
+            label1.Location = new Point(108, 18);
+            label1.Name = "label1";
+            label1.Size = new Size(123, 28);
+            label1.TabIndex = 6;
+            label1.Text = "Iniciar sesión";
+            label1.Click += label1_Click;
+            // 
             // LoginForm
-            //
-            this.AcceptButton = this.btnIngresar;
-            this.CancelButton = this.btnCancelar;
-            this.ClientSize = new System.Drawing.Size(340, 170);
-            this.Controls.Add(this.lblUsuario);
-            this.Controls.Add(this.txtUsuario);
-            this.Controls.Add(this.lblContrasena);
-            this.Controls.Add(this.txtContrasena);
-            this.Controls.Add(this.btnIngresar);
-            this.Controls.Add(this.btnCancelar);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
-            this.MaximizeBox = false;
-            this.MinimizeBox = false;
-            this.Name = "LoginForm";
-            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Iniciar sesión - Complejo Deportivo";
-            this.ResumeLayout(false);
-            this.PerformLayout();
+            // 
+            AcceptButton = btnIngresar;
+            CancelButton = btnCancelar;
+            ClientSize = new Size(340, 185);
+            Controls.Add(label1);
+            Controls.Add(lblUsuario);
+            Controls.Add(txtUsuario);
+            Controls.Add(lblContrasena);
+            Controls.Add(txtContrasena);
+            Controls.Add(btnIngresar);
+            Controls.Add(btnCancelar);
+            FormBorderStyle = FormBorderStyle.FixedDialog;
+            MaximizeBox = false;
+            MinimizeBox = false;
+            Name = "LoginForm";
+            StartPosition = FormStartPosition.CenterScreen;
+            Text = "Iniciar sesión - Complejo Deportivo";
+            ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
@@ -108,5 +121,6 @@ namespace WindowsForms
         private System.Windows.Forms.TextBox txtContrasena;
         private System.Windows.Forms.Button btnIngresar;
         private System.Windows.Forms.Button btnCancelar;
+        private Label label1;
     }
 }

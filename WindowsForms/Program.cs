@@ -19,10 +19,6 @@ namespace WindowsForms
 
                 Application.Run(new Home());
 
-                // Si "Home" se cerró porque el usuario hizo Logout, SesionActual.Usuario
-                // ya quedó en null (lo limpia Home antes de cerrarse) y volvemos a mostrar
-                // el login. Si se cerró por "Salir" (o la X de la ventana), la sesión sigue
-                // activa y cortamos el loop: la app termina de una.
                 if (!SesionActual.EstaLogueado)
                     continue;
 

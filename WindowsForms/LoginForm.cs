@@ -64,5 +64,10 @@ namespace WindowsForms
                 btnIngresar_Click(sender, EventArgs.Empty);
             }
         }
+
+        private void label1_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }

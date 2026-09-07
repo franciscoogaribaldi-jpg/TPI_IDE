@@ -17,212 +17,211 @@ namespace WindowsForms
 
         private void InitializeComponent()
         {
-            this.lblNombre = new System.Windows.Forms.Label();
-            this.txtNombre = new System.Windows.Forms.TextBox();
-            this.lblPrecioPorHora = new System.Windows.Forms.Label();
-            this.numPrecioPorHora = new System.Windows.Forms.NumericUpDown();
-            this.lblEstado = new System.Windows.Forms.Label();
-            this.cmbEstado = new System.Windows.Forms.ComboBox();
-            this.grpTipo = new System.Windows.Forms.GroupBox();
-            this.radPadel = new System.Windows.Forms.RadioButton();
-            this.radFutbol = new System.Windows.Forms.RadioButton();
-            this.pnlRaquetas = new System.Windows.Forms.Panel();
-            this.lblPrecioTotalRaquetas = new System.Windows.Forms.Label();
-            this.numPrecioTotalRaquetas = new System.Windows.Forms.NumericUpDown();
-            this.lblCantidadRaquetas = new System.Windows.Forms.Label();
-            this.numCantidadRaquetas = new System.Windows.Forms.NumericUpDown();
-            this.btnGuardar = new System.Windows.Forms.Button();
-            this.btnCancelar = new System.Windows.Forms.Button();
-            ((System.ComponentModel.ISupportInitialize)(this.numPrecioPorHora)).BeginInit();
-            this.grpTipo.SuspendLayout();
-            this.pnlRaquetas.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numPrecioTotalRaquetas)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numCantidadRaquetas)).BeginInit();
-            this.SuspendLayout();
-            //
+            lblNombre = new Label();
+            txtNombre = new TextBox();
+            lblPrecioPorHora = new Label();
+            numPrecioPorHora = new NumericUpDown();
+            lblEstado = new Label();
+            cmbEstado = new ComboBox();
+            grpTipo = new GroupBox();
+            radPadel = new RadioButton();
+            radFutbol = new RadioButton();
+            pnlRaquetas = new Panel();
+            lblCantidadRaquetas = new Label();
+            numCantidadRaquetas = new NumericUpDown();
+            lblPrecioTotalRaquetas = new Label();
+            numPrecioTotalRaquetas = new NumericUpDown();
+            btnGuardar = new Button();
+            btnCancelar = new Button();
+            ((System.ComponentModel.ISupportInitialize)numPrecioPorHora).BeginInit();
+            grpTipo.SuspendLayout();
+            pnlRaquetas.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)numCantidadRaquetas).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numPrecioTotalRaquetas).BeginInit();
+            SuspendLayout();
+            // 
             // lblNombre
-            //
-            this.lblNombre.AutoSize = true;
-            this.lblNombre.Location = new System.Drawing.Point(20, 23);
-            this.lblNombre.Name = "lblNombre";
-            this.lblNombre.Size = new System.Drawing.Size(58, 15);
-            this.lblNombre.TabIndex = 0;
-            this.lblNombre.Text = "Nombre:";
-            //
+            // 
+            lblNombre.AutoSize = true;
+            lblNombre.Location = new Point(20, 23);
+            lblNombre.Name = "lblNombre";
+            lblNombre.Size = new Size(54, 15);
+            lblNombre.TabIndex = 0;
+            lblNombre.Text = "Nombre:";
+            // 
             // txtNombre
-            //
-            this.txtNombre.Location = new System.Drawing.Point(150, 20);
-            this.txtNombre.Name = "txtNombre";
-            this.txtNombre.Size = new System.Drawing.Size(210, 23);
-            this.txtNombre.TabIndex = 1;
-            //
+            // 
+            txtNombre.Location = new Point(150, 20);
+            txtNombre.Name = "txtNombre";
+            txtNombre.Size = new Size(210, 23);
+            txtNombre.TabIndex = 1;
+            // 
             // lblPrecioPorHora
-            //
-            this.lblPrecioPorHora.AutoSize = true;
-            this.lblPrecioPorHora.Location = new System.Drawing.Point(20, 63);
-            this.lblPrecioPorHora.Name = "lblPrecioPorHora";
-            this.lblPrecioPorHora.Size = new System.Drawing.Size(95, 15);
-            this.lblPrecioPorHora.TabIndex = 2;
-            this.lblPrecioPorHora.Text = "Precio por hora:";
-            //
+            // 
+            lblPrecioPorHora.AutoSize = true;
+            lblPrecioPorHora.Location = new Point(20, 63);
+            lblPrecioPorHora.Name = "lblPrecioPorHora";
+            lblPrecioPorHora.Size = new Size(91, 15);
+            lblPrecioPorHora.TabIndex = 2;
+            lblPrecioPorHora.Text = "Precio por hora:";
+            // 
             // numPrecioPorHora
-            //
-            this.numPrecioPorHora.DecimalPlaces = 2;
-            this.numPrecioPorHora.Location = new System.Drawing.Point(150, 60);
-            this.numPrecioPorHora.Maximum = new decimal(new int[] { 999999, 0, 0, 0 });
-            this.numPrecioPorHora.Name = "numPrecioPorHora";
-            this.numPrecioPorHora.Size = new System.Drawing.Size(150, 23);
-            this.numPrecioPorHora.TabIndex = 3;
-            //
+            // 
+            numPrecioPorHora.DecimalPlaces = 2;
+            numPrecioPorHora.Location = new Point(150, 60);
+            numPrecioPorHora.Maximum = new decimal(new int[] { 999999, 0, 0, 0 });
+            numPrecioPorHora.Name = "numPrecioPorHora";
+            numPrecioPorHora.Size = new Size(150, 23);
+            numPrecioPorHora.TabIndex = 3;
+            // 
             // lblEstado
-            //
-            this.lblEstado.AutoSize = true;
-            this.lblEstado.Location = new System.Drawing.Point(20, 103);
-            this.lblEstado.Name = "lblEstado";
-            this.lblEstado.Size = new System.Drawing.Size(45, 15);
-            this.lblEstado.TabIndex = 4;
-            this.lblEstado.Text = "Estado:";
-            //
+            // 
+            lblEstado.AutoSize = true;
+            lblEstado.Location = new Point(20, 103);
+            lblEstado.Name = "lblEstado";
+            lblEstado.Size = new Size(45, 15);
+            lblEstado.TabIndex = 4;
+            lblEstado.Text = "Estado:";
+            // 
             // cmbEstado
-            //
-            this.cmbEstado.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cmbEstado.Location = new System.Drawing.Point(150, 100);
-            this.cmbEstado.Name = "cmbEstado";
-            this.cmbEstado.Size = new System.Drawing.Size(210, 23);
-            this.cmbEstado.TabIndex = 5;
-            //
+            // 
+            cmbEstado.DropDownStyle = ComboBoxStyle.DropDownList;
+            cmbEstado.Location = new Point(150, 100);
+            cmbEstado.Name = "cmbEstado";
+            cmbEstado.Size = new Size(210, 23);
+            cmbEstado.TabIndex = 5;
+            // 
             // grpTipo
-            //
-            this.grpTipo.Controls.Add(this.radPadel);
-            this.grpTipo.Controls.Add(this.radFutbol);
-            this.grpTipo.Location = new System.Drawing.Point(20, 140);
-            this.grpTipo.Name = "grpTipo";
-            this.grpTipo.Size = new System.Drawing.Size(340, 60);
-            this.grpTipo.TabIndex = 6;
-            this.grpTipo.TabStop = false;
-            this.grpTipo.Text = "Tipo de cancha";
-            //
-            // radFutbol
-            //
-            this.radFutbol.AutoSize = true;
-            this.radFutbol.Location = new System.Drawing.Point(20, 25);
-            this.radFutbol.Name = "radFutbol";
-            this.radFutbol.Size = new System.Drawing.Size(65, 19);
-            this.radFutbol.TabIndex = 0;
-            this.radFutbol.TabStop = true;
-            this.radFutbol.Text = "Fútbol";
-            this.radFutbol.UseVisualStyleBackColor = true;
-            this.radFutbol.CheckedChanged += new System.EventHandler(this.radTipo_CheckedChanged);
-            //
+            // 
+            grpTipo.Controls.Add(radPadel);
+            grpTipo.Controls.Add(radFutbol);
+            grpTipo.Location = new Point(20, 140);
+            grpTipo.Name = "grpTipo";
+            grpTipo.Size = new Size(340, 60);
+            grpTipo.TabIndex = 6;
+            grpTipo.TabStop = false;
+            grpTipo.Text = "Tipo de cancha";
+            // 
             // radPadel
-            //
-            this.radPadel.AutoSize = true;
-            this.radPadel.Location = new System.Drawing.Point(150, 25);
-            this.radPadel.Name = "radPadel";
-            this.radPadel.Size = new System.Drawing.Size(63, 19);
-            this.radPadel.TabIndex = 1;
-            this.radPadel.TabStop = true;
-            this.radPadel.Text = "Pádel";
-            this.radPadel.UseVisualStyleBackColor = true;
-            this.radPadel.CheckedChanged += new System.EventHandler(this.radTipo_CheckedChanged);
-            //
+            // 
+            radPadel.AutoSize = true;
+            radPadel.Location = new Point(150, 25);
+            radPadel.Name = "radPadel";
+            radPadel.Size = new Size(54, 19);
+            radPadel.TabIndex = 1;
+            radPadel.TabStop = true;
+            radPadel.Text = "Pádel";
+            radPadel.UseVisualStyleBackColor = true;
+            radPadel.CheckedChanged += radTipo_CheckedChanged;
+            // 
+            // radFutbol
+            // 
+            radFutbol.AutoSize = true;
+            radFutbol.Location = new Point(20, 25);
+            radFutbol.Name = "radFutbol";
+            radFutbol.Size = new Size(59, 19);
+            radFutbol.TabIndex = 0;
+            radFutbol.TabStop = true;
+            radFutbol.Text = "Fútbol";
+            radFutbol.UseVisualStyleBackColor = true;
+            radFutbol.CheckedChanged += radTipo_CheckedChanged;
+            // 
             // pnlRaquetas
-            //
-            this.pnlRaquetas.Controls.Add(this.lblCantidadRaquetas);
-            this.pnlRaquetas.Controls.Add(this.numCantidadRaquetas);
-            this.pnlRaquetas.Controls.Add(this.lblPrecioTotalRaquetas);
-            this.pnlRaquetas.Controls.Add(this.numPrecioTotalRaquetas);
-            this.pnlRaquetas.Location = new System.Drawing.Point(20, 210);
-            this.pnlRaquetas.Name = "pnlRaquetas";
-            this.pnlRaquetas.Size = new System.Drawing.Size(340, 80);
-            this.pnlRaquetas.TabIndex = 7;
-            //
+            // 
+            pnlRaquetas.Controls.Add(lblCantidadRaquetas);
+            pnlRaquetas.Controls.Add(numCantidadRaquetas);
+            pnlRaquetas.Controls.Add(lblPrecioTotalRaquetas);
+            pnlRaquetas.Controls.Add(numPrecioTotalRaquetas);
+            pnlRaquetas.Location = new Point(20, 210);
+            pnlRaquetas.Name = "pnlRaquetas";
+            pnlRaquetas.Size = new Size(340, 80);
+            pnlRaquetas.TabIndex = 7;
+            // 
             // lblCantidadRaquetas
-            //
-            this.lblCantidadRaquetas.AutoSize = true;
-            this.lblCantidadRaquetas.Location = new System.Drawing.Point(0, 8);
-            this.lblCantidadRaquetas.Name = "lblCantidadRaquetas";
-            this.lblCantidadRaquetas.Size = new System.Drawing.Size(130, 15);
-            this.lblCantidadRaquetas.TabIndex = 0;
-            this.lblCantidadRaquetas.Text = "Cantidad de raquetas:";
-            //
+            // 
+            lblCantidadRaquetas.AutoSize = true;
+            lblCantidadRaquetas.Location = new Point(0, 8);
+            lblCantidadRaquetas.Name = "lblCantidadRaquetas";
+            lblCantidadRaquetas.Size = new Size(122, 15);
+            lblCantidadRaquetas.TabIndex = 0;
+            lblCantidadRaquetas.Text = "Cantidad de raquetas:";
+            // 
             // numCantidadRaquetas
-            //
-            this.numCantidadRaquetas.Location = new System.Drawing.Point(160, 5);
-            this.numCantidadRaquetas.Maximum = new decimal(new int[] { 100, 0, 0, 0 });
-            this.numCantidadRaquetas.Name = "numCantidadRaquetas";
-            this.numCantidadRaquetas.Size = new System.Drawing.Size(90, 23);
-            this.numCantidadRaquetas.TabIndex = 1;
-            //
+            // 
+            numCantidadRaquetas.Location = new Point(160, 5);
+            numCantidadRaquetas.Name = "numCantidadRaquetas";
+            numCantidadRaquetas.Size = new Size(90, 23);
+            numCantidadRaquetas.TabIndex = 1;
+            // 
             // lblPrecioTotalRaquetas
-            //
-            this.lblPrecioTotalRaquetas.AutoSize = true;
-            this.lblPrecioTotalRaquetas.Location = new System.Drawing.Point(0, 43);
-            this.lblPrecioTotalRaquetas.Name = "lblPrecioTotalRaquetas";
-            this.lblPrecioTotalRaquetas.Size = new System.Drawing.Size(140, 15);
-            this.lblPrecioTotalRaquetas.TabIndex = 2;
-            this.lblPrecioTotalRaquetas.Text = "Precio total raquetas:";
-            //
+            // 
+            lblPrecioTotalRaquetas.AutoSize = true;
+            lblPrecioTotalRaquetas.Location = new Point(0, 43);
+            lblPrecioTotalRaquetas.Name = "lblPrecioTotalRaquetas";
+            lblPrecioTotalRaquetas.Size = new Size(118, 15);
+            lblPrecioTotalRaquetas.TabIndex = 2;
+            lblPrecioTotalRaquetas.Text = "Precio total raquetas:";
+            // 
             // numPrecioTotalRaquetas
-            //
-            this.numPrecioTotalRaquetas.DecimalPlaces = 2;
-            this.numPrecioTotalRaquetas.Location = new System.Drawing.Point(160, 40);
-            this.numPrecioTotalRaquetas.Maximum = new decimal(new int[] { 999999, 0, 0, 0 });
-            this.numPrecioTotalRaquetas.Name = "numPrecioTotalRaquetas";
-            this.numPrecioTotalRaquetas.Size = new System.Drawing.Size(150, 23);
-            this.numPrecioTotalRaquetas.TabIndex = 3;
-            //
+            // 
+            numPrecioTotalRaquetas.DecimalPlaces = 2;
+            numPrecioTotalRaquetas.Location = new Point(160, 40);
+            numPrecioTotalRaquetas.Maximum = new decimal(new int[] { 999999, 0, 0, 0 });
+            numPrecioTotalRaquetas.Name = "numPrecioTotalRaquetas";
+            numPrecioTotalRaquetas.Size = new Size(150, 23);
+            numPrecioTotalRaquetas.TabIndex = 3;
+            // 
             // btnGuardar
-            //
-            this.btnGuardar.Location = new System.Drawing.Point(190, 320);
-            this.btnGuardar.Name = "btnGuardar";
-            this.btnGuardar.Size = new System.Drawing.Size(85, 30);
-            this.btnGuardar.TabIndex = 8;
-            this.btnGuardar.Text = "Guardar";
-            this.btnGuardar.UseVisualStyleBackColor = true;
-            this.btnGuardar.Click += new System.EventHandler(this.btnGuardar_Click);
-            //
+            // 
+            btnGuardar.Location = new Point(190, 320);
+            btnGuardar.Name = "btnGuardar";
+            btnGuardar.Size = new Size(85, 30);
+            btnGuardar.TabIndex = 8;
+            btnGuardar.Text = "Guardar";
+            btnGuardar.UseVisualStyleBackColor = true;
+            btnGuardar.Click += btnGuardar_Click;
+            // 
             // btnCancelar
-            //
-            this.btnCancelar.Location = new System.Drawing.Point(280, 320);
-            this.btnCancelar.Name = "btnCancelar";
-            this.btnCancelar.Size = new System.Drawing.Size(85, 30);
-            this.btnCancelar.TabIndex = 9;
-            this.btnCancelar.Text = "Cancelar";
-            this.btnCancelar.UseVisualStyleBackColor = true;
-            this.btnCancelar.Click += new System.EventHandler(this.btnCancelar_Click);
-            //
+            // 
+            btnCancelar.Location = new Point(280, 320);
+            btnCancelar.Name = "btnCancelar";
+            btnCancelar.Size = new Size(85, 30);
+            btnCancelar.TabIndex = 9;
+            btnCancelar.Text = "Cancelar";
+            btnCancelar.UseVisualStyleBackColor = true;
+            btnCancelar.Click += btnCancelar_Click;
+            // 
             // CanchaDetalle
-            //
-            this.AcceptButton = this.btnGuardar;
-            this.CancelButton = this.btnCancelar;
-            this.ClientSize = new System.Drawing.Size(385, 375);
-            this.Controls.Add(this.lblNombre);
-            this.Controls.Add(this.txtNombre);
-            this.Controls.Add(this.lblPrecioPorHora);
-            this.Controls.Add(this.numPrecioPorHora);
-            this.Controls.Add(this.lblEstado);
-            this.Controls.Add(this.cmbEstado);
-            this.Controls.Add(this.grpTipo);
-            this.Controls.Add(this.pnlRaquetas);
-            this.Controls.Add(this.btnGuardar);
-            this.Controls.Add(this.btnCancelar);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
-            this.MaximizeBox = false;
-            this.MinimizeBox = false;
-            this.Name = "CanchaDetalle";
-            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "CanchaDetalle";
-            this.Load += new System.EventHandler(this.CanchaDetalle_Load);
-            ((System.ComponentModel.ISupportInitialize)(this.numPrecioPorHora)).EndInit();
-            this.grpTipo.ResumeLayout(false);
-            this.grpTipo.PerformLayout();
-            this.pnlRaquetas.ResumeLayout(false);
-            this.pnlRaquetas.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numPrecioTotalRaquetas)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numCantidadRaquetas)).EndInit();
-            this.ResumeLayout(false);
-            this.PerformLayout();
+            // 
+            AcceptButton = btnGuardar;
+            CancelButton = btnCancelar;
+            ClientSize = new Size(449, 375);
+            Controls.Add(lblNombre);
+            Controls.Add(txtNombre);
+            Controls.Add(lblPrecioPorHora);
+            Controls.Add(numPrecioPorHora);
+            Controls.Add(lblEstado);
+            Controls.Add(cmbEstado);
+            Controls.Add(grpTipo);
+            Controls.Add(pnlRaquetas);
+            Controls.Add(btnGuardar);
+            Controls.Add(btnCancelar);
+            FormBorderStyle = FormBorderStyle.FixedDialog;
+            MaximizeBox = false;
+            MinimizeBox = false;
+            Name = "CanchaDetalle";
+            StartPosition = FormStartPosition.CenterParent;
+            Text = "CanchaDetalle";
+            Load += CanchaDetalle_Load;
+            ((System.ComponentModel.ISupportInitialize)numPrecioPorHora).EndInit();
+            grpTipo.ResumeLayout(false);
+            grpTipo.PerformLayout();
+            pnlRaquetas.ResumeLayout(false);
+            pnlRaquetas.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)numCantidadRaquetas).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numPrecioTotalRaquetas).EndInit();
+            ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
