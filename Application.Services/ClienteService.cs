@@ -22,14 +22,10 @@ namespace Application.Services
 
         public async Task<ClienteDTO> AddAsync(ClienteDTO dto)
         {
-            // VALIDACIÓN: antes era un cast directo (Estado)dto.Estado sin chequear rango.
+          
             if (!Enum.IsDefined(typeof(Estado), dto.Estado))
                 throw new ArgumentException("El estado del cliente no es válido.", nameof(dto.Estado));
 
-            // CORRECCIÓN DE CÁTEDRA: Cliente tiene IdUsuario pero nunca se verificaba que
-            // el Usuario realmente exista. Ahora sí se busca y, si no existe, se corta acá
-            // con un error de negocio claro (antes hubiera fallado más abajo, feo, contra
-            // la restricción de clave foránea de SQL Server).
             var usuario = await _usuarioRepository.GetAsync(dto.IdUsuario);
             if (usuario == null)
                 throw new ReglaDeNegocioException("El usuario indicado no existe.");

@@ -8,7 +8,7 @@ namespace WebAPI
     public static class AuthEndpoints
     {
         // Login/logout simple para la Entrega 2 (sin tokens: eso es requisito recién
-        // de la Entrega 3). El WinForms guarda el LoginResponseDTO en memoria mientras
+        // de la Entrega 3). El WinForms guarda el LoginResponseDTO en memria mientras
         // dura la sesión y lo descarta al hacer logout.
         public static void MapAuthEndpoints(this WebApplication app)
         {

@@ -11,7 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// ---------- Persistencia: EF Core + SQL Server (Entrega 2) ----------
+// =========== Persistencia: EF Core + SQL Server (Entrega 2) ===========
 string? connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<TPIContext>(options => options.UseSqlServer(connectionString));
 

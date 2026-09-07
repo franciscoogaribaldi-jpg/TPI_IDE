@@ -31,7 +31,7 @@ namespace Data
                 entity.Property(u => u.IdUsuario).ValueGeneratedOnAdd();
 
                 entity.Property(u => u.NombreUsuario).IsRequired().HasMaxLength(50);
-                // Guardamos el HASH de la contraseña, nunca el texto plano (lo resuelve Application.Services).
+                // Guardamos el HASH de la contrasenia, hecho en applicationServices
                 entity.Property(u => u.Contrasena).IsRequired().HasMaxLength(255);
                 entity.Property(u => u.Email).IsRequired().HasMaxLength(150);
                 entity.Property(u => u.Rol).IsRequired().HasConversion<int>();
@@ -64,11 +64,7 @@ namespace Data
                       .OnDelete(DeleteBehavior.Restrict);
             });
 
-            // ---------- Cancha: herencia TPH (Table-per-Hierarchy) ----------
-            // Una sola tabla "Canchas" con columna discriminadora "TipoCancha".
-            // Es el mapeo de herencia más simple de EF Core (Unidad 4, Cap. herencia en EF);
-            // la alternativa sería TPT (una tabla por subclase), más "purista" a nivel
-            // relacional pero con más JOINs. Para este dominio, TPH alcanza y sobra.
+           
             modelBuilder.Entity<Cancha>(entity =>
             {
                 entity.ToTable("Canchas");
