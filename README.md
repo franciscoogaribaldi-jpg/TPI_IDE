@@ -2,8 +2,9 @@
 # Sistema de Gestión para un Complejo Deportivo de Fútbol y Pádel
 
 # Integrantes
-Lescano Augusto , 54401, augustolescano53@gmail.com.
-Garibaldi Francisco, 54288, franciscoogaribaldi@gmail.com.
+Lescano Augusto , 54401, augustolescano53@gmail.com
+
+Garibaldi Francisco, 54288, franciscoogaribaldi@gmail.com
 
 ## Introducción
 
