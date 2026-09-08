@@ -1,6 +1,10 @@
 # TPI_Net
 # Sistema de Gestión para un Complejo Deportivo de Fútbol y Pádel
 
+# Integrantes
+Lescano Augusto , 54401, augustolescano53@gmail.com
+Garibaldi Francisco, 54288, franciscoogaribaldi@gmail.com
+
 ## Introducción
 
 Este proyecto consiste en el desarrollo de un sistema de gestión orientado a la administración integral de un complejo deportivo dedicado al alquiler de canchas de fútbol 5 y pádel.
