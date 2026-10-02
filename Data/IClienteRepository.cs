@@ -7,7 +7,7 @@ namespace Data
     public interface IClienteRepository
     {
         // El cajero nos dice: "Te devuelvo una Tarea que, cuando termine, adentro tendrá una Lista de Clientes"
-        Task<IEnumerable<Cliente>> GetAllAsync();
+        Task<IEnumerable<Cliente>> GetAllAsync(); 
 
         // "Te devuelvo una Tarea que, cuando termine, tendrá UN Cliente (o nada, por eso el ?)"
         Task<Cliente?> GetAsync(int id);

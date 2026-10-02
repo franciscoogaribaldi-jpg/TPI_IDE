@@ -12,7 +12,7 @@ namespace WebAPI
     {
         public static void MapClienteEndpoints(this WebApplication app)
         {
-            app.MapGet("/clientes/buscar", async (string? texto, IClienteService clienteService) =>
+            app.MapGet("/clientes/buscar", async (string? texto, IClienteService clienteService) => 
             {
                 var criteria = new ClienteCriteriaDTO { Texto = texto };
                 var clientes = await clienteService.GetByCriteriaAsync(criteria);
@@ -52,8 +52,8 @@ namespace WebAPI
             {
                 try
                 {
-                    ClienteDTO clienteDTO = await clienteService.AddAsync(dto);
-                    return Results.Created($"/clientes/{clienteDTO.IdCliente}", clienteDTO);
+                    ClienteDTO clienteDTO = await clienteService.AddAsync(dto); // devuelve el dto pero con los datos que no se autocompletan (id lo incremente sqlServer)
+                    return Results.Created($"/clientes/{clienteDTO.IdCliente}", clienteDTO); // produce la respuesta de que se creo (201)
                 }
                 catch (ReglaDeNegocioException ex)
                 {
@@ -77,7 +77,7 @@ namespace WebAPI
                     var found = await clienteService.UpdateAsync(dto);
                     if (!found) return Results.NotFound();
 
-                    return Results.NoContent();
+                    return Results.NoContent(); // este es el exito porqque al actualizar no devuelve nada
                 }
                 catch (ReglaDeNegocioException ex)
                 {

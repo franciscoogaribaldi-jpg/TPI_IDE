@@ -20,30 +20,12 @@ namespace WindowsForms
             _clienteOriginal = cliente;
         }
 
-        private async void ClienteDetalle_Load(object sender, EventArgs e)
+        private void ClienteDetalle_Load(object sender, EventArgs e)
         {
             Text = EsAlta ? "Nuevo cliente" : "Editar cliente";
 
             cmbEstado.DataSource = new[] { "Activo", "Inactivo" };
             cmbEstado.SelectedIndex = 0;
-
-            Cursor = Cursors.WaitCursor;
-            try
-            {
-                var usuarios = (await UsuarioApiClient.GetAllAsync()).ToList();
-                cmbUsuario.DataSource = usuarios;
-                cmbUsuario.DisplayMember = nameof(UsuarioDTO.NombreUsuario);
-                cmbUsuario.ValueMember = nameof(UsuarioDTO.IdUsuario);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"No se pudo cargar la lista de usuarios.\n\n{ex.Message}",
-                    "Error de conexión", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            finally
-            {
-                Cursor = Cursors.Default;
-            }
 
             if (!EsAlta && _clienteOriginal != null)
             {
@@ -53,7 +35,6 @@ namespace WindowsForms
                 txtTelefono.Text = _clienteOriginal.Telefono;
                 dtpFechaNacimiento.Value = _clienteOriginal.FechaNacimiento;
                 cmbEstado.SelectedIndex = _clienteOriginal.Estado == 1 ? 0 : 1;
-                cmbUsuario.SelectedValue = _clienteOriginal.IdUsuario;
             }
         }
 
@@ -87,12 +68,7 @@ namespace WindowsForms
                 return false;
             }
 
-            if (cmbUsuario.SelectedValue == null)
-            {
-                MessageBox.Show("Elegí un usuario para vincular al cliente.", "Datos incompletos", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                cmbUsuario.Focus();
-                return false;
-            }
+            
 
             return true;
         }
@@ -104,7 +80,7 @@ namespace WindowsForms
             var dto = new ClienteDTO
             {
                 IdCliente = _clienteOriginal?.IdCliente ?? 0,
-                IdUsuario = (int)cmbUsuario.SelectedValue!,
+                IdUsuario = SesionActual.Usuario.IdUsuario,
                 Nombre = txtNombre.Text.Trim(),
                 Apellido = txtApellido.Text.Trim(),
                 Dni = txtDni.Text.Trim(),
@@ -150,3 +126,4 @@ namespace WindowsForms
         }
     }
 }
+

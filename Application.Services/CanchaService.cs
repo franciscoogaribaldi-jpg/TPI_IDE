@@ -28,14 +28,14 @@ namespace Application.Services
             // VALIDACIÓN: antes era dto.TipoCancha?.ToLower() == "futbol"/"padel" repetido
             // en dos métodos. Enum.TryParse centraliza los valores válidos en un solo lugar
             // (Domain.Model.TipoCancha) y rechaza cualquier otra cosa de forma prolija.
-            if (!Enum.TryParse<TipoCancha>(dto.TipoCancha, ignoreCase: true, out var tipo))
+            if (!Enum.TryParse<TipoCancha>(dto.TipoCancha, ignoreCase: true, out var tipo)) // nos fijamos si es valido y si lo es lo pasamos a Enum
                 throw new ArgumentException("Tipo de cancha inválido. Use 'Futbol' o 'Padel'.", nameof(dto.TipoCancha));
 
             Cancha cancha = tipo switch
             {
                 TipoCancha.Futbol => new CanchaFutbol(0, dto.Nombre, (Estado)dto.Estado, dto.PrecioPorHora),
                 TipoCancha.Padel => new CanchaPadel(0, dto.Nombre, (Estado)dto.Estado, dto.PrecioPorHora,
-                    dto.CantidadRaquetas ?? 0, dto.PrecioTotalRaquetas ?? 0),
+                    dto.CantidadRaquetas ?? 0, dto.PrecioTotalRaquetas ?? 0), // Usa el valor de la izquierda, PERO si la izquierda está nula (vacía), usa el número de la derecha (0)
                 _ => throw new ArgumentException("Tipo de cancha inválido. Use 'Futbol' o 'Padel'.", nameof(dto.TipoCancha))
             };
 

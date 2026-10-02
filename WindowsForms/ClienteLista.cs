@@ -8,8 +8,33 @@ namespace WindowsForms
         public ClienteLista()
         {
             InitializeComponent();
+            ConfigurarGrilla();
             Load += async (_, _) => await CargarTodosAsync();
         }
+
+        // nuevo metodo
+        private void ConfigurarGrilla()
+        {
+            dgvClientes.AutoGenerateColumns = false;
+            dgvClientes.Columns.Clear();
+
+            dgvClientes.Columns.Add(new DataGridViewTextBoxColumn { Name = "IdCliente", HeaderText = "ID", DataPropertyName = "IdCliente", Width = 50 });
+            dgvClientes.Columns.Add(new DataGridViewTextBoxColumn { Name = "Nombre", HeaderText = "Nombre", DataPropertyName = "Nombre" });
+            dgvClientes.Columns.Add(new DataGridViewTextBoxColumn { Name = "Apellido", HeaderText = "Apellido", DataPropertyName = "Apellido" });
+            dgvClientes.Columns.Add(new DataGridViewTextBoxColumn { Name = "Dni", HeaderText = "DNI", DataPropertyName = "Dni" });
+            dgvClientes.Columns.Add(new DataGridViewTextBoxColumn { Name = "Telefono", HeaderText = "Teléfono", DataPropertyName = "Telefono" });
+
+            var colFecha = new DataGridViewTextBoxColumn { Name = "FechaNacimiento", HeaderText = "F. Nacimiento", DataPropertyName = "FechaNacimiento" };
+            colFecha.DefaultCellStyle.Format = "dd/MM/yyyy";
+            dgvClientes.Columns.Add(colFecha);
+
+            dgvClientes.Columns.Add(new DataGridViewTextBoxColumn { Name = "Estado", HeaderText = "Estado", DataPropertyName = "Estado" });
+
+            
+            dgvClientes.Columns.Add(new DataGridViewTextBoxColumn { Name = "NombreUsuario", HeaderText = "Registrado Por", DataPropertyName = "NombreUsuario" });
+        }
+
+
 
         private async Task CargarTodosAsync()
         {
@@ -17,7 +42,7 @@ namespace WindowsForms
             {
                 var clientes = (await ClienteApiClient.GetAllAsync()).ToList();
                 dgvClientes.DataSource = clientes;
-                AjustarColumnas();
+                
             });
         }
 
@@ -27,7 +52,7 @@ namespace WindowsForms
             {
                 var clientes = (await ClienteApiClient.BuscarAsync(txtBuscar.Text.Trim())).ToList();
                 dgvClientes.DataSource = clientes;
-                AjustarColumnas();
+               
             });
         }
 
@@ -96,17 +121,7 @@ namespace WindowsForms
             return dgvClientes.CurrentRow?.DataBoundItem as ClienteDTO;
         }
 
-        private void AjustarColumnas()
-        {
-            if (dgvClientes.Columns["IdUsuario"] != null)
-                dgvClientes.Columns["IdUsuario"].Visible = false;
-
-            if (dgvClientes.Columns["IdCliente"] != null)
-                dgvClientes.Columns["IdCliente"].HeaderText = "ID";
-
-            if (dgvClientes.Columns["FechaNacimiento"] != null)
-                dgvClientes.Columns["FechaNacimiento"].DefaultCellStyle.Format = "dd/MM/yyyy";
-        }
+       
 
         private void dgvClientes_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {

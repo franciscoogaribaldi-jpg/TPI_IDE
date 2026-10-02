@@ -11,7 +11,7 @@ namespace Application.Services
 {
     public class ClienteService : IClienteService
     {
-        private readonly IClienteRepository _repository;
+        private readonly IClienteRepository _repository;    // usa la interface porque esta 'Bajo Acoplamiento', que significa que no le importa como trabaje con la bd
         private readonly IUsuarioRepository _usuarioRepository;
 
         public ClienteService(IClienteRepository repository, IUsuarioRepository usuarioRepository)
@@ -23,7 +23,7 @@ namespace Application.Services
         public async Task<ClienteDTO> AddAsync(ClienteDTO dto)
         {
           
-            if (!Enum.IsDefined(typeof(Estado), dto.Estado))
+            if (!Enum.IsDefined(typeof(Estado), dto.Estado)) // dto.Estado esta definido en la lista Estado de enum
                 throw new ArgumentException("El estado del cliente no es válido.", nameof(dto.Estado));
 
             var usuario = await _usuarioRepository.GetAsync(dto.IdUsuario);
@@ -43,6 +43,7 @@ namespace Application.Services
                 telefono: dto.Telefono,
                 fechaNacimiento: dto.FechaNacimiento,
                 estado: (Estado)dto.Estado
+                
             );
 
             // CORRECCIÓN DE CÁTEDRA: SetUsuario no se invocaba nunca; la navigation
@@ -52,10 +53,10 @@ namespace Application.Services
             await _repository.AddAsync(cliente);
 
             dto.IdCliente = cliente.IdCliente;
-            return dto;
+            return dto; // se retorna para que aparezca en la parte visual
         }
 
-        public async Task<bool> DeleteAsync(int id)
+        public async Task<bool> DeleteAsync(int id) // esta parte de la capa de servicios esta solo para cumplir con la arquitectura porque hasta ahora solo sirve para llamar a repository
         {
             return await _repository.DeleteAsync(id);
         }
@@ -96,7 +97,7 @@ namespace Application.Services
                 dni: dto.Dni,
                 telefono: dto.Telefono,
                 fechaNacimiento: dto.FechaNacimiento,
-                estado: (Estado)dto.Estado
+                estado: (Estado)dto.Estado // casteo del estado
             );
             clienteModificado.SetUsuario(usuario);
 
@@ -119,7 +120,8 @@ namespace Application.Services
             Dni = c.Dni,
             Telefono = c.Telefono,
             FechaNacimiento = c.FechaNacimiento,
-            Estado = (int)c.Estado
+            Estado = (int)c.Estado,
+            NombreUsuario = c.Usuario.NombreUsuario
         };
     }
 }

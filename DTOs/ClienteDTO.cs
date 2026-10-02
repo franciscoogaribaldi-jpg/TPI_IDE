@@ -12,5 +12,6 @@ namespace DTOs
         public string Telefono { get; set; }
         public DateTime FechaNacimiento { get; set; }
         public int Estado { get; set; }
-    }
+        public string? NombreUsuario  { get; set; }
+}
 }

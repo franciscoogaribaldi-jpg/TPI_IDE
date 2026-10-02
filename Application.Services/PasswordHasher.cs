@@ -10,7 +10,7 @@ namespace Application.Services
     /// acá para que quede claro que es una simplificación consciente, no un olvido.
     /// Esto fue consultado con la IA
   
-    internal static class PasswordHasher
+    public static class PasswordHasher
     {
         public static string Hash(string password)
         {

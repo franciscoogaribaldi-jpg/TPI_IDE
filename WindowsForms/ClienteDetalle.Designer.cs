@@ -17,191 +17,169 @@ namespace WindowsForms
 
         private void InitializeComponent()
         {
-            this.lblNombre = new System.Windows.Forms.Label();
-            this.txtNombre = new System.Windows.Forms.TextBox();
-            this.lblApellido = new System.Windows.Forms.Label();
-            this.txtApellido = new System.Windows.Forms.TextBox();
-            this.lblDni = new System.Windows.Forms.Label();
-            this.txtDni = new System.Windows.Forms.TextBox();
-            this.lblTelefono = new System.Windows.Forms.Label();
-            this.txtTelefono = new System.Windows.Forms.TextBox();
-            this.lblFechaNacimiento = new System.Windows.Forms.Label();
-            this.dtpFechaNacimiento = new System.Windows.Forms.DateTimePicker();
-            this.lblEstado = new System.Windows.Forms.Label();
-            this.cmbEstado = new System.Windows.Forms.ComboBox();
-            this.lblUsuario = new System.Windows.Forms.Label();
-            this.cmbUsuario = new System.Windows.Forms.ComboBox();
-            this.btnGuardar = new System.Windows.Forms.Button();
-            this.btnCancelar = new System.Windows.Forms.Button();
-            this.SuspendLayout();
-            //
+            lblNombre = new Label();
+            txtNombre = new TextBox();
+            lblApellido = new Label();
+            txtApellido = new TextBox();
+            lblDni = new Label();
+            txtDni = new TextBox();
+            lblTelefono = new Label();
+            txtTelefono = new TextBox();
+            lblFechaNacimiento = new Label();
+            dtpFechaNacimiento = new DateTimePicker();
+            lblEstado = new Label();
+            cmbEstado = new ComboBox();
+            btnGuardar = new Button();
+            btnCancelar = new Button();
+            SuspendLayout();
+            // 
             // lblNombre
-            //
-            this.lblNombre.AutoSize = true;
-            this.lblNombre.Location = new System.Drawing.Point(20, 23);
-            this.lblNombre.Name = "lblNombre";
-            this.lblNombre.Size = new System.Drawing.Size(58, 15);
-            this.lblNombre.TabIndex = 0;
-            this.lblNombre.Text = "Nombre:";
-            //
+            // 
+            lblNombre.AutoSize = true;
+            lblNombre.Location = new Point(20, 23);
+            lblNombre.Name = "lblNombre";
+            lblNombre.Size = new Size(54, 15);
+            lblNombre.TabIndex = 0;
+            lblNombre.Text = "Nombre:";
+            // 
             // txtNombre
-            //
-            this.txtNombre.Location = new System.Drawing.Point(150, 20);
-            this.txtNombre.Name = "txtNombre";
-            this.txtNombre.Size = new System.Drawing.Size(220, 23);
-            this.txtNombre.TabIndex = 1;
-            //
+            // 
+            txtNombre.Location = new Point(150, 20);
+            txtNombre.Name = "txtNombre";
+            txtNombre.Size = new Size(220, 23);
+            txtNombre.TabIndex = 1;
+            // 
             // lblApellido
-            //
-            this.lblApellido.AutoSize = true;
-            this.lblApellido.Location = new System.Drawing.Point(20, 63);
-            this.lblApellido.Name = "lblApellido";
-            this.lblApellido.Size = new System.Drawing.Size(58, 15);
-            this.lblApellido.TabIndex = 2;
-            this.lblApellido.Text = "Apellido:";
-            //
+            // 
+            lblApellido.AutoSize = true;
+            lblApellido.Location = new Point(20, 63);
+            lblApellido.Name = "lblApellido";
+            lblApellido.Size = new Size(54, 15);
+            lblApellido.TabIndex = 2;
+            lblApellido.Text = "Apellido:";
+            // 
             // txtApellido
-            //
-            this.txtApellido.Location = new System.Drawing.Point(150, 60);
-            this.txtApellido.Name = "txtApellido";
-            this.txtApellido.Size = new System.Drawing.Size(220, 23);
-            this.txtApellido.TabIndex = 3;
-            //
+            // 
+            txtApellido.Location = new Point(150, 60);
+            txtApellido.Name = "txtApellido";
+            txtApellido.Size = new Size(220, 23);
+            txtApellido.TabIndex = 3;
+            // 
             // lblDni
-            //
-            this.lblDni.AutoSize = true;
-            this.lblDni.Location = new System.Drawing.Point(20, 103);
-            this.lblDni.Name = "lblDni";
-            this.lblDni.Size = new System.Drawing.Size(31, 15);
-            this.lblDni.TabIndex = 4;
-            this.lblDni.Text = "DNI:";
-            //
+            // 
+            lblDni.AutoSize = true;
+            lblDni.Location = new Point(20, 103);
+            lblDni.Name = "lblDni";
+            lblDni.Size = new Size(30, 15);
+            lblDni.TabIndex = 4;
+            lblDni.Text = "DNI:";
+            // 
             // txtDni
-            //
-            this.txtDni.Location = new System.Drawing.Point(150, 100);
-            this.txtDni.Name = "txtDni";
-            this.txtDni.Size = new System.Drawing.Size(220, 23);
-            this.txtDni.TabIndex = 5;
-            //
+            // 
+            txtDni.Location = new Point(150, 100);
+            txtDni.Name = "txtDni";
+            txtDni.Size = new Size(220, 23);
+            txtDni.TabIndex = 5;
+            // 
             // lblTelefono
-            //
-            this.lblTelefono.AutoSize = true;
-            this.lblTelefono.Location = new System.Drawing.Point(20, 143);
-            this.lblTelefono.Name = "lblTelefono";
-            this.lblTelefono.Size = new System.Drawing.Size(59, 15);
-            this.lblTelefono.TabIndex = 6;
-            this.lblTelefono.Text = "Teléfono:";
-            //
+            // 
+            lblTelefono.AutoSize = true;
+            lblTelefono.Location = new Point(20, 143);
+            lblTelefono.Name = "lblTelefono";
+            lblTelefono.Size = new Size(55, 15);
+            lblTelefono.TabIndex = 6;
+            lblTelefono.Text = "Teléfono:";
+            // 
             // txtTelefono
-            //
-            this.txtTelefono.Location = new System.Drawing.Point(150, 140);
-            this.txtTelefono.Name = "txtTelefono";
-            this.txtTelefono.Size = new System.Drawing.Size(220, 23);
-            this.txtTelefono.TabIndex = 7;
-            //
+            // 
+            txtTelefono.Location = new Point(150, 140);
+            txtTelefono.Name = "txtTelefono";
+            txtTelefono.Size = new Size(220, 23);
+            txtTelefono.TabIndex = 7;
+            // 
             // lblFechaNacimiento
-            //
-            this.lblFechaNacimiento.AutoSize = true;
-            this.lblFechaNacimiento.Location = new System.Drawing.Point(20, 183);
-            this.lblFechaNacimiento.Name = "lblFechaNacimiento";
-            this.lblFechaNacimiento.Size = new System.Drawing.Size(115, 15);
-            this.lblFechaNacimiento.TabIndex = 8;
-            this.lblFechaNacimiento.Text = "Fecha nacimiento:";
-            //
+            // 
+            lblFechaNacimiento.AutoSize = true;
+            lblFechaNacimiento.Location = new Point(20, 183);
+            lblFechaNacimiento.Name = "lblFechaNacimiento";
+            lblFechaNacimiento.Size = new Size(104, 15);
+            lblFechaNacimiento.TabIndex = 8;
+            lblFechaNacimiento.Text = "Fecha nacimiento:";
+            // 
             // dtpFechaNacimiento
-            //
-            this.dtpFechaNacimiento.Format = System.Windows.Forms.DateTimePickerFormat.Short;
-            this.dtpFechaNacimiento.Location = new System.Drawing.Point(150, 180);
-            this.dtpFechaNacimiento.MaxDate = new System.DateTime(9998, 12, 31);
-            this.dtpFechaNacimiento.Name = "dtpFechaNacimiento";
-            this.dtpFechaNacimiento.Size = new System.Drawing.Size(220, 23);
-            this.dtpFechaNacimiento.TabIndex = 9;
-            this.dtpFechaNacimiento.Value = new System.DateTime(2000, 1, 1);
-            //
+            // 
+            dtpFechaNacimiento.Format = DateTimePickerFormat.Short;
+            dtpFechaNacimiento.Location = new Point(150, 180);
+            dtpFechaNacimiento.Name = "dtpFechaNacimiento";
+            dtpFechaNacimiento.Size = new Size(220, 23);
+            dtpFechaNacimiento.TabIndex = 9;
+            dtpFechaNacimiento.Value = new DateTime(2000, 1, 1, 0, 0, 0, 0);
+            // 
             // lblEstado
-            //
-            this.lblEstado.AutoSize = true;
-            this.lblEstado.Location = new System.Drawing.Point(20, 223);
-            this.lblEstado.Name = "lblEstado";
-            this.lblEstado.Size = new System.Drawing.Size(45, 15);
-            this.lblEstado.TabIndex = 10;
-            this.lblEstado.Text = "Estado:";
-            //
+            // 
+            lblEstado.AutoSize = true;
+            lblEstado.Location = new Point(20, 223);
+            lblEstado.Name = "lblEstado";
+            lblEstado.Size = new Size(45, 15);
+            lblEstado.TabIndex = 10;
+            lblEstado.Text = "Estado:";
+            // 
             // cmbEstado
-            //
-            this.cmbEstado.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cmbEstado.Location = new System.Drawing.Point(150, 220);
-            this.cmbEstado.Name = "cmbEstado";
-            this.cmbEstado.Size = new System.Drawing.Size(220, 23);
-            this.cmbEstado.TabIndex = 11;
-            //
-            // lblUsuario
-            //
-            this.lblUsuario.AutoSize = true;
-            this.lblUsuario.Location = new System.Drawing.Point(20, 263);
-            this.lblUsuario.Name = "lblUsuario";
-            this.lblUsuario.Size = new System.Drawing.Size(54, 15);
-            this.lblUsuario.TabIndex = 12;
-            this.lblUsuario.Text = "Usuario:";
-            //
-            // cmbUsuario
-            //
-            this.cmbUsuario.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cmbUsuario.Location = new System.Drawing.Point(150, 260);
-            this.cmbUsuario.Name = "cmbUsuario";
-            this.cmbUsuario.Size = new System.Drawing.Size(220, 23);
-            this.cmbUsuario.TabIndex = 13;
-            //
+            // 
+            cmbEstado.DropDownStyle = ComboBoxStyle.DropDownList;
+            cmbEstado.Location = new Point(150, 220);
+            cmbEstado.Name = "cmbEstado";
+            cmbEstado.Size = new Size(220, 23);
+            cmbEstado.TabIndex = 11;
+            // 
             // btnGuardar
-            //
-            this.btnGuardar.Location = new System.Drawing.Point(190, 310);
-            this.btnGuardar.Name = "btnGuardar";
-            this.btnGuardar.Size = new System.Drawing.Size(85, 30);
-            this.btnGuardar.TabIndex = 14;
-            this.btnGuardar.Text = "Guardar";
-            this.btnGuardar.UseVisualStyleBackColor = true;
-            this.btnGuardar.Click += new System.EventHandler(this.btnGuardar_Click);
-            //
+            // 
+            btnGuardar.Location = new Point(190, 270);
+            btnGuardar.Name = "btnGuardar";
+            btnGuardar.Size = new Size(85, 30);
+            btnGuardar.TabIndex = 14;
+            btnGuardar.Text = "Guardar";
+            btnGuardar.UseVisualStyleBackColor = true;
+            btnGuardar.Click += btnGuardar_Click;
+            // 
             // btnCancelar
-            //
-            this.btnCancelar.Location = new System.Drawing.Point(285, 310);
-            this.btnCancelar.Name = "btnCancelar";
-            this.btnCancelar.Size = new System.Drawing.Size(85, 30);
-            this.btnCancelar.TabIndex = 15;
-            this.btnCancelar.Text = "Cancelar";
-            this.btnCancelar.UseVisualStyleBackColor = true;
-            this.btnCancelar.Click += new System.EventHandler(this.btnCancelar_Click);
-            //
+            // 
+            btnCancelar.Location = new Point(285, 270);
+            btnCancelar.Name = "btnCancelar";
+            btnCancelar.Size = new Size(85, 30);
+            btnCancelar.TabIndex = 15;
+            btnCancelar.Text = "Cancelar";
+            btnCancelar.UseVisualStyleBackColor = true;
+            btnCancelar.Click += btnCancelar_Click;
+            // 
             // ClienteDetalle
-            //
-            this.AcceptButton = this.btnGuardar;
-            this.CancelButton = this.btnCancelar;
-            this.ClientSize = new System.Drawing.Size(390, 360);
-            this.Controls.Add(this.lblNombre);
-            this.Controls.Add(this.txtNombre);
-            this.Controls.Add(this.lblApellido);
-            this.Controls.Add(this.txtApellido);
-            this.Controls.Add(this.lblDni);
-            this.Controls.Add(this.txtDni);
-            this.Controls.Add(this.lblTelefono);
-            this.Controls.Add(this.txtTelefono);
-            this.Controls.Add(this.lblFechaNacimiento);
-            this.Controls.Add(this.dtpFechaNacimiento);
-            this.Controls.Add(this.lblEstado);
-            this.Controls.Add(this.cmbEstado);
-            this.Controls.Add(this.lblUsuario);
-            this.Controls.Add(this.cmbUsuario);
-            this.Controls.Add(this.btnGuardar);
-            this.Controls.Add(this.btnCancelar);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
-            this.MaximizeBox = false;
-            this.MinimizeBox = false;
-            this.Name = "ClienteDetalle";
-            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "ClienteDetalle";
-            this.Load += new System.EventHandler(this.ClienteDetalle_Load);
-            this.ResumeLayout(false);
-            this.PerformLayout();
+            // 
+            AcceptButton = btnGuardar;
+            CancelButton = btnCancelar;
+            ClientSize = new Size(390, 317);
+            Controls.Add(lblNombre);
+            Controls.Add(txtNombre);
+            Controls.Add(lblApellido);
+            Controls.Add(txtApellido);
+            Controls.Add(lblDni);
+            Controls.Add(txtDni);
+            Controls.Add(lblTelefono);
+            Controls.Add(txtTelefono);
+            Controls.Add(lblFechaNacimiento);
+            Controls.Add(dtpFechaNacimiento);
+            Controls.Add(lblEstado);
+            Controls.Add(cmbEstado);
+            Controls.Add(btnGuardar);
+            Controls.Add(btnCancelar);
+            FormBorderStyle = FormBorderStyle.FixedDialog;
+            MaximizeBox = false;
+            MinimizeBox = false;
+            Name = "ClienteDetalle";
+            StartPosition = FormStartPosition.CenterParent;
+            Text = "ClienteDetalle";
+            Load += ClienteDetalle_Load;
+            ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion

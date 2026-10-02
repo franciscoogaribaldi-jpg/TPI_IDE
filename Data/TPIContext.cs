@@ -9,13 +9,13 @@ namespace Data
     /// La base se autogenera si no existe (Database.EnsureCreated, llamado una
     /// única vez al iniciar la app en Program.cs).
     /// </summary>
-    public class TPIContext : DbContext
+    public class TPIContext : DbContext // TPIContext hereda de DbContext
     {
         public DbSet<Usuario> Usuarios { get; set; } = null!;
         public DbSet<Cliente> Clientes { get; set; } = null!;
         public DbSet<Cancha> Canchas { get; set; } = null!;
 
-        public TPIContext(DbContextOptions<TPIContext> options) : base(options)
+        public TPIContext(DbContextOptions<TPIContext> options) : base(options) // Constructor de TPIContext que recibe las opciones y se las envía a la clase padre DbContext
         {
         }
 
@@ -39,6 +39,8 @@ namespace Data
 
                 entity.HasIndex(u => u.NombreUsuario).IsUnique();
                 entity.HasIndex(u => u.Email).IsUnique();
+
+                
             });
 
             // ---------- Cliente ----------
@@ -59,9 +61,9 @@ namespace Data
                 // Cliente.Usuario e IdUsuario tienen setter privado: EF puede usarlo igual
                 // por reflexión, no hace falta HasField() como en el ejemplo de cátedra.
                 entity.HasOne(c => c.Usuario)
-                      .WithMany()
+                      .WithMany() // no lo tenemos en cuenta porque No me importa registrar la relación a la inversa adentro de la clase Usuario, solo me importa desde el lado del Cliente
                       .HasForeignKey(c => c.IdUsuario)
-                      .OnDelete(DeleteBehavior.Restrict);
+                      .OnDelete(DeleteBehavior.Restrict);   // para que cuando quieras borrar el usuario primero tengas que borrar el cliente asignado
             });
 
            
@@ -73,7 +75,7 @@ namespace Data
 
                 entity.Property(c => c.Nombre).IsRequired().HasMaxLength(100);
                 entity.Property(c => c.Estado).IsRequired().HasConversion<int>();
-                entity.Property(c => c.PrecioPorHora).HasColumnType("decimal(18,2)");
+                entity.Property(c => c.PrecioPorHora).HasColumnType("decimal(18,2)"); // nro de 18 digitos con 2 decimales que representan los centavos
 
                 entity.HasDiscriminator<string>("TipoCancha")
                       .HasValue<CanchaFutbol>("Futbol")
