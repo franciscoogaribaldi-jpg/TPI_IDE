@@ -10,11 +10,21 @@ namespace API.Clients
         // o mirando la ventana de la consola cuando arranca ("Now listening on: ...").
         private const string BaseUrl = "https://localhost:7111/";
 
+        // El token JWT de la sesión activa. Lo completa quien haga login (hoy WinForms,
+        // a futuro también Blazor), y de acá lo toma cada pedido HTTP automáticamente.
+        public static string? TokenActual { get; set; } 
+
         protected static HttpClient CreateHttpClient()
         {
             var client = new HttpClient { BaseAddress = new Uri(BaseUrl) };
             client.DefaultRequestHeaders.Accept.Clear();
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+            if (!string.IsNullOrEmpty(TokenActual))
+            {
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", TokenActual);
+            }
+
             return client;
         }
 

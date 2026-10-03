@@ -7,5 +7,7 @@ namespace DTOs
 
         // int para no acoplar DTOs a Domain.Model; el WinForms lo castea a RolUsuario.
         public int Rol { get; set; }
+
+        public string Token { get; set; } = string.Empty;
     }
 }

@@ -1,4 +1,5 @@
 using DTOs;
+using API.Clients;
 
 namespace WindowsForms
 {
@@ -17,6 +18,7 @@ namespace WindowsForms
         public static void CerrarSesion()
         {
             Usuario = null;
+            BaseApiClient.TokenActual = null;
         }
     }
 }

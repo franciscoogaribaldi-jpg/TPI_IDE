@@ -21,7 +21,8 @@ namespace WebAPI
             .WithName("GetUsuario")
             .Produces<UsuarioDTO>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound)
-            .WithOpenApi();
+            .WithOpenApi()
+            .RequireAuthorization(policy => policy.RequireRole("Administrador"));
 
             app.MapGet("/usuarios", async (IUsuarioService usuarioService) =>
             {
@@ -30,7 +31,8 @@ namespace WebAPI
             })
             .WithName("GetAllUsuarios")
             .Produces<IEnumerable<UsuarioDTO>>(StatusCodes.Status200OK)
-            .WithOpenApi();
+            .WithOpenApi()
+            .RequireAuthorization(policy => policy.RequireRole("Administrador"));
 
             app.MapPost("/usuarios", async (UsuarioDTO dto, IUsuarioService usuarioService) =>
             {
@@ -51,7 +53,8 @@ namespace WebAPI
             .WithName("AddUsuario")
             .Produces<UsuarioDTO>(StatusCodes.Status201Created)
             .Produces(StatusCodes.Status400BadRequest)
-            .WithOpenApi();
+            .WithOpenApi()
+            .RequireAuthorization(policy => policy.RequireRole("Administrador"));
 
             app.MapPut("/usuarios", async (UsuarioDTO dto, IUsuarioService usuarioService) =>
             {
@@ -74,7 +77,8 @@ namespace WebAPI
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status400BadRequest)
-            .WithOpenApi();
+            .WithOpenApi()
+            .RequireAuthorization(policy => policy.RequireRole("Administrador"));
 
             app.MapDelete("/usuarios/{id}", async (int id, IUsuarioService usuarioService) =>
             {
@@ -85,7 +89,8 @@ namespace WebAPI
             .WithName("DeleteUsuario")
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status404NotFound)
-            .WithOpenApi();
+            .WithOpenApi()
+            .RequireAuthorization(policy => policy.RequireRole("Administrador"));
         }
     }
 }

@@ -12,7 +12,7 @@ namespace WebAPI
     {
         public static void MapClienteEndpoints(this WebApplication app)
         {
-            app.MapGet("/clientes/buscar", async (string? texto, IClienteService clienteService) => 
+            app.MapGet("/clientes/buscar", async (string? texto, IClienteService clienteService) =>
             {
                 var criteria = new ClienteCriteriaDTO { Texto = texto };
                 var clientes = await clienteService.GetByCriteriaAsync(criteria);
@@ -20,7 +20,8 @@ namespace WebAPI
             })
             .WithName("GetClientesByCriteria")
             .Produces<IEnumerable<ClienteDTO>>(StatusCodes.Status200OK)
-            .WithOpenApi();
+            .WithOpenApi()
+            .RequireAuthorization(policy => policy.RequireRole("Administrador"));
 
             app.MapGet("/clientes/{id}", async (int id, IClienteService clienteService) =>
             {
@@ -36,7 +37,8 @@ namespace WebAPI
             .WithName("GetCliente")
             .Produces<ClienteDTO>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound)
-            .WithOpenApi();
+            .WithOpenApi()
+            .RequireAuthorization(policy => policy.RequireRole("Administrador"));
 
             app.MapGet("/clientes", async (IClienteService clienteService) =>
             {
@@ -46,7 +48,8 @@ namespace WebAPI
             })
             .WithName("GetAllClientes")
             .Produces<IEnumerable<ClienteDTO>>(StatusCodes.Status200OK)
-            .WithOpenApi();
+            .WithOpenApi()
+            .RequireAuthorization(policy => policy.RequireRole("Administrador")); 
 
             app.MapPost("/clientes", async (ClienteDTO dto, IClienteService clienteService) =>
             {
@@ -68,7 +71,8 @@ namespace WebAPI
             .WithName("AddCliente")
             .Produces<ClienteDTO>(StatusCodes.Status201Created)
             .Produces(StatusCodes.Status400BadRequest)
-            .WithOpenApi();
+            .WithOpenApi()
+            .RequireAuthorization(policy => policy.RequireRole("Administrador"));
 
             app.MapPut("/clientes", async (ClienteDTO dto, IClienteService clienteService) =>
             {
@@ -92,7 +96,8 @@ namespace WebAPI
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status400BadRequest)
-            .WithOpenApi();
+            .WithOpenApi()
+            .RequireAuthorization(policy => policy.RequireRole("Administrador"));
 
             app.MapDelete("/clientes/{id}", async (int id, IClienteService clienteService) =>
             {
@@ -104,7 +109,8 @@ namespace WebAPI
             .WithName("DeleteCliente")
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status404NotFound)
-            .WithOpenApi();
+            .WithOpenApi()
+            .RequireAuthorization(policy => policy.RequireRole("Administrador"));
         }
     }
 }

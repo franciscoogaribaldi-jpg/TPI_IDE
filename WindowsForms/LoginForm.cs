@@ -35,6 +35,7 @@ namespace WindowsForms
                 }
 
                 SesionActual.IniciarSesion(respuesta);
+                BaseApiClient.TokenActual = respuesta.Token;
                 DialogResult = DialogResult.OK;
                 Close();
             }

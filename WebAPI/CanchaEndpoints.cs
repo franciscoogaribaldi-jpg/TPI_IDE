@@ -21,7 +21,8 @@ namespace WebAPI
             .WithName("GetCancha")
             .Produces<CanchaDTO>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound)
-            .WithOpenApi();
+            .WithOpenApi()
+            .RequireAuthorization(policy => policy.RequireRole("Administrador"));
 
             app.MapGet("/canchas", async (ICanchaService canchaService) =>
             {
@@ -30,7 +31,8 @@ namespace WebAPI
             })
             .WithName("GetAllCanchas")
             .Produces<IEnumerable<CanchaDTO>>(StatusCodes.Status200OK)
-            .WithOpenApi();
+            .WithOpenApi()
+            .RequireAuthorization(policy => policy.RequireRole("Administrador"));
 
             app.MapPost("/canchas", async (CanchaDTO dto, ICanchaService canchaService) =>
             {
@@ -51,7 +53,8 @@ namespace WebAPI
             .WithName("AddCancha")
             .Produces<CanchaDTO>(StatusCodes.Status201Created)
             .Produces(StatusCodes.Status400BadRequest)
-            .WithOpenApi();
+            .WithOpenApi()
+            .RequireAuthorization(policy => policy.RequireRole("Administrador"));
 
             app.MapPut("/canchas", async (CanchaDTO dto, ICanchaService canchaService) =>
             {
@@ -74,7 +77,8 @@ namespace WebAPI
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status400BadRequest)
-            .WithOpenApi();
+            .WithOpenApi()
+            .RequireAuthorization(policy => policy.RequireRole("Administrador"));
 
             app.MapDelete("/canchas/{id}", async (int id, ICanchaService canchaService) =>
             {
@@ -85,7 +89,8 @@ namespace WebAPI
             .WithName("DeleteCancha")
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status404NotFound)
-            .WithOpenApi();
+            .WithOpenApi()
+            .RequireAuthorization(policy => policy.RequireRole("Administrador"));
         }
     }
 }
