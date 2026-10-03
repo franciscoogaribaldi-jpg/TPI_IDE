@@ -158,6 +158,9 @@ namespace Application.Services
             ImporteTotal = r.ImporteTotal,
             Sena = r.Sena,
             FechaCreacion = r.FechaCreacion,
+            NombreCliente = r.Cliente != null ? $"{r.Cliente.Nombre} {r.Cliente.Apellido}" : string.Empty,
+            NombreCancha = r.Cancha?.Nombre ?? string.Empty,
+            HorarioTurno = r.Turno != null ? $"{r.Turno.HoraInicio:hh\\:mm} - {r.Turno.HoraFin:hh\\:mm}" : string.Empty,
             Detalles = detalles?.Select(d => new DetalleReservaDTO
             {
                 IdDetalleReserva = d.IdDetalleReserva,

@@ -20,6 +20,7 @@ namespace WindowsForms
             this.menuPrincipal = new System.Windows.Forms.MenuStrip();
             this.menuClientes = new System.Windows.Forms.ToolStripMenuItem();
             this.menuCanchas = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuReservas = new System.Windows.Forms.ToolStripMenuItem();
             this.menuSesion = new System.Windows.Forms.ToolStripMenuItem();
             this.menuCerrarSesion = new System.Windows.Forms.ToolStripMenuItem();
             this.menuSalir = new System.Windows.Forms.ToolStripMenuItem();
@@ -32,6 +33,7 @@ namespace WindowsForms
             this.menuPrincipal.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.menuClientes,
             this.menuCanchas,
+            this.menuReservas,
             this.menuSesion,
             this.lblBienvenida});
             this.menuPrincipal.Location = new System.Drawing.Point(0, 0);
@@ -52,6 +54,13 @@ namespace WindowsForms
             this.menuCanchas.Size = new System.Drawing.Size(70, 20);
             this.menuCanchas.Text = "Canchas";
             this.menuCanchas.Click += new System.EventHandler(this.menuCanchas_Click);
+            //
+            // menuReservas
+            //
+            this.menuReservas.Name = "menuReservas";
+            this.menuReservas.Size = new System.Drawing.Size(75, 20);
+            this.menuReservas.Text = "Reservas";
+            this.menuReservas.Click += new System.EventHandler(this.menuReservas_Click);
             //
             // menuSesion
             //
@@ -103,6 +112,7 @@ namespace WindowsForms
         private System.Windows.Forms.MenuStrip menuPrincipal;
         private System.Windows.Forms.ToolStripMenuItem menuClientes;
         private System.Windows.Forms.ToolStripMenuItem menuCanchas;
+        private System.Windows.Forms.ToolStripMenuItem menuReservas;
         private System.Windows.Forms.ToolStripMenuItem menuSesion;
         private System.Windows.Forms.ToolStripMenuItem menuCerrarSesion;
         private System.Windows.Forms.ToolStripMenuItem menuSalir;

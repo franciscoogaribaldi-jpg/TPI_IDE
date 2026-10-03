@@ -51,6 +51,19 @@ namespace WindowsForms
             form.Show();
         }
 
+        private void menuReservas_Click(object sender, EventArgs e)
+        {
+            var existente = MdiChildren.OfType<ReservaLista>().FirstOrDefault();
+            if (existente != null)
+            {
+                existente.Activate();
+                return;
+            }
+
+            var form = new ReservaLista { MdiParent = this };
+            form.Show();
+        }
+
         private void menuCerrarSesion_Click(object sender, EventArgs e)
         {
             SesionActual.CerrarSesion();
