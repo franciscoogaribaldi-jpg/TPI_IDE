@@ -1,0 +1,91 @@
+﻿@page "/login"
+@using System.ComponentModel.DataAnnotations
+@inject SesionUsuario Sesion
+@inject NavigationManager Navigation
+
+<PageTitle>Iniciar sesión</PageTitle>
+
+<div class="row justify-content-center mt-5">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="text-center">Iniciar sesión</h3>
+            </div>
+            <div class="card-body">
+                <EditForm Model="modelo" OnValidSubmit="IngresarAsync">
+                    <DataAnnotationsValidator />
+
+                    <div class="mb-3">
+                        <label class="form-label">Usuario</label>
+                        <InputText class="form-control" @bind-Value="modelo.NombreUsuario" />
+                        <ValidationMessage For="() => modelo.NombreUsuario" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Contraseña</label>
+                        <InputText type="password" class="form-control" @bind-Value="modelo.Contrasena" />
+                        <ValidationMessage For="() => modelo.Contrasena" />
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(mensajeError))
+                    {
+                        <div class="alert alert-danger">@mensajeError</div>
+                    }
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary" disabled="@cargando">
+                            @if (cargando)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2"></span>
+                            }
+                            Ingresar
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private LoginModelo modelo = new();
+    private string mensajeError = string.Empty;
+    private bool cargando = false;
+
+    private async Task IngresarAsync()
+    {
+        cargando = true;
+        mensajeError = string.Empty;
+        try
+        {
+            bool ok = await Sesion.IniciarSesionAsync(modelo.NombreUsuario.Trim(), modelo.Contrasena);
+            if (ok)
+            {
+                Navigation.NavigateTo("/");
+            }
+            else
+            {
+                mensajeError = "Usuario o contraseña incorrectos.";
+                modelo.Contrasena = string.Empty;
+            }
+        }
+        catch (Exception ex)
+        {
+            mensajeError = $"No se pudo conectar con el servidor. {ex.Message}";
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+
+    // Modelo propio del formulario: los [Required] dan la validación a nivel UI.
+    public class LoginModelo
+    {
+        [Required(ErrorMessage = "Ingresá el usuario.")]
+        public string NombreUsuario { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Ingresá la contraseña.")]
+        public string Contrasena { get; set; } = string.Empty;
+    }
+}

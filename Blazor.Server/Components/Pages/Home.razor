@@ -1,0 +1,30 @@
+﻿@page "/"
+@inject SesionUsuario Sesion
+@inject NavigationManager Navigation
+
+<PageTitle>Inicio</PageTitle>
+
+@if (Sesion.EstaLogueado)
+{
+    <h1>Bienvenido, @Sesion.Usuario!.NombreUsuario</h1>
+
+    @if (Sesion.EsAdministrador)
+    {
+        <p>Usá el menú lateral para gestionar Clientes y Canchas.</p>
+    }
+    else
+    {
+        <div class="alert alert-info">
+            Tu usuario no tiene funcionalidades de administración disponibles en esta versión.
+        </div>
+    }
+}
+
+@code {
+    protected override void OnInitialized()
+    {
+        // Sin sesión, no hay pantalla principal: al login (como el while de Program.cs del WinForms).
+        if (!Sesion.EstaLogueado)
+            Navigation.NavigateTo("/login");
+    }
+}

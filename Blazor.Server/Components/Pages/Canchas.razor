@@ -1,0 +1,138 @@
+﻿@page "/canchas"
+@inject SesionUsuario Sesion
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+<PageTitle>Canchas</PageTitle>
+
+<h3>Canchas</h3>
+
+@if (!string.IsNullOrEmpty(mensajeError))
+{
+    <div class="alert alert-danger alert-dismissible">
+        @mensajeError
+        <button type="button" class="btn-close" @onclick="() => mensajeError = string.Empty"></button>
+    </div>
+}
+@if (!string.IsNullOrEmpty(mensajeExito))
+{
+    <div class="alert alert-success alert-dismissible">
+        @mensajeExito
+        <button type="button" class="btn-close" @onclick="() => mensajeExito = string.Empty"></button>
+    </div>
+}
+
+<div class="mb-3">
+    <button class="btn btn-primary" @onclick="() => modal.MostrarAlta()">+ Nueva cancha</button>
+</div>
+
+@if (cargando)
+{
+    <div class="d-flex justify-content-center">
+        <div class="spinner-border" role="status"></div>
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Tipo</th>
+                    <th>Precio p/Hora</th>
+                    <th>Cant. Raquetas</th>
+                    <th>Total Raquetas</th>
+                    <th>Estado</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!canchas.Any())
+                {
+                    <tr><td colspan="8" class="text-center text-muted">No hay canchas para mostrar.</td></tr>
+                }
+                @foreach (var c in canchas)
+                {
+                    <tr>
+                        <td>@c.IdCancha</td>
+                        <td>@c.Nombre</td>
+                        <td>@c.TipoCancha</td>
+                        <td>@c.PrecioPorHora.ToString("C2")</td>
+                        <td>@c.CantidadRaquetas</td>
+                        <td>@c.PrecioTotalRaquetas?.ToString("C2")</td>
+                        <td>@(c.Estado == 1 ? "Activo" : "Inactivo")</td>
+                        <td class="text-nowrap">
+                            <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => modal.MostrarEdicion(c)">Editar</button>
+                            <button class="btn btn-sm btn-outline-danger" @onclick="() => ConfirmarEliminarAsync(c)">Eliminar</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+<CanchaModal @ref="modal" OnGuardado="AlGuardarAsync" />
+
+@code {
+    private List<CanchaDTO> canchas = new();
+    private bool cargando = true;
+    private string mensajeError = string.Empty;
+    private string mensajeExito = string.Empty;
+    private CanchaModal modal = null!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!Sesion.EsAdministrador)
+        {
+            Navigation.NavigateTo(Sesion.EstaLogueado ? "/" : "/login");
+            return;
+        }
+        await CargarTodosAsync();
+    }
+
+    private async Task CargarTodosAsync()
+    {
+        await EjecutarConEsperaAsync(async () =>
+            canchas = (await CanchaApiClient.GetAllAsync()).ToList());
+    }
+
+    private async Task AlGuardarAsync()
+    {
+        mensajeExito = "Cancha guardada correctamente.";
+        await CargarTodosAsync();
+    }
+
+    private async Task ConfirmarEliminarAsync(CanchaDTO c)
+    {
+        bool confirmado = await JS.InvokeAsync<bool>("confirm", $"¿Eliminar la cancha \"{c.Nombre}\"?");
+        if (!confirmado) return;
+
+        await EjecutarConEsperaAsync(async () =>
+        {
+            await CanchaApiClient.DeleteAsync(c.IdCancha);
+            canchas = (await CanchaApiClient.GetAllAsync()).ToList();
+            mensajeExito = "Cancha eliminada.";
+        });
+    }
+
+    private async Task EjecutarConEsperaAsync(Func<Task> accion)
+    {
+        cargando = true;
+        mensajeError = string.Empty;
+        try
+        {
+            await accion();
+        }
+        catch (Exception ex)
+        {
+            mensajeError = ex.Message;
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+}

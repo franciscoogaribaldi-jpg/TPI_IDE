@@ -1,0 +1,179 @@
+﻿@inject SesionUsuario Sesion
+
+@if (visible)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">@(esAlta ? "Nuevo cliente" : "Editar cliente")</h5>
+                    <button type="button" class="btn-close" @onclick="Cerrar"></button>
+                </div>
+
+                <EditForm Model="cliente" OnSubmit="GuardarAsync">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Nombre *</label>
+                            <InputText class="form-control" @bind-Value="cliente.Nombre" />
+                            <div class="text-danger small">@Error("Nombre")</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Apellido *</label>
+                            <InputText class="form-control" @bind-Value="cliente.Apellido" />
+                            <div class="text-danger small">@Error("Apellido")</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">DNI *</label>
+                            <InputText class="form-control" @bind-Value="cliente.Dni" />
+                            <div class="text-danger small">@Error("Dni")</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Teléfono</label>
+                            <InputText class="form-control" @bind-Value="cliente.Telefono" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Fecha de nacimiento *</label>
+                            <InputDate class="form-control" @bind-Value="cliente.FechaNacimiento" />
+                            <div class="text-danger small">@Error("FechaNacimiento")</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Estado</label>
+                            <InputSelect class="form-select" @bind-Value="cliente.Estado">
+                                <option value="1">Activo</option>
+                                <option value="0">Inactivo</option>
+                            </InputSelect>
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(mensajeError))
+                        {
+                            <div class="alert alert-danger">@mensajeError</div>
+                        }
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" @onclick="Cerrar">Cancelar</button>
+                        <button type="submit" class="btn btn-primary" disabled="@guardando">
+                            @if (guardando)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2"></span>
+                            }
+                            Guardar
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    // El listado padre se entera de que se guardó algo y recarga la tabla.
+    [Parameter] public EventCallback OnGuardado { get; set; }
+
+    private bool visible;
+    private bool esAlta;
+    private bool guardando;
+    private string mensajeError = string.Empty;
+    private ClienteDTO cliente = new();
+    private Dictionary<string, string> errores = new();
+
+    public void MostrarAlta()
+    {
+        esAlta = true;
+        cliente = new ClienteDTO
+        {
+            Nombre = "",
+            Apellido = "",
+            Dni = "",
+            Telefono = "",
+            FechaNacimiento = DateTime.Today,
+            Estado = 1
+        };
+        Abrir();
+    }
+
+    public void MostrarEdicion(ClienteDTO original)
+    {
+        esAlta = false;
+        // Copia: si se cancela, la fila de la tabla no queda modificada.
+        cliente = new ClienteDTO
+        {
+            IdCliente = original.IdCliente,
+            IdUsuario = original.IdUsuario,
+            Nombre = original.Nombre,
+            Apellido = original.Apellido,
+            Dni = original.Dni,
+            Telefono = original.Telefono,
+            FechaNacimiento = original.FechaNacimiento,
+            Estado = original.Estado,
+            NombreUsuario = original.NombreUsuario
+        };
+        Abrir();
+    }
+
+    private void Abrir()
+    {
+        errores.Clear();
+        mensajeError = string.Empty;
+        visible = true;
+        StateHasChanged();
+    }
+
+    private void Cerrar() => visible = false;
+
+    private string? Error(string campo) => errores.GetValueOrDefault(campo);
+
+    // Mismas reglas que ClienteDetalle.ValidarCampos() del WinForms.
+    private bool Validar()
+    {
+        errores.Clear();
+        if (string.IsNullOrWhiteSpace(cliente.Nombre)) errores["Nombre"] = "El nombre es obligatorio.";
+        if (string.IsNullOrWhiteSpace(cliente.Apellido)) errores["Apellido"] = "El apellido es obligatorio.";
+        if (string.IsNullOrWhiteSpace(cliente.Dni)) errores["Dni"] = "El DNI es obligatorio.";
+        if (cliente.FechaNacimiento.Date >= DateTime.Today)
+            errores["FechaNacimiento"] = "La fecha de nacimiento debe ser anterior a hoy.";
+        return errores.Count == 0;
+    }
+
+    private async Task GuardarAsync()
+    {
+        if (!Validar()) return;
+
+        var dto = new ClienteDTO
+        {
+            IdCliente = cliente.IdCliente,
+            IdUsuario = esAlta ? Sesion.Usuario!.IdUsuario : cliente.IdUsuario,
+            Nombre = cliente.Nombre.Trim(),
+            Apellido = cliente.Apellido.Trim(),
+            Dni = cliente.Dni.Trim(),
+            Telefono = (cliente.Telefono ?? "").Trim(),
+            FechaNacimiento = cliente.FechaNacimiento.Date,
+            Estado = cliente.Estado
+        };
+
+        guardando = true;
+        mensajeError = string.Empty;
+        try
+        {
+            if (esAlta) await ClienteApiClient.AddAsync(dto);
+            else await ClienteApiClient.UpdateAsync(dto);
+
+            visible = false;
+            await OnGuardado.InvokeAsync();
+        }
+        catch (Exception ex)
+        {
+            // Llega el mensaje de la regla de negocio armado por el servidor (ej. "Ya existe un cliente con ese DNI.")
+            mensajeError = ex.Message;
+        }
+        finally
+        {
+            guardando = false;
+        }
+    }
+}

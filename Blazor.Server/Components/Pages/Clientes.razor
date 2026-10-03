@@ -1,0 +1,167 @@
+﻿@page "/clientes"
+@inject SesionUsuario Sesion
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+<PageTitle>Clientes</PageTitle>
+
+<h3>Clientes</h3>
+
+@if (!string.IsNullOrEmpty(mensajeError))
+{
+    <div class="alert alert-danger alert-dismissible">
+        @mensajeError
+        <button type="button" class="btn-close" @onclick="() => mensajeError = string.Empty"></button>
+    </div>
+}
+@if (!string.IsNullOrEmpty(mensajeExito))
+{
+    <div class="alert alert-success alert-dismissible">
+        @mensajeExito
+        <button type="button" class="btn-close" @onclick="() => mensajeExito = string.Empty"></button>
+    </div>
+}
+
+<div class="row g-2 mb-3">
+    <div class="col-md-5">
+        <input class="form-control" placeholder="Buscar por nombre, apellido o DNI..." @bind="textoBusqueda" />
+    </div>
+    <div class="col-auto">
+        <button class="btn btn-secondary" @onclick="BuscarAsync">Buscar</button>
+        <button class="btn btn-outline-secondary" @onclick="MostrarTodosAsync">Mostrar todos</button>
+    </div>
+    <div class="col-auto ms-auto">
+        <button class="btn btn-primary" @onclick="() => modal.MostrarAlta()">+ Nuevo cliente</button>
+    </div>
+</div>
+
+@if (cargando)
+{
+    <div class="d-flex justify-content-center">
+        <div class="spinner-border" role="status"></div>
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Apellido</th>
+                    <th>DNI</th>
+                    <th>Teléfono</th>
+                    <th>F. Nacimiento</th>
+                    <th>Estado</th>
+                    <th>Registrado por</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!clientes.Any())
+                {
+                    <tr><td colspan="9" class="text-center text-muted">No hay clientes para mostrar.</td></tr>
+                }
+                @foreach (var c in clientes)
+                {
+                    <tr>
+                        <td>@c.IdCliente</td>
+                        <td>@c.Nombre</td>
+                        <td>@c.Apellido</td>
+                        <td>@c.Dni</td>
+                        <td>@c.Telefono</td>
+                        <td>@c.FechaNacimiento.ToString("dd/MM/yyyy")</td>
+                        <td>@(c.Estado == 1 ? "Activo" : "Inactivo")</td>
+                        <td>@c.NombreUsuario</td>
+                        <td class="text-nowrap">
+                            <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => modal.MostrarEdicion(c)">Editar</button>
+                            <button class="btn btn-sm btn-outline-danger" @onclick="() => ConfirmarEliminarAsync(c)">Eliminar</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+<ClienteModal @ref="modal" OnGuardado="AlGuardarAsync" />
+
+@code {
+    private List<ClienteDTO> clientes = new();
+    private bool cargando = true;
+    private string textoBusqueda = string.Empty;
+    private string mensajeError = string.Empty;
+    private string mensajeExito = string.Empty;
+    private ClienteModal modal = null!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Autorización de la página: solo Administrador (la WebAPI también lo exige con el token).
+        if (!Sesion.EsAdministrador)
+        {
+            Navigation.NavigateTo(Sesion.EstaLogueado ? "/" : "/login");
+            return;
+        }
+        await CargarTodosAsync();
+    }
+
+    private async Task CargarTodosAsync()
+    {
+        await EjecutarConEsperaAsync(async () =>
+            clientes = (await ClienteApiClient.GetAllAsync()).ToList());
+    }
+
+    private async Task BuscarAsync()
+    {
+        mensajeExito = string.Empty;
+        await EjecutarConEsperaAsync(async () =>
+            clientes = (await ClienteApiClient.BuscarAsync(textoBusqueda.Trim())).ToList());
+    }
+
+    private async Task MostrarTodosAsync()
+    {
+        textoBusqueda = string.Empty;
+        mensajeExito = string.Empty;
+        await CargarTodosAsync();
+    }
+
+    private async Task AlGuardarAsync()
+    {
+        mensajeExito = "Cliente guardado correctamente.";
+        await CargarTodosAsync();
+    }
+
+    private async Task ConfirmarEliminarAsync(ClienteDTO c)
+    {
+        bool confirmado = await JS.InvokeAsync<bool>("confirm",
+            $"¿Eliminar a {c.Nombre} {c.Apellido} (DNI {c.Dni})?");
+        if (!confirmado) return;
+
+        await EjecutarConEsperaAsync(async () =>
+        {
+            await ClienteApiClient.DeleteAsync(c.IdCliente);
+            clientes = (await ClienteApiClient.GetAllAsync()).ToList();
+            mensajeExito = "Cliente eliminado.";
+        });
+    }
+
+    // Mismo helper que en ClienteLista.cs: spinner mientras espera y errores en pantalla.
+    private async Task EjecutarConEsperaAsync(Func<Task> accion)
+    {
+        cargando = true;
+        mensajeError = string.Empty;
+        try
+        {
+            await accion();
+        }
+        catch (Exception ex)
+        {
+            mensajeError = ex.Message;
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+}

@@ -1,0 +1,51 @@
+﻿@implements IDisposable
+@inject SesionUsuario Sesion
+
+<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">Complejo Deportivo</a>
+    </div>
+</div>
+
+<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
+
+<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
+    <nav class="flex-column">
+        @if (Sesion.EstaLogueado)
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                    <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Inicio
+                </NavLink>
+            </div>
+
+            @if (Sesion.EsAdministrador)
+            {
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="clientes">
+                        <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Clientes
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="canchas">
+                        <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Canchas
+                    </NavLink>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="login">
+                    <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Iniciar sesión
+                </NavLink>
+            </div>
+        }
+    </nav>
+</div>
+
+@code {
+    protected override void OnInitialized() => Sesion.OnCambio += Refrescar;
+    private void Refrescar() => InvokeAsync(StateHasChanged);
+    public void Dispose() => Sesion.OnCambio -= Refrescar;
+}

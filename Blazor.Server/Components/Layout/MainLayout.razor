@@ -1,0 +1,50 @@
+﻿@inherits LayoutComponentBase
+@implements IDisposable
+@inject SesionUsuario Sesion
+@inject NavigationManager Navigation
+
+<div class="page">
+    <div class="sidebar">
+        <NavMenu />
+    </div>
+
+    <main>
+        <div class="top-row px-4">
+            @if (Sesion.EstaLogueado)
+            {
+                <span class="me-3">Conectado como: <strong>@Sesion.Usuario!.NombreUsuario</strong></span>
+                <button class="btn btn-outline-danger btn-sm" @onclick="CerrarSesion">Cerrar sesión</button>
+            }
+        </div>
+
+        <article class="content px-4">
+            @Body
+        </article>
+    </main>
+</div>
+
+<div id="blazor-error-ui">
+    Ocurrió un error inesperado.
+    <a href="" class="reload">Recargar</a>
+    <a class="dismiss">🗙</a>
+</div>
+
+@code {
+    protected override void OnInitialized()
+    {
+        Sesion.OnCambio += Refrescar;
+    }
+
+    private void Refrescar() => InvokeAsync(StateHasChanged);
+
+    private void CerrarSesion()
+    {
+        Sesion.CerrarSesion();
+        Navigation.NavigateTo("/login");
+    }
+
+    public void Dispose()
+    {
+        Sesion.OnCambio -= Refrescar;
+    }
+}

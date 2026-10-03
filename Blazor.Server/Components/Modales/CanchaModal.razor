@@ -1,0 +1,180 @@
+﻿@if (visible)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">@(esAlta ? "Nueva cancha" : "Editar cancha")</h5>
+                    <button type="button" class="btn-close" @onclick="Cerrar"></button>
+                </div>
+
+                <EditForm Model="cancha" OnSubmit="GuardarAsync">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Nombre *</label>
+                            <InputText class="form-control" @bind-Value="cancha.Nombre" />
+                            <div class="text-danger small">@Error("Nombre")</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label d-block">Tipo de cancha</label>
+                            <InputRadioGroup @bind-Value="cancha.TipoCancha">
+                                <div class="form-check form-check-inline">
+                                    <InputRadio class="form-check-input" Value="@("Futbol")" disabled="@(!esAlta)" />
+                                    <label class="form-check-label">Fútbol</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <InputRadio class="form-check-input" Value="@("Padel")" disabled="@(!esAlta)" />
+                                    <label class="form-check-label">Pádel</label>
+                                </div>
+                            </InputRadioGroup>
+                            @if (!esAlta)
+                            {
+                                <div class="form-text">El tipo no se puede cambiar en una cancha ya creada.</div>
+                            }
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Precio por hora *</label>
+                            <InputNumber class="form-control" @bind-Value="cancha.PrecioPorHora" step="0.01" />
+                            <div class="text-danger small">@Error("PrecioPorHora")</div>
+                        </div>
+
+                        @if (EsPadel)
+                        {
+                            <div class="mb-3">
+                                <label class="form-label">Cantidad de raquetas</label>
+                                <InputNumber class="form-control" @bind-Value="cancha.CantidadRaquetas" />
+                                <div class="text-danger small">@Error("CantidadRaquetas")</div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Precio total raquetas</label>
+                                <InputNumber class="form-control" @bind-Value="cancha.PrecioTotalRaquetas" step="0.01" />
+                                <div class="text-danger small">@Error("PrecioTotalRaquetas")</div>
+                            </div>
+                        }
+
+                        <div class="mb-3">
+                            <label class="form-label">Estado</label>
+                            <InputSelect class="form-select" @bind-Value="cancha.Estado">
+                                <option value="1">Activo</option>
+                                <option value="0">Inactivo</option>
+                            </InputSelect>
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(mensajeError))
+                        {
+                            <div class="alert alert-danger">@mensajeError</div>
+                        }
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" @onclick="Cerrar">Cancelar</button>
+                        <button type="submit" class="btn btn-primary" disabled="@guardando">
+                            @if (guardando)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2"></span>
+                            }
+                            Guardar
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public EventCallback OnGuardado { get; set; }
+
+    private bool visible;
+    private bool esAlta;
+    private bool guardando;
+    private string mensajeError = string.Empty;
+    private CanchaDTO cancha = new();
+    private Dictionary<string, string> errores = new();
+
+    private bool EsPadel => cancha.TipoCancha == "Padel";
+
+    public void MostrarAlta()
+    {
+        esAlta = true;
+        cancha = new CanchaDTO { Nombre = "", TipoCancha = "Futbol", Estado = 1 };
+        Abrir();
+    }
+
+    public void MostrarEdicion(CanchaDTO original)
+    {
+        esAlta = false;
+        cancha = new CanchaDTO
+        {
+            IdCancha = original.IdCancha,
+            Nombre = original.Nombre,
+            Estado = original.Estado,
+            PrecioPorHora = original.PrecioPorHora,
+            TipoCancha = original.TipoCancha,
+            CantidadRaquetas = original.CantidadRaquetas,
+            PrecioTotalRaquetas = original.PrecioTotalRaquetas
+        };
+        Abrir();
+    }
+
+    private void Abrir()
+    {
+        errores.Clear();
+        mensajeError = string.Empty;
+        visible = true;
+        StateHasChanged();
+    }
+
+    private void Cerrar() => visible = false;
+
+    private string? Error(string campo) => errores.GetValueOrDefault(campo);
+
+    private bool Validar()
+    {
+        errores.Clear();
+        if (string.IsNullOrWhiteSpace(cancha.Nombre)) errores["Nombre"] = "El nombre es obligatorio.";
+        if (cancha.PrecioPorHora <= 0) errores["PrecioPorHora"] = "El precio por hora debe ser mayor a cero.";
+        if (EsPadel && (cancha.CantidadRaquetas ?? 0) < 0)
+            errores["CantidadRaquetas"] = "La cantidad de raquetas no puede ser negativa.";
+        if (EsPadel && (cancha.PrecioTotalRaquetas ?? 0) < 0)
+            errores["PrecioTotalRaquetas"] = "El precio de raquetas no puede ser negativo.";
+        return errores.Count == 0;
+    }
+
+    private async Task GuardarAsync()
+    {
+        if (!Validar()) return;
+
+        var dto = new CanchaDTO
+        {
+            IdCancha = cancha.IdCancha,
+            Nombre = cancha.Nombre.Trim(),
+            Estado = cancha.Estado,
+            PrecioPorHora = cancha.PrecioPorHora,
+            TipoCancha = EsPadel ? "Padel" : "Futbol",
+            CantidadRaquetas = EsPadel ? (cancha.CantidadRaquetas ?? 0) : null,
+            PrecioTotalRaquetas = EsPadel ? (cancha.PrecioTotalRaquetas ?? 0) : null
+        };
+
+        guardando = true;
+        mensajeError = string.Empty;
+        try
+        {
+            if (esAlta) await CanchaApiClient.AddAsync(dto);
+            else await CanchaApiClient.UpdateAsync(dto);
+
+            visible = false;
+            await OnGuardado.InvokeAsync();
+        }
+        catch (Exception ex)
+        {
+            mensajeError = ex.Message;
+        }
+        finally
+        {
+            guardando = false;
+        }
+    }
+}
