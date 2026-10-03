@@ -121,7 +121,7 @@ namespace Application.Services
             Telefono = c.Telefono,
             FechaNacimiento = c.FechaNacimiento,
             Estado = (int)c.Estado,
-            NombreUsuario = c.Usuario.NombreUsuario
+            NombreUsuario = c.Usuario?.NombreUsuario
         };
     }
 }

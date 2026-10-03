@@ -82,28 +82,29 @@ namespace Data
         */
         public async Task<IEnumerable<Cliente>> GetByCriteriaAsync(ClienteCriteria criteria)
         {
+            // JOIN con Usuarios para traer también quién registró al cliente
+            // (el equivalente al .Include(c => c.Usuario) que usan GetAllAsync y GetAsync).
             const string sql = @"
-                SELECT IdCliente, IdUsuario, Nombre, Apellido, Dni, Telefono, FechaNacimiento, Estado
-                FROM Clientes
-                WHERE Nombre LIKE @Busqueda
-                   OR Apellido LIKE @Busqueda
-                   OR Dni LIKE @Busqueda
-                ORDER BY Apellido, Nombre";
-
-            
-
+        SELECT c.IdCliente, c.IdUsuario, c.Nombre, c.Apellido, c.Dni, c.Telefono,
+               c.FechaNacimiento, c.Estado,
+               u.NombreUsuario, u.Contrasena, u.Email, u.Rol, u.Estado AS EstadoUsuario
+        FROM Clientes c
+        INNER JOIN Usuarios u ON u.IdUsuario = c.IdUsuario
+        WHERE c.Nombre LIKE @Busqueda
+           OR c.Apellido LIKE @Busqueda
+           OR c.Dni LIKE @Busqueda
+        ORDER BY c.Apellido, c.Nombre";
 
             var clientes = new List<Cliente>();
-            string? connectionString = _context.Database.GetConnectionString(); // aprovechamos el EF para pedir el ConnectionString para usar ADO.Net. El connectionString es la ubicacion de la Db
+            string? connectionString = _context.Database.GetConnectionString();
             string patron = $"%{criteria.Texto}%";
 
-            using var connection = new SqlConnection(connectionString); // Crea el cable físico de internet para enchufarse a la base de datos usando la ruta de conexión
-            using var command = new SqlCommand(sql, connection); // Es el cartero. Le entregamos nuestro texto SQL crudo y le decimos por qué cable tiene que viajar.
+            using var connection = new SqlConnection(connectionString);
+            using var command = new SqlCommand(sql, connection);
+            command.Parameters.AddWithValue("@Busqueda", patron);
 
-            command.Parameters.AddWithValue("@Busqueda", patron); // Le inyectamos la palabra que el usuario buscó (@Busqueda). @ porque es variable temporal
-
-            await connection.OpenAsync(); // Esto es para abrir la coneccion con la bd
-            using var reader = await command.ExecuteReaderAsync(); // ejecutar el command y devuelve un reader que no son todos los datos de una
+            await connection.OpenAsync();
+            using var reader = await command.ExecuteReaderAsync();
 
             while (await reader.ReadAsync())
             {
@@ -116,6 +117,16 @@ namespace Data
                     telefono: reader.IsDBNull(5) ? string.Empty : reader.GetString(5),
                     fechaNacimiento: reader.GetDateTime(6),
                     estado: (Estado)reader.GetInt32(7));
+
+                var usuario = new Usuario(
+                    idUsuario: reader.GetInt32(1),
+                    nombreUsuario: reader.GetString(8),
+                    contrasena: reader.GetString(9),
+                    email: reader.GetString(10),
+                    rol: (RolUsuario)reader.GetInt32(11),
+                    estado: (Estado)reader.GetInt32(12));
+
+                cliente.SetUsuario(usuario); // ahora c.Usuario ya no es null
 
                 clientes.Add(cliente);
             }
