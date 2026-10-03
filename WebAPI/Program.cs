@@ -15,6 +15,8 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args); // instanciamos el builder
 
 builder.Services.AddEndpointsApiExplorer();
+
+// Configurar JWT Authentication en Swagger
 builder.Services.AddSwaggerGen(options =>
 {
     options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
@@ -54,6 +56,9 @@ builder.Services.AddScoped<IClienteService, ClienteService>();
 
 builder.Services.AddScoped<ICanchaRepository, CanchaRepository>();
 builder.Services.AddScoped<ICanchaService, CanchaService>();
+
+builder.Services.AddScoped<ITurnoRepository, TurnoRepository>();
+builder.Services.AddScoped<ITurnoService, TurnoService>();
 
 // =========== Seguridad: autenticación con JWT (Entrega 3) ===========
 var jwtKey = builder.Configuration["Jwt:Key"]!;
@@ -121,5 +126,6 @@ app.MapAuthEndpoints();
 app.MapUsuarioEndpoints();
 app.MapClienteEndpoints();
 app.MapCanchaEndpoints();
+app.MapTurnoEndpoints();
 
 app.Run();

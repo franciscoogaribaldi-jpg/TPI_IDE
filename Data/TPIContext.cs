@@ -14,6 +14,9 @@ namespace Data
         public DbSet<Usuario> Usuarios { get; set; } = null!;
         public DbSet<Cliente> Clientes { get; set; } = null!;
         public DbSet<Cancha> Canchas { get; set; } = null!;
+        public DbSet<Turno> Turnos { get; set; } = null!;
+        public DbSet<Reserva> Reservas { get; set; } = null!;
+        public DbSet<DetalleReserva> DetallesReserva { get; set; } = null!;
 
         public TPIContext(DbContextOptions<TPIContext> options) : base(options) // Constructor de TPIContext que recibe las opciones y se las envía a la clase padre DbContext
         {
@@ -40,7 +43,7 @@ namespace Data
                 entity.HasIndex(u => u.NombreUsuario).IsUnique();
                 entity.HasIndex(u => u.Email).IsUnique();
 
-                
+
             });
 
             // ---------- Cliente ----------
@@ -66,7 +69,7 @@ namespace Data
                       .OnDelete(DeleteBehavior.Restrict);   // para que cuando quieras borrar el usuario primero tengas que borrar el cliente asignado
             });
 
-           
+            // ---------- Cancha ----------
             modelBuilder.Entity<Cancha>(entity =>
             {
                 entity.ToTable("Canchas");
@@ -82,9 +85,59 @@ namespace Data
                       .HasValue<CanchaPadel>("Padel");
             });
 
+            // ---------- Cancha Padel ----------
             modelBuilder.Entity<CanchaPadel>(entity =>
             {
                 entity.Property(c => c.PrecioTotalRaquetas).HasColumnType("decimal(18,2)");
+            });
+
+
+            // ---------- Turno ----------
+            modelBuilder.Entity<Turno>(entity =>
+            {
+                entity.ToTable("Turnos");
+                entity.HasKey(t => t.IdTurno);
+                entity.Property(t => t.IdTurno).ValueGeneratedOnAdd();
+
+                entity.Property(t => t.Estado).IsRequired().HasConversion<int>();
+                entity.Property(t => t.HoraInicio).IsRequired();
+                entity.Property(t => t.HoraFin).IsRequired();
+            }
+            
+            );
+
+
+            // ---------- Reserva ----------
+            modelBuilder.Entity<Reserva>(entity =>
+            {
+                entity.ToTable("Reservas");
+                entity.HasKey(r => r.IdReserva);
+                entity.Property(r => r.IdReserva).ValueGeneratedOnAdd();
+
+                entity.Property(r => r.EstadoReserva).IsRequired().HasConversion<int>();
+                entity.Property(r => r.ImporteTotal).HasColumnType("decimal(18,2)");
+                entity.Property(r => r.Sena).HasColumnType("decimal(18,2)");
+
+                entity.HasOne(r => r.Cliente).WithMany().HasForeignKey(r => r.IdCliente).OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(r => r.Cancha).WithMany().HasForeignKey(r => r.IdCancha).OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(r => r.Turno).WithMany().HasForeignKey(r => r.IdTurno).OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // ---------- DetalleReserva ----------
+            modelBuilder.Entity<DetalleReserva>(entity =>
+            {
+                entity.ToTable("DetallesReserva");
+                entity.HasKey(d => d.IdDetalleReserva);
+                entity.Property(d => d.IdDetalleReserva).ValueGeneratedOnAdd();
+
+                entity.Property(d => d.Concepto).IsRequired().HasMaxLength(100);
+                entity.Property(d => d.PrecioUnitario).HasColumnType("decimal(18,2)");
+                entity.Ignore(d => d.Subtotal);
+
+                entity.HasOne<Reserva>()
+                      .WithMany()
+                      .HasForeignKey(d => d.IdReserva)
+                      .OnDelete(DeleteBehavior.Cascade);
             });
         }
     }
