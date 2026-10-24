@@ -34,6 +34,7 @@ namespace Data
                 .Include(r => r.Cliente)
                 .Include(r => r.Cancha)
                 .Include(r => r.Turno)
+                .Include(r => r.Detalles)
                 .FirstOrDefaultAsync(r => r.IdReserva == id);
         }
 
@@ -43,27 +44,27 @@ namespace Data
                 .Include(r => r.Cliente)
                 .Include(r => r.Cancha)
                 .Include(r => r.Turno)
+                .Include(r => r.Detalles)
                 .ToListAsync();
         }
 
         public async Task<bool> UpdateAsync(Reserva reserva)
         {
-            var existing = await _context.Reservas.FindAsync(reserva.IdReserva);
+            var existing = await _context.Reservas
+                .Include(r => r.Detalles)
+                .FirstOrDefaultAsync(r => r.IdReserva == reserva.IdReserva);
             if (existing == null) return false;
 
             existing.SetIdCliente(reserva.IdCliente);
             existing.SetIdCancha(reserva.IdCancha);
             existing.SetIdTurno(reserva.IdTurno);
-
-            // Solo tocamos la fecha si de verdad cambió. Si no, SetFecha explota en
-            // cuanto una reserva ya pasó de fecha y solo querés, por ejemplo, marcarla
-            // como Finalizada al día siguiente (su propia validación de dominio rechaza
-            // cualquier fecha pasada, incluso si es la MISMA que ya tenía guardada).
-            if (existing.Fecha != reserva.Fecha)
-                existing.SetFecha(reserva.Fecha);
-
+            existing.SetFecha(reserva.Fecha);
             existing.SetEstadoReserva(reserva.EstadoReserva);
             existing.SetImportes(reserva.ImporteTotal, reserva.Sena);
+
+            _context.DetallesReserva.RemoveRange(existing.Detalles.ToList());
+            foreach (var linea in reserva.Detalles)
+                existing.AgregarDetalle(linea);
 
             await _context.SaveChangesAsync();
             return true;

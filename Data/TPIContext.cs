@@ -135,7 +135,7 @@ namespace Data
                 entity.Ignore(d => d.Subtotal);
 
                 entity.HasOne<Reserva>()
-                      .WithMany()
+                      .WithMany(r => r.Detalles)
                       .HasForeignKey(d => d.IdReserva)
                       .OnDelete(DeleteBehavior.Cascade);
             });

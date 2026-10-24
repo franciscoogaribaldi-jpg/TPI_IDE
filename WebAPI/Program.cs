@@ -61,7 +61,6 @@ builder.Services.AddScoped<ITurnoRepository, TurnoRepository>();
 builder.Services.AddScoped<ITurnoService, TurnoService>();
 
 builder.Services.AddScoped<IReservaRepository, ReservaRepository>();
-builder.Services.AddScoped<IDetalleReservaRepository, DetalleReservaRepository>();
 builder.Services.AddScoped<IReservaService, ReservaService>();
 
 // =========== Seguridad: autenticación con JWT (Entrega 3) ===========

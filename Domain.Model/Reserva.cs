@@ -22,6 +22,8 @@ namespace Domain.Model
         public decimal Sena { get; private set; }
         public DateTime FechaCreacion { get; private set; }
 
+        public ICollection<DetalleReserva> Detalles { get; private set; } = new List<DetalleReserva>();
+
         public Reserva(int idReserva, int idCliente, int idCancha, int idTurno, DateTime fecha, EstadoReserva estadoReserva, decimal importeTotal, decimal sena)
         {
             SetIdReserva(idReserva);
@@ -60,9 +62,6 @@ namespace Domain.Model
 
         public void SetFecha(DateTime fecha)
         {
-            
-            if (fecha.Date < DateTime.Today)
-                throw new ArgumentException("No se pueden hacer reservas en fechas pasadas.");
             Fecha = fecha.Date; // Asegura que solo se guarde la fecha sin la hora
         }
 
@@ -78,6 +77,13 @@ namespace Domain.Model
 
             ImporteTotal = importeTotal;
             Sena = sena;
+        }
+
+
+        public void AgregarDetalle(DetalleReserva detalle)
+        {
+            if (detalle == null) throw new ArgumentNullException(nameof(detalle));
+            Detalles.Add(detalle);
         }
     }
 }

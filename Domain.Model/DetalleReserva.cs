@@ -27,7 +27,7 @@
 
         public void SetIdReserva(int idReserva)
         {
-            if (idReserva <= 0) throw new ArgumentException("Id de reserva inválido.");
+            if (idReserva < 0) throw new ArgumentException("Id de reserva inválido.");
             IdReserva = idReserva;
         }
 
