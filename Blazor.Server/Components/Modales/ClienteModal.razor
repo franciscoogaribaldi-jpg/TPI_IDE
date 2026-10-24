@@ -1,4 +1,4 @@
-﻿@inject SesionUsuario Sesion
+@inject SesionUsuario Sesion
 
 @if (visible)
 {
@@ -49,6 +49,42 @@
                             </InputSelect>
                         </div>
 
+                        <hr />
+                        @if (esAlta)
+                        {
+                            <p class="text-muted small mb-2">Usuario de acceso del cliente (rol Cliente)</p>
+
+                            <div class="mb-3">
+                                <label class="form-label">Usuario *</label>
+                                <InputText class="form-control" @bind-Value="cliente.NombreUsuario" />
+                                <div class="text-danger small">@Error("NombreUsuario")</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Email *</label>
+                                <InputText class="form-control" @bind-Value="cliente.Email" />
+                                <div class="text-danger small">@Error("Email")</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Contraseña inicial *</label>
+                                <InputText type="password" class="form-control" @bind-Value="cliente.Contrasena" />
+                                <div class="text-danger small">@Error("Contrasena")</div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="mb-3">
+                                <label class="form-label">Usuario</label>
+                                <input class="form-control" value="@cliente.NombreUsuario" disabled />
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Email</label>
+                                <input class="form-control" value="@cliente.Email" disabled />
+                            </div>
+                        }
+
                         @if (!string.IsNullOrEmpty(mensajeError))
                         {
                             <div class="alert alert-danger">@mensajeError</div>
@@ -92,7 +128,10 @@
             Dni = "",
             Telefono = "",
             FechaNacimiento = DateTime.Today,
-            Estado = 1
+            Estado = 1,
+            NombreUsuario = "",
+            Email = "",
+            Contrasena = ""
         };
         Abrir();
     }
@@ -111,7 +150,8 @@
             Telefono = original.Telefono,
             FechaNacimiento = original.FechaNacimiento,
             Estado = original.Estado,
-            NombreUsuario = original.NombreUsuario
+            NombreUsuario = original.NombreUsuario,
+            Email = original.Email
         };
         Abrir();
     }
@@ -137,6 +177,15 @@
         if (string.IsNullOrWhiteSpace(cliente.Dni)) errores["Dni"] = "El DNI es obligatorio.";
         if (cliente.FechaNacimiento.Date >= DateTime.Today)
             errores["FechaNacimiento"] = "La fecha de nacimiento debe ser anterior a hoy.";
+
+        // Solo en el alta: se crea también el usuario de acceso del cliente.
+        if (esAlta)
+        {
+            if (string.IsNullOrWhiteSpace(cliente.NombreUsuario)) errores["NombreUsuario"] = "El usuario es obligatorio.";
+            if (string.IsNullOrWhiteSpace(cliente.Email) || !cliente.Email.Contains('@')) errores["Email"] = "Ingresá un email válido.";
+            if (string.IsNullOrWhiteSpace(cliente.Contrasena)) errores["Contrasena"] = "La contraseña inicial es obligatoria.";
+        }
+
         return errores.Count == 0;
     }
 
@@ -147,21 +196,25 @@
         var dto = new ClienteDTO
         {
             IdCliente = cliente.IdCliente,
-            IdUsuario = esAlta ? Sesion.Usuario!.IdUsuario : cliente.IdUsuario,
+            // En el alta es 0: el servidor crea el usuario del cliente junto con el cliente.
+            IdUsuario = cliente.IdUsuario,
             Nombre = cliente.Nombre.Trim(),
             Apellido = cliente.Apellido.Trim(),
             Dni = cliente.Dni.Trim(),
             Telefono = (cliente.Telefono ?? "").Trim(),
             FechaNacimiento = cliente.FechaNacimiento.Date,
-            Estado = cliente.Estado
+            Estado = cliente.Estado,
+            NombreUsuario = esAlta ? (cliente.NombreUsuario ?? "").Trim() : cliente.NombreUsuario,
+            Email = esAlta ? (cliente.Email ?? "").Trim() : cliente.Email,
+            Contrasena = esAlta ? cliente.Contrasena : null
         };
 
         guardando = true;
         mensajeError = string.Empty;
         try
         {
-            if (esAlta) await ClienteApiClient.AddAsync(dto,Sesion.Token);
-            else await ClienteApiClient.UpdateAsync(dto,Sesion.Token);
+            if (esAlta) await ClienteApiClient.AddAsync(dto, Sesion.Token);
+            else await ClienteApiClient.UpdateAsync(dto, Sesion.Token);
 
             visible = false;
             await OnGuardado.InvokeAsync();

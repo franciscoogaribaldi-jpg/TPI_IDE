@@ -35,6 +35,20 @@ namespace WindowsForms
                 txtTelefono.Text = _clienteOriginal.Telefono;
                 dtpFechaNacimiento.Value = _clienteOriginal.FechaNacimiento;
                 cmbEstado.SelectedIndex = _clienteOriginal.Estado == 1 ? 0 : 1;
+
+                // En la edición el usuario de acceso no se modifica: se muestra solo para consulta
+                // y no se pide contraseña.
+                txtUsuario.Text = _clienteOriginal.NombreUsuario;
+                txtEmail.Text = _clienteOriginal.Email;
+                txtUsuario.Enabled = false;
+                txtEmail.Enabled = false;
+                lblContrasena.Visible = false;
+                txtContrasena.Visible = false;
+
+                // Se acomoda el formulario para que no quede el hueco de la contraseña.
+                btnGuardar.Top -= 40;
+                btnCancelar.Top -= 40;
+                ClientSize = new Size(ClientSize.Width, ClientSize.Height - 40);
             }
         }
 
@@ -68,7 +82,30 @@ namespace WindowsForms
                 return false;
             }
 
-            
+            // Solo en el alta: se crea también el usuario de acceso del cliente.
+            if (EsAlta)
+            {
+                if (string.IsNullOrWhiteSpace(txtUsuario.Text))
+                {
+                    MessageBox.Show("El nombre de usuario es obligatorio.", "Datos incompletos", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    txtUsuario.Focus();
+                    return false;
+                }
+
+                if (string.IsNullOrWhiteSpace(txtEmail.Text) || !txtEmail.Text.Contains('@'))
+                {
+                    MessageBox.Show("Ingresá un email válido.", "Dato inválido", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    txtEmail.Focus();
+                    return false;
+                }
+
+                if (string.IsNullOrWhiteSpace(txtContrasena.Text))
+                {
+                    MessageBox.Show("La contraseña inicial es obligatoria.", "Datos incompletos", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    txtContrasena.Focus();
+                    return false;
+                }
+            }
 
             return true;
         }
@@ -80,13 +117,17 @@ namespace WindowsForms
             var dto = new ClienteDTO
             {
                 IdCliente = _clienteOriginal?.IdCliente ?? 0,
-                IdUsuario = SesionActual.Usuario.IdUsuario,
+                // En el alta es 0: el servidor crea el usuario junto con el cliente.
+                IdUsuario = _clienteOriginal?.IdUsuario ?? 0,
                 Nombre = txtNombre.Text.Trim(),
                 Apellido = txtApellido.Text.Trim(),
                 Dni = txtDni.Text.Trim(),
                 Telefono = txtTelefono.Text.Trim(),
                 FechaNacimiento = dtpFechaNacimiento.Value.Date,
-                Estado = cmbEstado.SelectedIndex == 0 ? 1 : 0
+                Estado = cmbEstado.SelectedIndex == 0 ? 1 : 0,
+                NombreUsuario = EsAlta ? txtUsuario.Text.Trim() : _clienteOriginal!.NombreUsuario,
+                Email = EsAlta ? txtEmail.Text.Trim() : _clienteOriginal!.Email,
+                Contrasena = EsAlta ? txtContrasena.Text : null
             };
 
             btnGuardar.Enabled = false;
@@ -108,7 +149,7 @@ namespace WindowsForms
             catch (Exception ex)
             {
                 // Acá llegan tanto los ArgumentException (datos inválidos) como los
-                // ReglaDeNegocioException (ej. DNI duplicado) que arma el servidor:
+                // ReglaDeNegocioException (ej. DNI o usuario duplicado) que arma el servidor:
                 // el mensaje ya viene armado y listo para mostrar.
                 MessageBox.Show(ex.Message, "No se pudo guardar", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
@@ -126,4 +167,3 @@ namespace WindowsForms
         }
     }
 }
-

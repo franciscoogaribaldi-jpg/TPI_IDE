@@ -8,14 +8,13 @@ namespace WindowsForms
             lblBienvenida.Text = $"Conectado como: {SesionActual.Usuario?.NombreUsuario}";
 
             // Autorización básica por rol (1=Administrador, 2=Cliente, ver Domain.Model.RolUsuario).
-            // Por ahora la gestión de Clientes/Canchas es solo para el Administrador; un usuario
-            // Cliente todavía no tiene pantallas propias en el escritorio (eso llega con las
-            // reservas). OJO: esto solo oculta el menú del lado de la UI. La WebAPI todavía no
-            // valida el rol de quien llama a cada endpoint — eso requiere tokens, que son
-            // requisito recién de la Entrega 3.
+            // Clientes, Canchas, Turnos y Reservas son pantallas de administración: solo las ve el
+            // Administrador. Esto solo oculta el menú; la WebAPI valida el rol de verdad con el token.
             bool esAdministrador = SesionActual.Usuario?.Rol == 1;
             menuClientes.Visible = esAdministrador;
             menuCanchas.Visible = esAdministrador;
+            menuTurnos.Visible = esAdministrador;
+            menuReservas.Visible = esAdministrador;
 
             if (!esAdministrador)
             {
@@ -48,6 +47,19 @@ namespace WindowsForms
             }
 
             var form = new CanchaLista { MdiParent = this };
+            form.Show();
+        }
+
+        private void menuTurnos_Click(object sender, EventArgs e)
+        {
+            var existente = MdiChildren.OfType<TurnoLista>().FirstOrDefault();
+            if (existente != null)
+            {
+                existente.Activate();
+                return;
+            }
+
+            var form = new TurnoLista { MdiParent = this };
             form.Show();
         }
 

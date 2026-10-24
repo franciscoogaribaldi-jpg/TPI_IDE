@@ -38,8 +38,10 @@ namespace Domain.Model
 
         public void SetIdUsuario(int idUsuario)
         {
-            if (idUsuario <= 0)
-                throw new ArgumentException("El Id de usuario debe ser mayor a 0.", nameof(idUsuario));
+            // 0 = cliente nuevo cuyo usuario todavía no se guardó: EF completa el Id al guardar
+            // el cliente junto con su usuario (ver ClienteService.AddAsync).
+            if (idUsuario < 0)
+                throw new ArgumentException("El Id de usuario no puede ser negativo.", nameof(idUsuario));
             IdUsuario = idUsuario;
         }
 

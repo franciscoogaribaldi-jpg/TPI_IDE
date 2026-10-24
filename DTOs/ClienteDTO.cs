@@ -1,4 +1,5 @@
 using System;
+using System.Text.Json.Serialization;
 
 namespace DTOs
 {
@@ -12,6 +13,14 @@ namespace DTOs
         public string Telefono { get; set; }
         public DateTime FechaNacimiento { get; set; }
         public int Estado { get; set; }
-        public string? NombreUsuario  { get; set; }
-}
+
+        // Datos del usuario de acceso del cliente. Se devuelven siempre; en el ALTA se reciben
+        // para crear el usuario (rol Cliente) junto con el cliente.
+        public string? NombreUsuario { get; set; }
+        public string? Email { get; set; }
+
+        // Solo de ENTRADA, y solo en el alta. El servidor nunca la devuelve.
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string? Contrasena { get; set; }
+    }
 }

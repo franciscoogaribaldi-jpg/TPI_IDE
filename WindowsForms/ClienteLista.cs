@@ -31,7 +31,7 @@ namespace WindowsForms
             dgvClientes.Columns.Add(new DataGridViewTextBoxColumn { Name = "Estado", HeaderText = "Estado", DataPropertyName = "Estado" });
 
             
-            dgvClientes.Columns.Add(new DataGridViewTextBoxColumn { Name = "NombreUsuario", HeaderText = "Registrado Por", DataPropertyName = "NombreUsuario" });
+            dgvClientes.Columns.Add(new DataGridViewTextBoxColumn { Name = "NombreUsuario", HeaderText = "Usuario", DataPropertyName = "NombreUsuario" });
         }
 
 

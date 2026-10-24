@@ -20,6 +20,7 @@ namespace WindowsForms
             this.menuPrincipal = new System.Windows.Forms.MenuStrip();
             this.menuClientes = new System.Windows.Forms.ToolStripMenuItem();
             this.menuCanchas = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuTurnos = new System.Windows.Forms.ToolStripMenuItem();
             this.menuReservas = new System.Windows.Forms.ToolStripMenuItem();
             this.menuSesion = new System.Windows.Forms.ToolStripMenuItem();
             this.menuCerrarSesion = new System.Windows.Forms.ToolStripMenuItem();
@@ -33,6 +34,7 @@ namespace WindowsForms
             this.menuPrincipal.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.menuClientes,
             this.menuCanchas,
+            this.menuTurnos,
             this.menuReservas,
             this.menuSesion,
             this.lblBienvenida});
@@ -54,6 +56,13 @@ namespace WindowsForms
             this.menuCanchas.Size = new System.Drawing.Size(70, 20);
             this.menuCanchas.Text = "Canchas";
             this.menuCanchas.Click += new System.EventHandler(this.menuCanchas_Click);
+            //
+            // menuTurnos
+            //
+            this.menuTurnos.Name = "menuTurnos";
+            this.menuTurnos.Size = new System.Drawing.Size(60, 20);
+            this.menuTurnos.Text = "Turnos";
+            this.menuTurnos.Click += new System.EventHandler(this.menuTurnos_Click);
             //
             // menuReservas
             //
@@ -112,6 +121,7 @@ namespace WindowsForms
         private System.Windows.Forms.MenuStrip menuPrincipal;
         private System.Windows.Forms.ToolStripMenuItem menuClientes;
         private System.Windows.Forms.ToolStripMenuItem menuCanchas;
+        private System.Windows.Forms.ToolStripMenuItem menuTurnos;
         private System.Windows.Forms.ToolStripMenuItem menuReservas;
         private System.Windows.Forms.ToolStripMenuItem menuSesion;
         private System.Windows.Forms.ToolStripMenuItem menuCerrarSesion;

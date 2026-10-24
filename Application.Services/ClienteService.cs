@@ -22,38 +22,51 @@ namespace Application.Services
 
         public async Task<ClienteDTO> AddAsync(ClienteDTO dto)
         {
-          
             if (!Enum.IsDefined(typeof(Estado), dto.Estado)) // dto.Estado esta definido en la lista Estado de enum
                 throw new ArgumentException("El estado del cliente no es válido.", nameof(dto.Estado));
 
-            var usuario = await _usuarioRepository.GetAsync(dto.IdUsuario);
-            if (usuario == null)
-                throw new ReglaDeNegocioException("El usuario indicado no existe.");
+            // El alta crea el cliente Y su usuario de acceso (rol Cliente) en una sola operación.
+            if (string.IsNullOrWhiteSpace(dto.NombreUsuario))
+                throw new ArgumentException("El nombre de usuario es obligatorio.", nameof(dto.NombreUsuario));
+            if (string.IsNullOrWhiteSpace(dto.Email))
+                throw new ArgumentException("El email es obligatorio.", nameof(dto.Email));
+            if (string.IsNullOrWhiteSpace(dto.Contrasena))
+                throw new ArgumentException("La contraseña es obligatoria.", nameof(dto.Contrasena));
 
-            bool existeDni = await _repository.DniExistsAsync(dto.Dni);
-            if (existeDni)
+            // Reglas de negocio: se validan TODAS antes de guardar nada.
+            if (await _repository.DniExistsAsync(dto.Dni))
                 throw new ReglaDeNegocioException("Ya existe un cliente con ese DNI.");
+            if (await _usuarioRepository.NombreUsuarioExistsAsync(dto.NombreUsuario))
+                throw new ReglaDeNegocioException("Ya existe un usuario con ese nombre de usuario.");
+            if (await _usuarioRepository.EmailExistsAsync(dto.Email))
+                throw new ReglaDeNegocioException("Ya existe un usuario con ese email.");
+
+            // La contraseña se guarda hasheada, igual que en UsuarioService.
+            var usuario = new Usuario(
+                idUsuario: 0,
+                nombreUsuario: dto.NombreUsuario.Trim(),
+                contrasena: PasswordHasher.Hash(dto.Contrasena),
+                email: dto.Email.Trim(),
+                rol: RolUsuario.Cliente,
+                estado: Estado.Activo);
 
             var cliente = new Cliente(
                 idCliente: 0,
-                idUsuario: dto.IdUsuario,
+                idUsuario: 0, // todavía no existe: se completa al guardar
                 nombre: dto.Nombre,
                 apellido: dto.Apellido,
                 dni: dto.Dni,
                 telefono: dto.Telefono,
                 fechaNacimiento: dto.FechaNacimiento,
                 estado: (Estado)dto.Estado
-                
             );
-
-            // CORRECCIÓN DE CÁTEDRA: SetUsuario no se invocaba nunca; la navigation
-            // property se quedaba siempre en null aunque IdUsuario tuviera un valor válido.
             cliente.SetUsuario(usuario);
 
+            // Un único SaveChangesAsync inserta el usuario y el cliente: si algo falla,
+            // no queda guardado ninguno de los dos.
             await _repository.AddAsync(cliente);
 
-            dto.IdCliente = cliente.IdCliente;
-            return dto; // se retorna para que aparezca en la parte visual
+            return MapToDto(cliente);
         }
 
         public async Task<bool> DeleteAsync(int id) // esta parte de la capa de servicios esta solo para cumplir con la arquitectura porque hasta ahora solo sirve para llamar a repository
@@ -121,7 +134,8 @@ namespace Application.Services
             Telefono = c.Telefono,
             FechaNacimiento = c.FechaNacimiento,
             Estado = (int)c.Estado,
-            NombreUsuario = c.Usuario?.NombreUsuario
+            NombreUsuario = c.Usuario?.NombreUsuario,
+            Email = c.Usuario?.Email
         };
     }
 }

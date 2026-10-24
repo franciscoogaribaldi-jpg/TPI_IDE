@@ -109,6 +109,21 @@ using (var scope = app.Services.CreateScope())
         context.Usuarios.Add(usuarioAdmin);
         context.SaveChanges();
     }
+
+    // creamos unos turnos pre hechos en la base de datos para poder realizar altas de reservas
+    if (!context.Turnos.Any())
+    {
+
+        for (int hora = 8; hora < 23; hora++)
+        {
+            context.Turnos.Add(new Turno(
+                idTurno: 0,
+                horaInicio: new TimeSpan(hora, 0, 0),
+                horaFin: new TimeSpan(hora + 1, 0, 0),
+                estado: Estado.Activo));
+        }
+        context.SaveChanges();
+    }
 }
 
 if (app.Environment.IsDevelopment())
