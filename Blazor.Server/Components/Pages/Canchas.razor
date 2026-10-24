@@ -96,7 +96,7 @@ else
     private async Task CargarTodosAsync()
     {
         await EjecutarConEsperaAsync(async () =>
-            canchas = (await CanchaApiClient.GetAllAsync()).ToList());
+            canchas = (await CanchaApiClient.GetAllAsync(Sesion.Token)).ToList());
     }
 
     private async Task AlGuardarAsync()
@@ -112,8 +112,8 @@ else
 
         await EjecutarConEsperaAsync(async () =>
         {
-            await CanchaApiClient.DeleteAsync(c.IdCancha);
-            canchas = (await CanchaApiClient.GetAllAsync()).ToList();
+            await CanchaApiClient.DeleteAsync(c.IdCancha,Sesion.Token);
+            canchas = (await CanchaApiClient.GetAllAsync(Sesion.Token)).ToList();
             mensajeExito = "Cancha eliminada.";
         });
     }

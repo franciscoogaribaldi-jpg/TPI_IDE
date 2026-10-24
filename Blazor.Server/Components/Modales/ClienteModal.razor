@@ -160,8 +160,8 @@
         mensajeError = string.Empty;
         try
         {
-            if (esAlta) await ClienteApiClient.AddAsync(dto);
-            else await ClienteApiClient.UpdateAsync(dto);
+            if (esAlta) await ClienteApiClient.AddAsync(dto,Sesion.Token);
+            else await ClienteApiClient.UpdateAsync(dto,Sesion.Token);
 
             visible = false;
             await OnGuardado.InvokeAsync();

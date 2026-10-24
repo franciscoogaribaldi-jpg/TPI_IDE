@@ -10,19 +10,22 @@ namespace API.Clients
         // o mirando la ventana de la consola cuando arranca ("Now listening on: ...").
         private const string BaseUrl = "https://localhost:7111/";
 
-        // El token JWT de la sesión activa. Lo completa quien haga login (hoy WinForms,
-        // a futuro también Blazor), y de acá lo toma cada pedido HTTP automáticamente.
-        public static string? TokenActual { get; set; } 
+        // Token de la sesión del ESCRITORIO: ahí cada proceso tiene un solo usuario, así que un
+        // estático alcanza. La web NO lo usa: en Blazor Server cada usuario conectado pasa su
+        // propio token como parámetro en cada llamada (ver SesionUsuario).
+        public static string? TokenActual { get; set; }
 
-        protected static HttpClient CreateHttpClient()
+        protected static HttpClient CreateHttpClient(string? token = null)
         {
             var client = new HttpClient { BaseAddress = new Uri(BaseUrl) };
             client.DefaultRequestHeaders.Accept.Clear();
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-            if (!string.IsNullOrEmpty(TokenActual))
+            // Si la llamada trae su propio token (web) se usa ese; si no, el del escritorio.
+            var tokenAUsar = token ?? TokenActual;
+            if (!string.IsNullOrEmpty(tokenAUsar))
             {
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", TokenActual);
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenAUsar);
             }
 
             return client;

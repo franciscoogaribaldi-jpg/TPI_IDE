@@ -1,4 +1,5 @@
-﻿@if (visible)
+﻿@inject SesionUsuario Sesion
+@if (visible)
 {
     <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
         <div class="modal-dialog">
@@ -162,8 +163,8 @@
         mensajeError = string.Empty;
         try
         {
-            if (esAlta) await CanchaApiClient.AddAsync(dto);
-            else await CanchaApiClient.UpdateAsync(dto);
+            if (esAlta) await CanchaApiClient.AddAsync(dto,Sesion.Token);
+            else await CanchaApiClient.UpdateAsync(dto,Sesion.Token);
 
             visible = false;
             await OnGuardado.InvokeAsync();

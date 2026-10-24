@@ -6,9 +6,9 @@ namespace API.Clients
 {
     public class ClienteApiClient : BaseApiClient
     {
-        public static async Task<ClienteDTO?> GetAsync(int id)
+        public static async Task<ClienteDTO?> GetAsync(int id, string? token = null)
         {
-            using var client = CreateHttpClient();
+            using var client = CreateHttpClient(token);
             var response = await client.GetAsync($"clientes/{id}");
 
             if (response.StatusCode == HttpStatusCode.NotFound) return null;
@@ -17,9 +17,9 @@ namespace API.Clients
             return await response.Content.ReadFromJsonAsync<ClienteDTO>();
         }
 
-        public static async Task<IEnumerable<ClienteDTO>> GetAllAsync()
+        public static async Task<IEnumerable<ClienteDTO>> GetAllAsync(string? token = null)
         {
-            using var client = CreateHttpClient();
+            using var client = CreateHttpClient(token);
             var response = await client.GetAsync("clientes");
 
             if (!response.IsSuccessStatusCode) throw new Exception(await LeerMensajeDeErrorAsync(response));
@@ -27,9 +27,9 @@ namespace API.Clients
             return await response.Content.ReadFromJsonAsync<IEnumerable<ClienteDTO>>() ?? Enumerable.Empty<ClienteDTO>();
         }
 
-        public static async Task<IEnumerable<ClienteDTO>> BuscarAsync(string texto)
+        public static async Task<IEnumerable<ClienteDTO>> BuscarAsync(string texto, string? token = null)
         {
-            using var client = CreateHttpClient();
+            using var client = CreateHttpClient(token);
             var response = await client.GetAsync($"clientes/buscar?texto={Uri.EscapeDataString(texto)}");
 
             if (!response.IsSuccessStatusCode) throw new Exception(await LeerMensajeDeErrorAsync(response));
@@ -37,9 +37,9 @@ namespace API.Clients
             return await response.Content.ReadFromJsonAsync<IEnumerable<ClienteDTO>>() ?? Enumerable.Empty<ClienteDTO>();
         }
 
-        public static async Task<ClienteDTO> AddAsync(ClienteDTO cliente)
+        public static async Task<ClienteDTO> AddAsync(ClienteDTO cliente, string? token = null)
         {
-            using var client = CreateHttpClient();
+            using var client = CreateHttpClient(token);
             var response = await client.PostAsJsonAsync("clientes", cliente);
 
             if (!response.IsSuccessStatusCode) throw new Exception(await LeerMensajeDeErrorAsync(response));
@@ -47,17 +47,17 @@ namespace API.Clients
             return (await response.Content.ReadFromJsonAsync<ClienteDTO>())!;
         }
 
-        public static async Task UpdateAsync(ClienteDTO cliente)
+        public static async Task UpdateAsync(ClienteDTO cliente, string? token = null)
         {
-            using var client = CreateHttpClient();
+            using var client = CreateHttpClient(token);
             var response = await client.PutAsJsonAsync("clientes", cliente);
 
             if (!response.IsSuccessStatusCode) throw new Exception(await LeerMensajeDeErrorAsync(response));
         }
 
-        public static async Task DeleteAsync(int id)
+        public static async Task DeleteAsync(int id, string? token = null)
         {
-            using var client = CreateHttpClient();
+            using var client = CreateHttpClient(token);
             var response = await client.DeleteAsync($"clientes/{id}");
 
             if (!response.IsSuccessStatusCode) throw new Exception(await LeerMensajeDeErrorAsync(response));

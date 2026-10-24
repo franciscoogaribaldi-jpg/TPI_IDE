@@ -6,9 +6,9 @@ namespace API.Clients
 {
     public class UsuarioApiClient : BaseApiClient
     {
-        public static async Task<IEnumerable<UsuarioDTO>> GetAllAsync()
+        public static async Task<IEnumerable<UsuarioDTO>> GetAllAsync(string? token = null)
         {
-            using var client = CreateHttpClient();
+            using var client = CreateHttpClient(token);
             var response = await client.GetAsync("usuarios");
 
             if (!response.IsSuccessStatusCode) throw new Exception(await LeerMensajeDeErrorAsync(response));
@@ -16,9 +16,9 @@ namespace API.Clients
             return await response.Content.ReadFromJsonAsync<IEnumerable<UsuarioDTO>>() ?? Enumerable.Empty<UsuarioDTO>();
         }
 
-        public static async Task<UsuarioDTO?> GetAsync(int id)
+        public static async Task<UsuarioDTO?> GetAsync(int id, string? token = null)
         {
-            using var client = CreateHttpClient();
+            using var client = CreateHttpClient(token);
             var response = await client.GetAsync($"usuarios/{id}");
 
             if (response.StatusCode == HttpStatusCode.NotFound) return null;

@@ -51,7 +51,7 @@ namespace WindowsForms
             // 
             // txtNombre
             // 
-            txtNombre.Location = new Point(150, 20);
+            txtNombre.Location = new Point(155, 15);
             txtNombre.Name = "txtNombre";
             txtNombre.Size = new Size(210, 23);
             txtNombre.TabIndex = 1;

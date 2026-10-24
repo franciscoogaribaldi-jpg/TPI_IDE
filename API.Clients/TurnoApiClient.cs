@@ -5,9 +5,9 @@ namespace API.Clients
 {
     public class TurnoApiClient : BaseApiClient
     {
-        public static async Task<IEnumerable<TurnoDTO>> GetAllAsync()
+        public static async Task<IEnumerable<TurnoDTO>> GetAllAsync(string? token = null)
         {
-            using var client = CreateHttpClient();
+            using var client = CreateHttpClient(token);
             var response = await client.GetAsync("turnos");
 
             if (!response.IsSuccessStatusCode) throw new Exception(await LeerMensajeDeErrorAsync(response));
