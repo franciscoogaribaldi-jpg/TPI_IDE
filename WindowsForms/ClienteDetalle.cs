@@ -151,7 +151,7 @@ namespace WindowsForms
                 // Acá llegan tanto los ArgumentException (datos inválidos) como los
                 // ReglaDeNegocioException (ej. DNI o usuario duplicado) que arma el servidor:
                 // el mensaje ya viene armado y listo para mostrar.
-                MessageBox.Show(ex.Message, "No se pudo guardar", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ErroresUI.Mostrar(this, ex, "No se pudo guardar");
             }
             finally
             {

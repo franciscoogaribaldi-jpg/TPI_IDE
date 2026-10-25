@@ -82,7 +82,7 @@ namespace WindowsForms
             catch (Exception ex)
             {
                 // Acá llegan los mensajes del servidor, por ejemplo el de turno superpuesto.
-                MessageBox.Show(ex.Message, "No se pudo guardar", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ErroresUI.Mostrar(this, ex, "No se pudo guardar");
             }
             finally
             {

@@ -162,7 +162,7 @@ namespace WindowsForms
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "No se pudo guardar", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ErroresUI.Mostrar(this, ex, "No se pudo guardar");
             }
             finally
             {

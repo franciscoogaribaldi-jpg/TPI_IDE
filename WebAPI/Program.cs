@@ -76,7 +76,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme) // a 
             ValidAudience = builder.Configuration["Jwt:Audience"],
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
-            ValidateLifetime = true
+            ValidateLifetime = true,
+            // Por defecto .NET da 5 minutos de tolerancia después del vencimiento. En cero, el
+            // token vence en el momento exacto (sirve para probar la vuelta al login).
+            ClockSkew = TimeSpan.Zero
         };
     });
 builder.Services.AddAuthorization(); // esto es para qeu el builder autorice o no a un usuario, si tiene token lo autoriza, sino no.

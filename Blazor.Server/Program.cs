@@ -1,3 +1,4 @@
+using API.Clients;
 using Blazor.Server.Components;
 using Blazor.Server.Services;
 
@@ -7,6 +8,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 builder.Services.AddScoped<SesionUsuario>();
+
+// URL de la WebAPI desde appsettings.json ("ApiUrl"). Es la misma para todos los usuarios,
+// por eso alcanza con la propiedad estática (el token, en cambio, va por sesión).
+BaseApiClient.BaseUrl = builder.Configuration["ApiUrl"] ?? BaseApiClient.BaseUrlPorDefecto;
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
