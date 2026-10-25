@@ -80,15 +80,29 @@ namespace Data
                 entity.Property(c => c.Estado).IsRequired().HasConversion<int>();
                 entity.Property(c => c.PrecioPorHora).HasColumnType("decimal(18,2)"); // nro de 18 digitos con 2 decimales que representan los centavos
 
+                entity.Property(c => c.EsTechada).IsRequired();
+
+                // Se calculan en cada clase hija (polimorfismo), no son columnas.
+                entity.Ignore(c => c.CantidadJugadores);
+                entity.Ignore(c => c.Caracteristicas);
+
                 entity.HasDiscriminator<string>("TipoCancha")
                       .HasValue<CanchaFutbol>("Futbol")
                       .HasValue<CanchaPadel>("Padel");
             });
 
+            // ---------- Cancha Futbol ----------
+            // Con TPH estas columnas quedan en la misma tabla Canchas y valen NULL en las filas de pádel.
+            modelBuilder.Entity<CanchaFutbol>(entity =>
+            {
+                entity.Property(c => c.TipoFutbol).HasConversion<int>();
+                entity.Property(c => c.TipoSuperficie).HasConversion<int>();
+            });
+
             // ---------- Cancha Padel ----------
             modelBuilder.Entity<CanchaPadel>(entity =>
             {
-                entity.Property(c => c.PrecioTotalRaquetas).HasColumnType("decimal(18,2)");
+                entity.Property(c => c.TipoPared).HasConversion<int>();
             });
 
 

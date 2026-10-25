@@ -41,9 +41,10 @@ else
                     <th>ID</th>
                     <th>Nombre</th>
                     <th>Tipo</th>
+                    <th>Características</th>
+                    <th>Jugadores</th>
+                    <th>Techada</th>
                     <th>Precio p/Hora</th>
-                    <th>Cant. Raquetas</th>
-                    <th>Total Raquetas</th>
                     <th>Estado</th>
                     <th></th>
                 </tr>
@@ -51,7 +52,7 @@ else
             <tbody>
                 @if (!canchas.Any())
                 {
-                    <tr><td colspan="8" class="text-center text-muted">No hay canchas para mostrar.</td></tr>
+                    <tr><td colspan="9" class="text-center text-muted">No hay canchas para mostrar.</td></tr>
                 }
                 @foreach (var c in canchas)
                 {
@@ -59,9 +60,10 @@ else
                         <td>@c.IdCancha</td>
                         <td>@c.Nombre</td>
                         <td>@c.TipoCancha</td>
+                        <td>@c.Caracteristicas</td>
+                        <td>@c.CantidadJugadores</td>
+                        <td>@(c.EsTechada ? "Sí" : "No")</td>
                         <td>@c.PrecioPorHora.ToString("C2")</td>
-                        <td>@c.CantidadRaquetas</td>
-                        <td>@c.PrecioTotalRaquetas?.ToString("C2")</td>
                         <td>@(c.Estado == 1 ? "Activo" : "Inactivo")</td>
                         <td class="text-nowrap">
                             <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => modal.MostrarEdicion(c)">Editar</button>

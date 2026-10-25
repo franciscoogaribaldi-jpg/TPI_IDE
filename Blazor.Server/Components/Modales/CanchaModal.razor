@@ -41,17 +41,42 @@
                             <div class="text-danger small">@Error("PrecioPorHora")</div>
                         </div>
 
+                        <div class="mb-3 form-check">
+                            <InputCheckbox class="form-check-input" id="chkTechada" @bind-Value="cancha.EsTechada" />
+                            <label class="form-check-label" for="chkTechada">Cancha techada</label>
+                        </div>
+
+                        @* Cada tipo de cancha muestra solo sus datos propios. Los valores son los int de los enums de Domain.Model. *@
                         @if (EsPadel)
                         {
                             <div class="mb-3">
-                                <label class="form-label">Cantidad de raquetas</label>
-                                <InputNumber class="form-control" @bind-Value="cancha.CantidadRaquetas" />
-                                <div class="text-danger small">@Error("CantidadRaquetas")</div>
+                                <label class="form-label">Paredes *</label>
+                                <InputSelect class="form-select" @bind-Value="cancha.TipoPared">
+                                    <option value="1">Vidrio</option>
+                                    <option value="2">Muro</option>
+                                </InputSelect>
+                                <div class="text-danger small">@Error("TipoPared")</div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="mb-3">
+                                <label class="form-label">Tipo de fútbol *</label>
+                                <InputSelect class="form-select" @bind-Value="cancha.TipoFutbol">
+                                    <option value="5">Fútbol 5</option>
+                                    <option value="7">Fútbol 7</option>
+                                    <option value="11">Fútbol 11</option>
+                                </InputSelect>
+                                <div class="text-danger small">@Error("TipoFutbol")</div>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label">Precio total raquetas</label>
-                                <InputNumber class="form-control" @bind-Value="cancha.PrecioTotalRaquetas" step="0.01" />
-                                <div class="text-danger small">@Error("PrecioTotalRaquetas")</div>
+                                <label class="form-label">Superficie *</label>
+                                <InputSelect class="form-select" @bind-Value="cancha.TipoSuperficie">
+                                    <option value="1">Césped sintético</option>
+                                    <option value="2">Césped natural</option>
+                                    <option value="3">Cemento</option>
+                                </InputSelect>
+                                <div class="text-danger small">@Error("TipoSuperficie")</div>
                             </div>
                         }
 
@@ -100,7 +125,8 @@
     public void MostrarAlta()
     {
         esAlta = true;
-        cancha = new CanchaDTO { Nombre = "", TipoCancha = "Futbol", Estado = 1 };
+        // Se precargan valores válidos para los dos tipos, así al cambiar de Fútbol a Pádel el combo ya tiene algo elegido.
+        cancha = new CanchaDTO { Nombre = "", TipoCancha = "Futbol", Estado = 1, TipoFutbol = 5, TipoSuperficie = 1, TipoPared = 1 };
         Abrir();
     }
 
@@ -114,8 +140,10 @@
             Estado = original.Estado,
             PrecioPorHora = original.PrecioPorHora,
             TipoCancha = original.TipoCancha,
-            CantidadRaquetas = original.CantidadRaquetas,
-            PrecioTotalRaquetas = original.PrecioTotalRaquetas
+            EsTechada = original.EsTechada,
+            TipoFutbol = original.TipoFutbol,
+            TipoSuperficie = original.TipoSuperficie,
+            TipoPared = original.TipoPared
         };
         Abrir();
     }
@@ -137,10 +165,9 @@
         errores.Clear();
         if (string.IsNullOrWhiteSpace(cancha.Nombre)) errores["Nombre"] = "El nombre es obligatorio.";
         if (cancha.PrecioPorHora <= 0) errores["PrecioPorHora"] = "El precio por hora debe ser mayor a cero.";
-        if (EsPadel && (cancha.CantidadRaquetas ?? 0) < 0)
-            errores["CantidadRaquetas"] = "La cantidad de raquetas no puede ser negativa.";
-        if (EsPadel && (cancha.PrecioTotalRaquetas ?? 0) < 0)
-            errores["PrecioTotalRaquetas"] = "El precio de raquetas no puede ser negativo.";
+        if (EsPadel && cancha.TipoPared == null) errores["TipoPared"] = "Elegí el tipo de pared.";
+        if (!EsPadel && cancha.TipoFutbol == null) errores["TipoFutbol"] = "Elegí si es fútbol 5, 7 u 11.";
+        if (!EsPadel && cancha.TipoSuperficie == null) errores["TipoSuperficie"] = "Elegí la superficie.";
         return errores.Count == 0;
     }
 
@@ -155,8 +182,10 @@
             Estado = cancha.Estado,
             PrecioPorHora = cancha.PrecioPorHora,
             TipoCancha = EsPadel ? "Padel" : "Futbol",
-            CantidadRaquetas = EsPadel ? (cancha.CantidadRaquetas ?? 0) : null,
-            PrecioTotalRaquetas = EsPadel ? (cancha.PrecioTotalRaquetas ?? 0) : null
+            EsTechada = cancha.EsTechada,
+            TipoFutbol = EsPadel ? null : cancha.TipoFutbol,
+            TipoSuperficie = EsPadel ? null : cancha.TipoSuperficie,
+            TipoPared = EsPadel ? cancha.TipoPared : null
         };
 
         guardando = true;

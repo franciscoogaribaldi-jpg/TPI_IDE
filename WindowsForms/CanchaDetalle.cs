@@ -5,6 +5,15 @@ namespace WindowsForms
 {
     public partial class CanchaDetalle : Form
     {
+        // Opciones de los combos: el valor es el int del enum de Domain.Model (WinForms no lo
+        // referencia a propósito) y el texto es lo que ve el usuario.
+        private static readonly (int Valor, string Texto)[] TiposFutbol =
+            { (5, "Fútbol 5"), (7, "Fútbol 7"), (11, "Fútbol 11") };
+        private static readonly (int Valor, string Texto)[] Superficies =
+            { (1, "Césped sintético"), (2, "Césped natural"), (3, "Cemento") };
+        private static readonly (int Valor, string Texto)[] Paredes =
+            { (1, "Vidrio"), (2, "Muro") };
+
         private readonly CanchaDTO? _canchaOriginal;
         private bool EsAlta => _canchaOriginal == null;
 
@@ -27,16 +36,21 @@ namespace WindowsForms
             cmbEstado.DataSource = new[] { "Activo", "Inactivo" };
             cmbEstado.SelectedIndex = 0;
 
+            CargarCombo(cmbTipoFutbol, TiposFutbol);
+            CargarCombo(cmbSuperficie, Superficies);
+            CargarCombo(cmbTipoPared, Paredes);
+
             if (EsAlta)
             {
                 radFutbol.Checked = true;
-                ActualizarVisibilidadRaquetas();
+                ActualizarVisibilidadPaneles();
             }
             else if (_canchaOriginal != null)
             {
                 txtNombre.Text = _canchaOriginal.Nombre;
                 numPrecioPorHora.Value = _canchaOriginal.PrecioPorHora;
                 cmbEstado.SelectedIndex = _canchaOriginal.Estado == 1 ? 0 : 1;
+                chkTechada.Checked = _canchaOriginal.EsTechada;
 
                 bool esPadel = _canchaOriginal.TipoCancha == "Padel";
                 radFutbol.Checked = !esPadel;
@@ -50,22 +64,47 @@ namespace WindowsForms
 
                 if (esPadel)
                 {
-                    numCantidadRaquetas.Value = _canchaOriginal.CantidadRaquetas ?? 0;
-                    numPrecioTotalRaquetas.Value = _canchaOriginal.PrecioTotalRaquetas ?? 0;
+                    SeleccionarValor(cmbTipoPared, Paredes, _canchaOriginal.TipoPared);
+                }
+                else
+                {
+                    SeleccionarValor(cmbTipoFutbol, TiposFutbol, _canchaOriginal.TipoFutbol);
+                    SeleccionarValor(cmbSuperficie, Superficies, _canchaOriginal.TipoSuperficie);
                 }
 
-                ActualizarVisibilidadRaquetas();
+                ActualizarVisibilidadPaneles();
             }
+        }
+
+        private static void CargarCombo(ComboBox combo, (int Valor, string Texto)[] opciones)
+        {
+            combo.Items.Clear();
+            foreach (var opcion in opciones)
+                combo.Items.Add(opcion.Texto);
+            combo.SelectedIndex = 0;
+        }
+
+        private static void SeleccionarValor(ComboBox combo, (int Valor, string Texto)[] opciones, int? valor)
+        {
+            int indice = Array.FindIndex(opciones, o => o.Valor == valor);
+            combo.SelectedIndex = indice >= 0 ? indice : 0;
+        }
+
+        private static int ValorSeleccionado(ComboBox combo, (int Valor, string Texto)[] opciones)
+        {
+            return opciones[combo.SelectedIndex].Valor;
         }
 
         private void radTipo_CheckedChanged(object sender, EventArgs e)
         {
-            ActualizarVisibilidadRaquetas();
+            ActualizarVisibilidadPaneles();
         }
 
-        private void ActualizarVisibilidadRaquetas()
+        // Cada tipo de cancha muestra solo sus datos propios.
+        private void ActualizarVisibilidadPaneles()
         {
-            pnlRaquetas.Visible = radPadel.Checked;
+            pnlFutbol.Visible = radFutbol.Checked;
+            pnlPadel.Visible = radPadel.Checked;
         }
 
         private bool ValidarCampos()
@@ -91,15 +130,18 @@ namespace WindowsForms
         {
             if (!ValidarCampos()) return;
 
+            bool esPadel = radPadel.Checked;
             var dto = new CanchaDTO
             {
                 IdCancha = _canchaOriginal?.IdCancha ?? 0,
                 Nombre = txtNombre.Text.Trim(),
                 Estado = cmbEstado.SelectedIndex == 0 ? 1 : 0,
                 PrecioPorHora = numPrecioPorHora.Value,
-                TipoCancha = radPadel.Checked ? "Padel" : "Futbol",
-                CantidadRaquetas = radPadel.Checked ? (int)numCantidadRaquetas.Value : null,
-                PrecioTotalRaquetas = radPadel.Checked ? numPrecioTotalRaquetas.Value : null
+                TipoCancha = esPadel ? "Padel" : "Futbol",
+                EsTechada = chkTechada.Checked,
+                TipoFutbol = esPadel ? null : ValorSeleccionado(cmbTipoFutbol, TiposFutbol),
+                TipoSuperficie = esPadel ? null : ValorSeleccionado(cmbSuperficie, Superficies),
+                TipoPared = esPadel ? ValorSeleccionado(cmbTipoPared, Paredes) : null
             };
 
             btnGuardar.Enabled = false;

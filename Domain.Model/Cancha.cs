@@ -9,13 +9,22 @@ namespace Domain.Model
         public Estado Estado { get; private set; }
         public decimal PrecioPorHora { get; private set; }
 
+        // Va en la clase padre porque tanto una cancha de fútbol como una de pádel pueden ser techadas.
+        public bool EsTechada { get; private set; }
+
+        // POLIMORFISMO: cada tipo de cancha calcula esto a su manera (ver CanchaFutbol y CanchaPadel).
+        // No se guardan en la base (ver TPIContext): se calculan a partir de los datos propios de cada hija.
+        public abstract int CantidadJugadores { get; }
+        public abstract string Caracteristicas { get; }
+
         // El constructor de la clase padre
-        protected Cancha(int idCancha, string nombre, Estado estado, decimal precioPorHora)
+        protected Cancha(int idCancha, string nombre, Estado estado, decimal precioPorHora, bool esTechada)
         {
             SetIdCancha(idCancha);
             SetNombre(nombre);
             SetEstado(estado);
             SetPrecioPorHora(precioPorHora);
+            SetEsTechada(esTechada);
         }
 
         public void SetIdCancha(int idCancha)
@@ -42,6 +51,11 @@ namespace Domain.Model
             if (precioPorHora <= 0)
                 throw new ArgumentException("El precio por hora debe ser mayor a cero.", nameof(precioPorHora));
             PrecioPorHora = precioPorHora;
+        }
+
+        public void SetEsTechada(bool esTechada)
+        {
+            EsTechada = esTechada;
         }
     }
 }

@@ -46,14 +46,20 @@ namespace Data
             existing.SetNombre(cancha.Nombre);
             existing.SetEstado(cancha.Estado);
             existing.SetPrecioPorHora(cancha.PrecioPorHora);
+            existing.SetEsTechada(cancha.EsTechada);
 
             // Nota heredada de la Entrega 1: si cambia el TIPO de cancha (Futbol<->Padel)
             // esto no lo contempla (ni lo contemplaba la versión en memoria). Cambiar el
             // tipo de una entidad ya persistida en una jerarquía TPH requiere borrar y
             // recrear la fila; lo dejamos afuera del alcance de la Entrega 2 a propósito.
-            if (existing is CanchaPadel padelExistente && cancha is CanchaPadel padelNueva)
+            if (existing is CanchaFutbol futbolExistente && cancha is CanchaFutbol futbolNueva)
             {
-                padelExistente.SetRaquetas(padelNueva.CantidadRaquetas, padelNueva.PrecioTotalRaquetas);
+                futbolExistente.SetTipoFutbol(futbolNueva.TipoFutbol);
+                futbolExistente.SetTipoSuperficie(futbolNueva.TipoSuperficie);
+            }
+            else if (existing is CanchaPadel padelExistente && cancha is CanchaPadel padelNueva)
+            {
+                padelExistente.SetTipoPared(padelNueva.TipoPared);
             }
 
             await _context.SaveChangesAsync();

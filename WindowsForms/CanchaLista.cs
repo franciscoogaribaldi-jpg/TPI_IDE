@@ -91,25 +91,24 @@ namespace WindowsForms
             dgvCanchas.Columns.Add(new DataGridViewTextBoxColumn { 
                 Name = "Nombre", HeaderText = "Nombre", DataPropertyName = "Nombre" 
             });
-            dgvCanchas.Columns.Add(new DataGridViewTextBoxColumn { 
-                Name = "TipoCancha", HeaderText = "Tipo de Cancha", DataPropertyName = "TipoCancha" 
+            dgvCanchas.Columns.Add(new DataGridViewTextBoxColumn {
+                Name = "TipoCancha", HeaderText = "Tipo de Cancha", DataPropertyName = "TipoCancha"
+            });
+            dgvCanchas.Columns.Add(new DataGridViewTextBoxColumn {
+                Name = "Caracteristicas", HeaderText = "Características", DataPropertyName = "Caracteristicas", Width = 180
+            });
+            dgvCanchas.Columns.Add(new DataGridViewTextBoxColumn {
+                Name = "CantidadJugadores", HeaderText = "Jugadores", DataPropertyName = "CantidadJugadores", Width = 70
+            });
+            dgvCanchas.Columns.Add(new DataGridViewTextBoxColumn {
+                Name = "EsTechada", HeaderText = "Techada", DataPropertyName = "EsTechada", Width = 70
             });
 
-            var colPrecioHora = new DataGridViewTextBoxColumn { 
-                Name = "PrecioPorHora", HeaderText = "Precio p/Hora", DataPropertyName = "PrecioPorHora" 
+            var colPrecioHora = new DataGridViewTextBoxColumn {
+                Name = "PrecioPorHora", HeaderText = "Precio p/Hora", DataPropertyName = "PrecioPorHora"
             };
             colPrecioHora.DefaultCellStyle.Format = "C2";
             dgvCanchas.Columns.Add(colPrecioHora);
-
-            dgvCanchas.Columns.Add(new DataGridViewTextBoxColumn { 
-                Name = "CantidadRaquetas", HeaderText = "Cant. Raquetas", DataPropertyName = "CantidadRaquetas" 
-            });
-
-            var colPrecioRaquetas = new DataGridViewTextBoxColumn { 
-                Name = "PrecioTotalRaquetas", HeaderText = "Total Raquetas", DataPropertyName = "PrecioTotalRaquetas" 
-            };
-            colPrecioRaquetas.DefaultCellStyle.Format = "C2";
-            dgvCanchas.Columns.Add(colPrecioRaquetas);
 
             dgvCanchas.Columns.Add(new DataGridViewTextBoxColumn { 
                 Name = "Estado", HeaderText = "Estado", DataPropertyName = "Estado" 
@@ -121,6 +120,11 @@ namespace WindowsForms
             if (dgvCanchas.Columns[e.ColumnIndex].Name == "Estado" && e.Value is int estado)
             {
                 e.Value = estado == 1 ? "Activo" : "Inactivo";
+                e.FormattingApplied = true;
+            }
+            else if (dgvCanchas.Columns[e.ColumnIndex].Name == "EsTechada" && e.Value is bool techada)
+            {
+                e.Value = techada ? "Sí" : "No";
                 e.FormattingApplied = true;
             }
         }

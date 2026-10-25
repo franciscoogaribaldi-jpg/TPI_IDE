@@ -20,28 +20,10 @@ namespace Application.Services
 
         public async Task<CanchaDTO> AddAsync(CanchaDTO dto)
         {
-            // VALIDACIÓN: antes esto era un cast directo (Estado)dto.Estado; un Estado=99
-            // entraba sin error. Corrección pedida por la cátedra sobre la Entrega 1.
-            if (!Enum.IsDefined(typeof(Estado), dto.Estado))
-                throw new ArgumentException("El estado de la cancha no es válido.", nameof(dto.Estado));
-
-            // VALIDACIÓN: antes era dto.TipoCancha?.ToLower() == "futbol"/"padel" repetido
-            // en dos métodos. Enum.TryParse centraliza los valores válidos en un solo lugar
-            // (Domain.Model.TipoCancha) y rechaza cualquier otra cosa de forma prolija.
-            if (!Enum.TryParse<TipoCancha>(dto.TipoCancha, ignoreCase: true, out var tipo)) // nos fijamos si es valido y si lo es lo pasamos a Enum
-                throw new ArgumentException("Tipo de cancha inválido. Use 'Futbol' o 'Padel'.", nameof(dto.TipoCancha));
-
-            Cancha cancha = tipo switch
-            {
-                TipoCancha.Futbol => new CanchaFutbol(0, dto.Nombre, (Estado)dto.Estado, dto.PrecioPorHora),
-                TipoCancha.Padel => new CanchaPadel(0, dto.Nombre, (Estado)dto.Estado, dto.PrecioPorHora,
-                    dto.CantidadRaquetas ?? 0, dto.PrecioTotalRaquetas ?? 0), // Usa el valor de la izquierda, PERO si la izquierda está nula (vacía), usa el número de la derecha (0)
-                _ => throw new ArgumentException("Tipo de cancha inválido. Use 'Futbol' o 'Padel'.", nameof(dto.TipoCancha))
-            };
+            Cancha cancha = CrearCancha(dto, idCancha: 0);
 
             await _repository.AddAsync(cancha);
-            dto.IdCancha = cancha.IdCancha;
-            return dto;
+            return MapToDto(cancha);
         }
 
         public async Task<bool> DeleteAsync(int id)
@@ -66,21 +48,42 @@ namespace Application.Services
             var existing = await _repository.GetAsync(dto.IdCancha);
             if (existing == null) return false;
 
+            Cancha canchaModificada = CrearCancha(dto, dto.IdCancha);
+
+            return await _repository.UpdateAsync(canchaModificada);
+        }
+
+        // Valida el DTO y arma la clase hija que corresponde (CanchaFutbol o CanchaPadel).
+        // La usan el alta y la modificación, así las reglas están en un solo lugar.
+        private static Cancha CrearCancha(CanchaDTO dto, int idCancha)
+        {
+            // VALIDACIÓN: antes esto era un cast directo (Estado)dto.Estado; un Estado=99
+            // entraba sin error. Corrección pedida por la cátedra sobre la Entrega 1.
             if (!Enum.IsDefined(typeof(Estado), dto.Estado))
                 throw new ArgumentException("El estado de la cancha no es válido.", nameof(dto.Estado));
 
-            if (!Enum.TryParse<TipoCancha>(dto.TipoCancha, ignoreCase: true, out var tipo))
+            // VALIDACIÓN: Enum.TryParse centraliza los valores válidos en un solo lugar
+            // (Domain.Model.TipoCancha) y rechaza cualquier otra cosa de forma prolija.
+            if (!Enum.TryParse<TipoCancha>(dto.TipoCancha, ignoreCase: true, out var tipo)) // nos fijamos si es valido y si lo es lo pasamos a Enum
                 throw new ArgumentException("Tipo de cancha inválido. Use 'Futbol' o 'Padel'.", nameof(dto.TipoCancha));
 
-            Cancha canchaModificada = tipo switch
+            return tipo switch
             {
-                TipoCancha.Futbol => new CanchaFutbol(dto.IdCancha, dto.Nombre, (Estado)dto.Estado, dto.PrecioPorHora),
-                TipoCancha.Padel => new CanchaPadel(dto.IdCancha, dto.Nombre, (Estado)dto.Estado, dto.PrecioPorHora,
-                    dto.CantidadRaquetas ?? 0, dto.PrecioTotalRaquetas ?? 0),
+                TipoCancha.Futbol => new CanchaFutbol(idCancha, dto.Nombre, (Estado)dto.Estado, dto.PrecioPorHora, dto.EsTechada,
+                    ValidarEnum<TipoFutbol>(dto.TipoFutbol, "Elegí si la cancha es de fútbol 5, 7 u 11."),
+                    ValidarEnum<TipoSuperficie>(dto.TipoSuperficie, "El tipo de superficie no es válido.")),
+                TipoCancha.Padel => new CanchaPadel(idCancha, dto.Nombre, (Estado)dto.Estado, dto.PrecioPorHora, dto.EsTechada,
+                    ValidarEnum<TipoPared>(dto.TipoPared, "El tipo de pared no es válido.")),
                 _ => throw new ArgumentException("Tipo de cancha inválido. Use 'Futbol' o 'Padel'.", nameof(dto.TipoCancha))
             };
+        }
 
-            return await _repository.UpdateAsync(canchaModificada);
+        // Los enums viajan como int en el DTO: se valida con Enum.IsDefined antes de castear.
+        private static TEnum ValidarEnum<TEnum>(int? valor, string mensaje) where TEnum : struct, Enum
+        {
+            if (valor == null || !Enum.IsDefined(typeof(TEnum), valor.Value))
+                throw new ArgumentException(mensaje);
+            return (TEnum)Enum.ToObject(typeof(TEnum), valor.Value);
         }
 
         private static CanchaDTO MapToDto(Cancha c)
@@ -90,18 +93,23 @@ namespace Application.Services
                 IdCancha = c.IdCancha,
                 Nombre = c.Nombre,
                 Estado = (int)c.Estado,
-                PrecioPorHora = c.PrecioPorHora
+                PrecioPorHora = c.PrecioPorHora,
+                EsTechada = c.EsTechada,
+                // Polimorfismo: cada hija responde a su manera, el servicio no pregunta el tipo.
+                CantidadJugadores = c.CantidadJugadores,
+                Caracteristicas = c.Caracteristicas
             };
 
-            if (c is CanchaFutbol)
+            if (c is CanchaFutbol futbol)
             {
                 dto.TipoCancha = nameof(TipoCancha.Futbol);
+                dto.TipoFutbol = (int)futbol.TipoFutbol;
+                dto.TipoSuperficie = (int)futbol.TipoSuperficie;
             }
             else if (c is CanchaPadel padel)
             {
                 dto.TipoCancha = nameof(TipoCancha.Padel);
-                dto.CantidadRaquetas = padel.CantidadRaquetas;
-                dto.PrecioTotalRaquetas = padel.PrecioTotalRaquetas;
+                dto.TipoPared = (int)padel.TipoPared;
             }
 
             return dto;
