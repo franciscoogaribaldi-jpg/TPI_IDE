@@ -80,6 +80,7 @@ namespace WebAPI
             .WithOpenApi()
             .RequireAuthorization(policy => policy.RequireRole("Administrador"));
 
+            // Baja lógica: el turno queda Inactivo, no se borra.
             app.MapDelete("/turnos/{id}", async (int id, ITurnoService turnoService) =>
             {
                 var deleted = await turnoService.DeleteAsync(id);

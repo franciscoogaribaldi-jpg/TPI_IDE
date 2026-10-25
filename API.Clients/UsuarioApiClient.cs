@@ -26,5 +26,31 @@ namespace API.Clients
 
             return await response.Content.ReadFromJsonAsync<UsuarioDTO>();
         }
+
+        public static async Task<UsuarioDTO> AddAsync(UsuarioDTO usuario, string? token = null)
+        {
+            using var client = CreateHttpClient(token);
+            var response = await client.PostAsJsonAsync("usuarios", usuario);
+
+            if (!response.IsSuccessStatusCode) throw new Exception(await LeerMensajeDeErrorAsync(response));
+
+            return (await response.Content.ReadFromJsonAsync<UsuarioDTO>())!;
+        }
+
+        public static async Task UpdateAsync(UsuarioDTO usuario, string? token = null)
+        {
+            using var client = CreateHttpClient(token);
+            var response = await client.PutAsJsonAsync("usuarios", usuario);
+
+            if (!response.IsSuccessStatusCode) throw new Exception(await LeerMensajeDeErrorAsync(response));
+        }
+
+        public static async Task DeleteAsync(int id, string? token = null)
+        {
+            using var client = CreateHttpClient(token);
+            var response = await client.DeleteAsync($"usuarios/{id}");
+
+            if (!response.IsSuccessStatusCode) throw new Exception(await LeerMensajeDeErrorAsync(response));
+        }
     }
 }

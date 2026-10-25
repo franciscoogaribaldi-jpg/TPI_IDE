@@ -1,0 +1,308 @@
+@inject SesionUsuario Sesion
+
+@if (visible)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">@(esAlta ? "Nueva reserva" : "Editar reserva")</h5>
+                    <button type="button" class="btn-close" @onclick="Cerrar"></button>
+                </div>
+
+                <div class="modal-body">
+                    @if (cargandoDatos)
+                    {
+                        <div class="d-flex justify-content-center"><div class="spinner-border"></div></div>
+                    }
+                    else
+                    {
+                        @* ---------- Maestro (cabecera de la reserva) ---------- *@
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Cliente *</label>
+                                <select class="form-select" @bind="reserva.IdCliente">
+                                    <option value="0">-- Elegí un cliente --</option>
+                                    @foreach (var c in clientes)
+                                    {
+                                        <option value="@c.IdCliente">@c.Apellido, @c.Nombre (DNI @c.Dni)</option>
+                                    }
+                                </select>
+                                <div class="text-danger small">@Error("IdCliente")</div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Cancha *</label>
+                                <select class="form-select" @bind="reserva.IdCancha">
+                                    <option value="0">-- Elegí una cancha --</option>
+                                    @foreach (var c in canchas)
+                                    {
+                                        <option value="@c.IdCancha">@c.Nombre (@c.TipoCancha) - @c.PrecioPorHora.ToString("C0")/h</option>
+                                    }
+                                </select>
+                                <div class="text-danger small">@Error("IdCancha")</div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label">Fecha *</label>
+                                <input type="date" class="form-control" @bind="reserva.Fecha" />
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label">Turno *</label>
+                                <select class="form-select" @bind="reserva.IdTurno">
+                                    <option value="0">-- Elegí un turno --</option>
+                                    @foreach (var t in turnos)
+                                    {
+                                        <option value="@t.IdTurno">@HoraCorta(t.HoraInicio) - @HoraCorta(t.HoraFin)@(t.Estado == 0 ? " (eliminado)" : "")</option>
+                                    }
+                                </select>
+                                <div class="text-danger small">@Error("IdTurno")</div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label">Estado</label>
+                                <select class="form-select" @bind="reserva.EstadoReserva">
+                                    <option value="1">Pendiente</option>
+                                    <option value="2">Confirmada</option>
+                                    <option value="3">Cancelada</option>
+                                    <option value="4">Finalizada</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label">Seña</label>
+                                <input type="number" min="0" step="0.01" class="form-control" @bind="reserva.Sena" />
+                                <div class="text-danger small">@Error("Sena")</div>
+                            </div>
+                        </div>
+
+                        @* ---------- Detalle (líneas de la reserva) ---------- *@
+                        <hr />
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="mb-0">Detalle (alquileres y consumos)</h6>
+                            <button type="button" class="btn btn-sm btn-outline-primary" @onclick="AgregarLinea">+ Agregar línea</button>
+                        </div>
+
+                        <table class="table table-sm align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Concepto</th>
+                                    <th style="width: 110px">Cantidad</th>
+                                    <th style="width: 150px">Precio unitario</th>
+                                    <th class="text-end" style="width: 130px">Subtotal</th>
+                                    <th style="width: 40px"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (!lineas.Any())
+                                {
+                                    <tr><td colspan="5" class="text-muted small">Sin líneas: solo se cobra la cancha.</td></tr>
+                                }
+                                @foreach (var linea in lineas)
+                                {
+                                    <tr>
+                                        <td><input class="form-control form-control-sm" placeholder="Ej: Alquiler de raqueta" @bind="linea.Concepto" /></td>
+                                        <td><input type="number" min="1" class="form-control form-control-sm" @bind="linea.Cantidad" /></td>
+                                        <td><input type="number" min="0" step="0.01" class="form-control form-control-sm" @bind="linea.PrecioUnitario" /></td>
+                                        <td class="text-end">@((linea.Cantidad * linea.PrecioUnitario).ToString("C2"))</td>
+                                        <td><button type="button" class="btn btn-sm btn-outline-danger" title="Quitar línea" @onclick="() => lineas.Remove(linea)">✕</button></td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                        <div class="text-danger small">@Error("Lineas")</div>
+
+                        <div class="text-end fs-5">
+                            Total estimado: <strong>@TotalEstimado.ToString("C2")</strong>
+                        </div>
+                        <div class="text-end form-text">El total definitivo lo calcula el servidor: precio de la cancha + líneas.</div>
+
+                        @if (!string.IsNullOrEmpty(mensajeError))
+                        {
+                            <div class="alert alert-danger mt-3">@mensajeError</div>
+                        }
+                    }
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="Cerrar">Cancelar</button>
+                    <button type="button" class="btn btn-primary" disabled="@(guardando || cargandoDatos)" @onclick="GuardarAsync">
+                        @if (guardando)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2"></span>
+                        }
+                        Guardar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public EventCallback OnGuardado { get; set; }
+
+    private bool visible;
+    private bool esAlta;
+    private bool guardando;
+    private bool cargandoDatos;
+    private string mensajeError = string.Empty;
+    private Dictionary<string, string> errores = new();
+
+    private ReservaDTO reserva = new();
+    private List<DetalleReservaDTO> lineas = new();
+
+    private List<ClienteDTO> clientes = new();
+    private List<CanchaDTO> canchas = new();
+    private List<TurnoDTO> turnos = new();
+
+    // Nombres de la reserva que se edita, por si su cliente, cancha o turno fue eliminado.
+    private string nombreClienteOriginal = string.Empty;
+    private string nombreCanchaOriginal = string.Empty;
+    private string horarioTurnoOriginal = string.Empty;
+
+    // Igual que ActualizarTotalEstimado() del ReservaDetalle.cs: precio de la cancha + líneas.
+    private decimal TotalEstimado =>
+        (canchas.FirstOrDefault(c => c.IdCancha == reserva.IdCancha)?.PrecioPorHora ?? 0)
+        + lineas.Sum(l => l.Cantidad * l.PrecioUnitario);
+
+    private static string HoraCorta(string hora) => hora.Length >= 5 ? hora[..5] : hora;
+
+    public async Task MostrarAltaAsync()
+    {
+        esAlta = true;
+        reserva = new ReservaDTO { Fecha = DateTime.Today.AddDays(1), EstadoReserva = 1 };
+        lineas = new List<DetalleReservaDTO>();
+        await AbrirAsync();
+    }
+
+    public async Task MostrarEdicionAsync(ReservaDTO original)
+    {
+        esAlta = false;
+        // Copia: si se cancela, la fila de la tabla no queda modificada.
+        reserva = new ReservaDTO
+        {
+            IdReserva = original.IdReserva,
+            IdCliente = original.IdCliente,
+            IdCancha = original.IdCancha,
+            IdTurno = original.IdTurno,
+            Fecha = original.Fecha,
+            EstadoReserva = original.EstadoReserva,
+            Sena = original.Sena
+        };
+        nombreClienteOriginal = original.NombreCliente;
+        nombreCanchaOriginal = original.NombreCancha;
+        horarioTurnoOriginal = original.HorarioTurno;
+        lineas = original.Detalles.Select(d => new DetalleReservaDTO
+        {
+            IdDetalleReserva = d.IdDetalleReserva,
+            Concepto = d.Concepto,
+            Cantidad = d.Cantidad,
+            PrecioUnitario = d.PrecioUnitario
+        }).ToList();
+        await AbrirAsync();
+    }
+
+    private async Task AbrirAsync()
+    {
+        errores.Clear();
+        mensajeError = string.Empty;
+        visible = true;
+        cargandoDatos = true;
+        StateHasChanged();
+
+        // Los combos se cargan cada vez que se abre, así siempre están al día. Traen solo lo
+        // activo; si se edita una reserva vieja cuyo cliente, cancha o turno fue eliminado, se
+        // agrega igual marcado como "(eliminado)" para no cambiarlo sin querer (como ReservaDetalle.cs).
+        try
+        {
+            clientes = (await ClienteApiClient.GetAllAsync(Sesion.Token)).OrderBy(c => c.Apellido).ToList();
+            canchas = (await CanchaApiClient.GetAllAsync(Sesion.Token)).ToList();
+            turnos = (await TurnoApiClient.GetAllAsync(Sesion.Token)).OrderBy(t => t.HoraInicio).ToList();
+
+            if (!esAlta)
+            {
+                if (!clientes.Any(c => c.IdCliente == reserva.IdCliente))
+                    clientes.Add(new ClienteDTO { IdCliente = reserva.IdCliente, Apellido = nombreClienteOriginal, Nombre = "(eliminado)", Dni = "-" });
+                if (!canchas.Any(c => c.IdCancha == reserva.IdCancha))
+                    canchas.Add(new CanchaDTO { IdCancha = reserva.IdCancha, Nombre = nombreCanchaOriginal, TipoCancha = "eliminada" });
+                if (!turnos.Any(t => t.IdTurno == reserva.IdTurno))
+                {
+                    // HorarioTurno viene como "17:00 - 18:00"; Estado 0 = eliminado (se muestra en el combo).
+                    var horas = horarioTurnoOriginal.Split(" - ");
+                    turnos.Add(new TurnoDTO { IdTurno = reserva.IdTurno, HoraInicio = horas[0], HoraFin = horas.Length > 1 ? horas[1] : "", Estado = 0 });
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            mensajeError = $"No se pudieron cargar los datos necesarios. {ex.Message}";
+        }
+        finally
+        {
+            cargandoDatos = false;
+        }
+    }
+
+    private void Cerrar() => visible = false;
+
+    private void AgregarLinea() => lineas.Add(new DetalleReservaDTO { Cantidad = 1 });
+
+    private string? Error(string campo) => errores.GetValueOrDefault(campo);
+
+    // Mismas reglas que ReservaDetalle.ValidarCampos() del WinForms (el servidor las vuelve a validar).
+    private bool Validar()
+    {
+        errores.Clear();
+        if (reserva.IdCliente == 0) errores["IdCliente"] = "Elegí un cliente.";
+        if (reserva.IdCancha == 0) errores["IdCancha"] = "Elegí una cancha.";
+        if (reserva.IdTurno == 0) errores["IdTurno"] = "Elegí un turno.";
+        if (reserva.Sena < 0) errores["Sena"] = "La seña no puede ser negativa.";
+        else if (reserva.Sena > TotalEstimado) errores["Sena"] = "La seña no puede superar el total.";
+
+        foreach (var linea in lineas)
+        {
+            if (string.IsNullOrWhiteSpace(linea.Concepto)) { errores["Lineas"] = "Hay una línea sin concepto."; break; }
+            if (linea.Cantidad <= 0) { errores["Lineas"] = $"La cantidad de \"{linea.Concepto}\" tiene que ser mayor a cero."; break; }
+            if (linea.PrecioUnitario < 0) { errores["Lineas"] = $"El precio de \"{linea.Concepto}\" no puede ser negativo."; break; }
+        }
+
+        return errores.Count == 0;
+    }
+
+    private async Task GuardarAsync()
+    {
+        if (!Validar()) return;
+
+        reserva.Fecha = reserva.Fecha.Date;
+        reserva.Detalles = lineas.Select(l => new DetalleReservaDTO
+        {
+            IdDetalleReserva = l.IdDetalleReserva,
+            Concepto = l.Concepto.Trim(),
+            Cantidad = l.Cantidad,
+            PrecioUnitario = l.PrecioUnitario
+        }).ToList();
+
+        guardando = true;
+        mensajeError = string.Empty;
+        try
+        {
+            // Cabecera y líneas viajan juntas: el servidor las guarda en una sola operación.
+            if (esAlta) await ReservaApiClient.AddAsync(reserva, Sesion.Token);
+            else await ReservaApiClient.UpdateAsync(reserva, Sesion.Token);
+
+            visible = false;
+            await OnGuardado.InvokeAsync();
+        }
+        catch (Exception ex)
+        {
+            // Por ejemplo: "Ya existe una reserva activa para esa cancha, ese turno y esa fecha."
+            mensajeError = ex.Message;
+        }
+        finally
+        {
+            guardando = false;
+        }
+    }
+}

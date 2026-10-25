@@ -18,12 +18,14 @@ namespace Data
             await _context.SaveChangesAsync();
         }
 
+        // Baja lógica: el usuario queda en la base como Inactivo y ya no puede iniciar sesión
+        // (UsuarioService.LoginAsync rechaza a los inactivos).
         public async Task<bool> DeleteAsync(int id)
         {
             var usuario = await _context.Usuarios.FindAsync(id);
-            if (usuario == null) return false;
+            if (usuario == null || usuario.Estado == Estado.Inactivo) return false;
 
-            _context.Usuarios.Remove(usuario);
+            usuario.SetEstado(Estado.Inactivo);
             await _context.SaveChangesAsync();
             return true;
         }
@@ -39,9 +41,10 @@ namespace Data
                 .FirstOrDefaultAsync(u => u.NombreUsuario == nombreUsuario);
         }
 
+        // Solo los activos: los eliminados (baja lógica) siguen en la base pero no se muestran.
         public async Task<IEnumerable<Usuario>> GetAllAsync()
         {
-            return await _context.Usuarios.ToListAsync();
+            return await _context.Usuarios.Where(u => u.Estado == Estado.Activo).ToListAsync();
         }
 
         public async Task<bool> UpdateAsync(Usuario usuario)
@@ -52,11 +55,17 @@ namespace Data
             existente.SetNombreUsuario(usuario.NombreUsuario);
             existente.SetEmail(usuario.Email);
             existente.SetRol(usuario.Rol);
-            existente.SetEstado(usuario.Estado);
-            // La contraseña NO se toca acá: se cambia con un flujo aparte (fuera del alcance de la Entrega 2).
+            // Ni la contraseña ni el Estado se tocan acá: la contraseña tiene un flujo aparte
+            // (fuera del alcance) y el Estado solo lo cambia la baja (DeleteAsync).
 
             await _context.SaveChangesAsync();
             return true;
+        }
+
+        public async Task RecuperarAsync(Usuario usuario)
+        {
+            // Viene de GetByNombreUsuarioAsync, así que EF ya lo está siguiendo: alcanza con guardar.
+            await _context.SaveChangesAsync();
         }
 
         public async Task<bool> NombreUsuarioExistsAsync(string nombreUsuario, int? excludeId = null)

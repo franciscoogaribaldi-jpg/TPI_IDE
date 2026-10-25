@@ -23,6 +23,7 @@ namespace WindowsForms
             this.colEstado = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.colImporteTotal = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.colSena = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.colAdministrador = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.pnlAcciones = new System.Windows.Forms.FlowLayoutPanel();
             this.btnNuevo = new System.Windows.Forms.Button();
             this.btnEditar = new System.Windows.Forms.Button();
@@ -43,7 +44,8 @@ namespace WindowsForms
             this.colTurno,
             this.colEstado,
             this.colImporteTotal,
-            this.colSena});
+            this.colSena,
+            this.colAdministrador});
             this.dgvReservas.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dgvReservas.Location = new System.Drawing.Point(0, 40);
             this.dgvReservas.MultiSelect = false;
@@ -115,6 +117,14 @@ namespace WindowsForms
             this.colSena.ReadOnly = true;
             this.colSena.Width = 100;
             //
+            // colAdministrador
+            //
+            this.colAdministrador.DataPropertyName = "NombreAdministrador";
+            this.colAdministrador.HeaderText = "Registrada por";
+            this.colAdministrador.Name = "colAdministrador";
+            this.colAdministrador.ReadOnly = true;
+            this.colAdministrador.Width = 150;
+            //
             // pnlAcciones
             //
             this.pnlAcciones.AutoSize = true;
@@ -152,9 +162,9 @@ namespace WindowsForms
             //
             this.btnEliminar.Location = new System.Drawing.Point(183, 8);
             this.btnEliminar.Name = "btnEliminar";
-            this.btnEliminar.Size = new System.Drawing.Size(80, 27);
+            this.btnEliminar.Size = new System.Drawing.Size(110, 27);
             this.btnEliminar.TabIndex = 2;
-            this.btnEliminar.Text = "Eliminar";
+            this.btnEliminar.Text = "Cancelar reserva";
             this.btnEliminar.UseVisualStyleBackColor = true;
             this.btnEliminar.Click += new System.EventHandler(this.btnEliminar_Click);
             //
@@ -179,6 +189,7 @@ namespace WindowsForms
         private System.Windows.Forms.DataGridViewTextBoxColumn colEstado;
         private System.Windows.Forms.DataGridViewTextBoxColumn colImporteTotal;
         private System.Windows.Forms.DataGridViewTextBoxColumn colSena;
+        private System.Windows.Forms.DataGridViewTextBoxColumn colAdministrador;
         private System.Windows.Forms.FlowLayoutPanel pnlAcciones;
         private System.Windows.Forms.Button btnNuevo;
         private System.Windows.Forms.Button btnEditar;

@@ -21,5 +21,15 @@ namespace Data
 
         Task<bool> DeleteAsync(int id);
         Task<IEnumerable<Cliente>> GetByCriteriaAsync(ClienteCriteria criteria);
+
+        // ¿Ese usuario ya tiene ficha de cliente? (para no borrar un usuario en uso)
+        Task<bool> ExisteConUsuarioAsync(int idUsuario);
+
+        // Busca por DNI aunque esté eliminado (baja lógica), con su usuario: el alta lo usa para
+        // recuperar a un cliente eliminado por error en lugar de crear otro.
+        Task<Cliente?> GetByDniAsync(string dni);
+
+        // Guarda un cliente recuperado (ya modificado, el que devolvió GetByDniAsync) y su usuario.
+        Task RecuperarAsync(Cliente cliente);
     }
 }

@@ -23,7 +23,9 @@ namespace Data
             var reserva = await _context.Reservas.FindAsync(id);
             if (reserva == null) return false;
 
-            _context.Reservas.Remove(reserva);
+            // Baja lógica de una reserva = cancelarla. Queda registrada (sirve para los reportes)
+            // y, como la doble reserva no cuenta las canceladas, libera la cancha y el turno.
+            reserva.SetEstadoReserva(EstadoReserva.Cancelada);
             await _context.SaveChangesAsync();
             return true;
         }
@@ -34,6 +36,7 @@ namespace Data
                 .Include(r => r.Cliente)
                 .Include(r => r.Cancha)
                 .Include(r => r.Turno)
+                .Include(r => r.Administrador)
                 .Include(r => r.Detalles)
                 .FirstOrDefaultAsync(r => r.IdReserva == id);
         }
@@ -44,6 +47,7 @@ namespace Data
                 .Include(r => r.Cliente)
                 .Include(r => r.Cancha)
                 .Include(r => r.Turno)
+                .Include(r => r.Administrador)
                 .Include(r => r.Detalles)
                 .ToListAsync();
         }

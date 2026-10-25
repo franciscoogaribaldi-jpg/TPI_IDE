@@ -25,9 +25,10 @@ namespace Data
             return await _context.Turnos.FindAsync(id);
         }
 
+        // Solo los activos: los eliminados (baja lógica) siguen en la base pero no se muestran.
         public async Task<IEnumerable<Turno>> GetAllAsync()
         {
-            return await _context.Turnos.ToListAsync();
+            return await _context.Turnos.Where(t => t.Estado == Estado.Activo).ToListAsync();
         }
 
         public async Task<bool> UpdateAsync(Turno turno)
@@ -35,27 +36,29 @@ namespace Data
             var existing = await _context.Turnos.FindAsync(turno.IdTurno);
             if (existing == null) return false;
 
-            existing.SetEstado(turno.Estado);
+            // El Estado no se cambia al editar: solo lo cambia la baja (DeleteAsync).
             existing.SetHorarios(turno.HoraInicio, turno.HoraFin);
-
 
             await _context.SaveChangesAsync();
             return true;
         }
 
+        // Baja lógica: el turno queda en la base como Inactivo, así las reservas que lo usan
+        // conservan su historial.
         public async Task<bool> DeleteAsync(int id)
         {
-            var turno = await _context.Turnos.FindAsync(id); 
-            if (turno == null) return false;
+            var turno = await _context.Turnos.FindAsync(id);
+            if (turno == null || turno.Estado == Estado.Inactivo) return false;
 
-            _context.Turnos.Remove(turno);
-            await _context.SaveChangesAsync(); 
+            turno.SetEstado(Estado.Inactivo);
+            await _context.SaveChangesAsync();
             return true;
         }
 
         public async Task<bool> ExisteSolapadoAsync(TimeSpan horaInicio, TimeSpan horaFin, int? excludeId = null)
         {
-            var query = _context.Turnos.Where(t => horaInicio < t.HoraFin && t.HoraInicio < horaFin);
+            // Un turno eliminado no ocupa más su horario.
+            var query = _context.Turnos.Where(t => t.Estado == Estado.Activo && horaInicio < t.HoraFin && t.HoraInicio < horaFin);
 
             if (excludeId.HasValue)
                 query = query.Where(t => t.IdTurno != excludeId.Value);

@@ -18,12 +18,14 @@ namespace Data
             await _context.SaveChangesAsync();
         }
 
+        // Baja lógica: la cancha queda en la base como Inactiva, así las reservas que la usan
+        // conservan su historial.
         public async Task<bool> DeleteAsync(int id)
         {
             var cancha = await _context.Canchas.FindAsync(id);
-            if (cancha == null) return false;
+            if (cancha == null || cancha.Estado == Estado.Inactivo) return false;
 
-            _context.Canchas.Remove(cancha);
+            cancha.SetEstado(Estado.Inactivo);
             await _context.SaveChangesAsync();
             return true;
         }
@@ -33,9 +35,10 @@ namespace Data
             return await _context.Canchas.FindAsync(id);
         }
 
+        // Solo las activas: las eliminadas (baja lógica) siguen en la base pero no se muestran.
         public async Task<IEnumerable<Cancha>> GetAllAsync()
         {
-            return await _context.Canchas.ToListAsync();
+            return await _context.Canchas.Where(c => c.Estado == Estado.Activo).ToListAsync();
         }
 
         public async Task<bool> UpdateAsync(Cancha cancha)
@@ -43,8 +46,8 @@ namespace Data
             var existing = await _context.Canchas.FindAsync(cancha.IdCancha);
             if (existing == null) return false;
 
+            // El Estado no se cambia al editar: solo lo cambia la baja (DeleteAsync).
             existing.SetNombre(cancha.Nombre);
-            existing.SetEstado(cancha.Estado);
             existing.SetPrecioPorHora(cancha.PrecioPorHora);
             existing.SetEsTechada(cancha.EsTechada);
 

@@ -56,9 +56,18 @@ namespace WindowsForms
                 return;
             }
 
+            // La baja de una reserva es cancelarla: queda en la lista como Cancelada (historial)
+            // y libera la cancha y el turno para otra reserva.
+            if (seleccionada.EstadoReserva == 3)
+            {
+                MessageBox.Show("Esa reserva ya está cancelada.", "Reserva cancelada",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
             var confirmacion = MessageBox.Show(
-                $"¿Eliminar la reserva de {seleccionada.NombreCliente} del {seleccionada.Fecha:dd/MM/yyyy}?",
-                "Confirmar eliminación", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                $"¿Cancelar la reserva de {seleccionada.NombreCliente} del {seleccionada.Fecha:dd/MM/yyyy}?\nQueda registrada como Cancelada y libera la cancha y el turno.",
+                "Confirmar cancelación", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
 
             if (confirmacion != DialogResult.Yes) return;
 

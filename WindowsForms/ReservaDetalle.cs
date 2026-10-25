@@ -33,24 +33,34 @@ namespace WindowsForms
             Cursor = Cursors.WaitCursor;
             try
             {
-                var clientes = (await ClienteApiClient.GetAllAsync()).ToList();
-                cmbCliente.DataSource = clientes
+                // Los combos traen solo lo activo (la API no devuelve lo eliminado). Si se edita una
+                // reserva vieja cuyo cliente, cancha o turno fue eliminado, se agrega igual marcado
+                // como "(eliminado)", para no cambiarlo sin querer al guardar.
+                var clientes = (await ClienteApiClient.GetAllAsync())
                     .Select(c => new { c.IdCliente, Display = $"{c.Apellido}, {c.Nombre} (DNI {c.Dni})" })
                     .ToList();
+                if (_reservaOriginal != null && !clientes.Any(c => c.IdCliente == _reservaOriginal.IdCliente))
+                    clientes.Add(new { _reservaOriginal.IdCliente, Display = $"{_reservaOriginal.NombreCliente} (eliminado)" });
+                cmbCliente.DataSource = clientes;
                 cmbCliente.DisplayMember = "Display";
                 cmbCliente.ValueMember = "IdCliente";
 
                 _canchas = (await CanchaApiClient.GetAllAsync()).ToList();
-                cmbCancha.DataSource = _canchas
+                var canchas = _canchas
                     .Select(c => new { c.IdCancha, Display = $"{c.Nombre} ({c.TipoCancha}) - {c.PrecioPorHora:C0}/h" })
                     .ToList();
+                if (_reservaOriginal != null && !canchas.Any(c => c.IdCancha == _reservaOriginal.IdCancha))
+                    canchas.Add(new { _reservaOriginal.IdCancha, Display = $"{_reservaOriginal.NombreCancha} (eliminada)" });
+                cmbCancha.DataSource = canchas;
                 cmbCancha.DisplayMember = "Display";
                 cmbCancha.ValueMember = "IdCancha";
 
-                var turnos = (await TurnoApiClient.GetAllAsync()).ToList();
-                cmbTurno.DataSource = turnos
+                var turnos = (await TurnoApiClient.GetAllAsync())
                     .Select(t => new { t.IdTurno, Display = $"{t.HoraInicio} - {t.HoraFin}" })
                     .ToList();
+                if (_reservaOriginal != null && !turnos.Any(t => t.IdTurno == _reservaOriginal.IdTurno))
+                    turnos.Add(new { _reservaOriginal.IdTurno, Display = $"{_reservaOriginal.HorarioTurno} (eliminado)" });
+                cmbTurno.DataSource = turnos;
                 cmbTurno.DisplayMember = "Display";
                 cmbTurno.ValueMember = "IdTurno";
             }

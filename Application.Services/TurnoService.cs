@@ -35,6 +35,7 @@ namespace Application.Services
             return dto;
         }
 
+        // Baja lógica (ver TurnoRepository.DeleteAsync): no se borra, se marca Inactivo.
         public async Task<bool> DeleteAsync(int id)
         {
             return await _repository.DeleteAsync(id);
@@ -42,8 +43,9 @@ namespace Application.Services
 
         public async Task<TurnoDTO?> GetAsync(int id)
         {
+            // Un turno eliminado (Inactivo) ya no existe para el sistema.
             var turno = await _repository.GetAsync(id);
-            return turno == null ? null : MapToDto(turno);
+            return turno == null || turno.Estado == Estado.Inactivo ? null : MapToDto(turno);
         }
 
         public async Task<IEnumerable<TurnoDTO>> GetAllAsync()
@@ -55,7 +57,7 @@ namespace Application.Services
         public async Task<bool> UpdateAsync(TurnoDTO dto)
         {
             var existente = await _repository.GetAsync(dto.IdTurno);
-            if (existente == null) return false;
+            if (existente == null || existente.Estado == Estado.Inactivo) return false;
 
             var (horaInicio, horaFin) = ParsearHorarios(dto);
 
@@ -63,14 +65,11 @@ namespace Application.Services
             if (solapado)
                 throw new ReglaDeNegocioException("Ya existe otro turno que se superpone con ese horario.");
 
-            if (!Enum.IsDefined(typeof(Estado), dto.Estado))
-                throw new ArgumentException("El estado del turno no es válido.", nameof(dto.Estado));
-
             var turnoModificado = new Turno(
                 idTurno: dto.IdTurno,
                 horaInicio: horaInicio,
                 horaFin: horaFin,
-                estado: (Estado)dto.Estado);
+                estado: existente.Estado); // el Estado no se edita: solo lo cambia la baja
 
             return await _repository.UpdateAsync(turnoModificado);
         }

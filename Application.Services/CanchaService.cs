@@ -20,12 +20,14 @@ namespace Application.Services
 
         public async Task<CanchaDTO> AddAsync(CanchaDTO dto)
         {
-            Cancha cancha = CrearCancha(dto, idCancha: 0);
+            // Toda alta nueva queda Activa; solo la baja la pasa a Inactiva.
+            Cancha cancha = CrearCancha(dto, idCancha: 0, Estado.Activo);
 
             await _repository.AddAsync(cancha);
             return MapToDto(cancha);
         }
 
+        // Baja lógica (ver CanchaRepository.DeleteAsync): no se borra, se marca Inactiva.
         public async Task<bool> DeleteAsync(int id)
         {
             return await _repository.DeleteAsync(id);
@@ -39,29 +41,27 @@ namespace Application.Services
 
         public async Task<CanchaDTO?> GetAsync(int id)
         {
+            // Una cancha eliminada (Inactiva) ya no existe para el sistema.
             var c = await _repository.GetAsync(id);
-            return c == null ? null : MapToDto(c);
+            return c == null || c.Estado == Estado.Inactivo ? null : MapToDto(c);
         }
 
         public async Task<bool> UpdateAsync(CanchaDTO dto)
         {
             var existing = await _repository.GetAsync(dto.IdCancha);
-            if (existing == null) return false;
+            if (existing == null || existing.Estado == Estado.Inactivo) return false;
 
-            Cancha canchaModificada = CrearCancha(dto, dto.IdCancha);
+            // El Estado no se edita: se conserva el que tiene.
+            Cancha canchaModificada = CrearCancha(dto, dto.IdCancha, existing.Estado);
 
             return await _repository.UpdateAsync(canchaModificada);
         }
 
         // Valida el DTO y arma la clase hija que corresponde (CanchaFutbol o CanchaPadel).
         // La usan el alta y la modificación, así las reglas están en un solo lugar.
-        private static Cancha CrearCancha(CanchaDTO dto, int idCancha)
+        // El Estado no viene del DTO: lo decide el servicio (ver AddAsync y UpdateAsync).
+        private static Cancha CrearCancha(CanchaDTO dto, int idCancha, Estado estado)
         {
-            // VALIDACIÓN: antes esto era un cast directo (Estado)dto.Estado; un Estado=99
-            // entraba sin error. Corrección pedida por la cátedra sobre la Entrega 1.
-            if (!Enum.IsDefined(typeof(Estado), dto.Estado))
-                throw new ArgumentException("El estado de la cancha no es válido.", nameof(dto.Estado));
-
             // VALIDACIÓN: Enum.TryParse centraliza los valores válidos en un solo lugar
             // (Domain.Model.TipoCancha) y rechaza cualquier otra cosa de forma prolija.
             if (!Enum.TryParse<TipoCancha>(dto.TipoCancha, ignoreCase: true, out var tipo)) // nos fijamos si es valido y si lo es lo pasamos a Enum
@@ -69,10 +69,10 @@ namespace Application.Services
 
             return tipo switch
             {
-                TipoCancha.Futbol => new CanchaFutbol(idCancha, dto.Nombre, (Estado)dto.Estado, dto.PrecioPorHora, dto.EsTechada,
+                TipoCancha.Futbol => new CanchaFutbol(idCancha, dto.Nombre, estado, dto.PrecioPorHora, dto.EsTechada,
                     ValidarEnum<TipoFutbol>(dto.TipoFutbol, "Elegí si la cancha es de fútbol 5, 7 u 11."),
                     ValidarEnum<TipoSuperficie>(dto.TipoSuperficie, "El tipo de superficie no es válido.")),
-                TipoCancha.Padel => new CanchaPadel(idCancha, dto.Nombre, (Estado)dto.Estado, dto.PrecioPorHora, dto.EsTechada,
+                TipoCancha.Padel => new CanchaPadel(idCancha, dto.Nombre, estado, dto.PrecioPorHora, dto.EsTechada,
                     ValidarEnum<TipoPared>(dto.TipoPared, "El tipo de pared no es válido.")),
                 _ => throw new ArgumentException("Tipo de cancha inválido. Use 'Futbol' o 'Padel'.", nameof(dto.TipoCancha))
             };

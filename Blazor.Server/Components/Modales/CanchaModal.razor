@@ -80,14 +80,6 @@
                             </div>
                         }
 
-                        <div class="mb-3">
-                            <label class="form-label">Estado</label>
-                            <InputSelect class="form-select" @bind-Value="cancha.Estado">
-                                <option value="1">Activo</option>
-                                <option value="0">Inactivo</option>
-                            </InputSelect>
-                        </div>
-
                         @if (!string.IsNullOrEmpty(mensajeError))
                         {
                             <div class="alert alert-danger">@mensajeError</div>

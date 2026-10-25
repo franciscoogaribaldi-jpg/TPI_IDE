@@ -24,8 +24,6 @@ namespace WindowsForms
         {
             Text = EsAlta ? "Nuevo cliente" : "Editar cliente";
 
-            cmbEstado.DataSource = new[] { "Activo", "Inactivo" };
-            cmbEstado.SelectedIndex = 0;
 
             if (!EsAlta && _clienteOriginal != null)
             {
@@ -34,7 +32,6 @@ namespace WindowsForms
                 txtDni.Text = _clienteOriginal.Dni;
                 txtTelefono.Text = _clienteOriginal.Telefono;
                 dtpFechaNacimiento.Value = _clienteOriginal.FechaNacimiento;
-                cmbEstado.SelectedIndex = _clienteOriginal.Estado == 1 ? 0 : 1;
 
                 // En la edición el usuario de acceso no se modifica: se muestra solo para consulta
                 // y no se pide contraseña.
@@ -124,7 +121,6 @@ namespace WindowsForms
                 Dni = txtDni.Text.Trim(),
                 Telefono = txtTelefono.Text.Trim(),
                 FechaNacimiento = dtpFechaNacimiento.Value.Date,
-                Estado = cmbEstado.SelectedIndex == 0 ? 1 : 0,
                 NombreUsuario = EsAlta ? txtUsuario.Text.Trim() : _clienteOriginal!.NombreUsuario,
                 Email = EsAlta ? txtEmail.Text.Trim() : _clienteOriginal!.Email,
                 Contrasena = EsAlta ? txtContrasena.Text : null
@@ -136,7 +132,12 @@ namespace WindowsForms
             {
                 if (EsAlta)
                 {
-                    await ClienteApiClient.AddAsync(dto);
+                    var creado = await ClienteApiClient.AddAsync(dto);
+
+                    // Si el DNI era de un cliente eliminado, el servidor lo recuperó en vez de crear otro.
+                    if (creado.Recuperado)
+                        MessageBox.Show("Ese DNI era de un cliente eliminado: se lo recuperó con los datos nuevos y conserva sus reservas anteriores.",
+                            "Cliente recuperado", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
                 else
                 {

@@ -53,7 +53,6 @@ else
                     <th>DNI</th>
                     <th>Teléfono</th>
                     <th>F. Nacimiento</th>
-                    <th>Estado</th>
                     <th>Usuario</th>
                     <th></th>
                 </tr>
@@ -61,7 +60,7 @@ else
             <tbody>
                 @if (!clientes.Any())
                 {
-                    <tr><td colspan="9" class="text-center text-muted">No hay clientes para mostrar.</td></tr>
+                    <tr><td colspan="8" class="text-center text-muted">No hay clientes para mostrar.</td></tr>
                 }
                 @foreach (var c in clientes)
                 {
@@ -72,7 +71,6 @@ else
                         <td>@c.Dni</td>
                         <td>@c.Telefono</td>
                         <td>@c.FechaNacimiento.ToString("dd/MM/yyyy")</td>
-                        <td>@(c.Estado == 1 ? "Activo" : "Inactivo")</td>
                         <td>@c.NombreUsuario</td>
                         <td class="text-nowrap">
                             <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => modal.MostrarEdicion(c)">Editar</button>
@@ -126,9 +124,10 @@ else
         await CargarTodosAsync();
     }
 
-    private async Task AlGuardarAsync()
+    // aviso: texto especial del modal (por ejemplo, "cliente recuperado") o null.
+    private async Task AlGuardarAsync(string? aviso)
     {
-        mensajeExito = "Cliente guardado correctamente.";
+        mensajeExito = aviso ?? "Cliente guardado correctamente.";
         await CargarTodosAsync();
     }
 

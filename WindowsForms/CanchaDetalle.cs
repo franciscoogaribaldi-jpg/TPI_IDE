@@ -33,8 +33,6 @@ namespace WindowsForms
         {
             Text = EsAlta ? "Nueva cancha" : "Editar cancha";
 
-            cmbEstado.DataSource = new[] { "Activo", "Inactivo" };
-            cmbEstado.SelectedIndex = 0;
 
             CargarCombo(cmbTipoFutbol, TiposFutbol);
             CargarCombo(cmbSuperficie, Superficies);
@@ -49,7 +47,6 @@ namespace WindowsForms
             {
                 txtNombre.Text = _canchaOriginal.Nombre;
                 numPrecioPorHora.Value = _canchaOriginal.PrecioPorHora;
-                cmbEstado.SelectedIndex = _canchaOriginal.Estado == 1 ? 0 : 1;
                 chkTechada.Checked = _canchaOriginal.EsTechada;
 
                 bool esPadel = _canchaOriginal.TipoCancha == "Padel";
@@ -135,7 +132,6 @@ namespace WindowsForms
             {
                 IdCancha = _canchaOriginal?.IdCancha ?? 0,
                 Nombre = txtNombre.Text.Trim(),
-                Estado = cmbEstado.SelectedIndex == 0 ? 1 : 0,
                 PrecioPorHora = numPrecioPorHora.Value,
                 TipoCancha = esPadel ? "Padel" : "Futbol",
                 EsTechada = chkTechada.Checked,

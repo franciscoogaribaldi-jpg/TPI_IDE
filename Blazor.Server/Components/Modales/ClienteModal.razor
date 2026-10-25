@@ -41,14 +41,6 @@
                             <div class="text-danger small">@Error("FechaNacimiento")</div>
                         </div>
 
-                        <div class="mb-3">
-                            <label class="form-label">Estado</label>
-                            <InputSelect class="form-select" @bind-Value="cliente.Estado">
-                                <option value="1">Activo</option>
-                                <option value="0">Inactivo</option>
-                            </InputSelect>
-                        </div>
-
                         <hr />
                         @if (esAlta)
                         {
@@ -109,7 +101,8 @@
 
 @code {
     // El listado padre se entera de que se guardó algo y recarga la tabla.
-    [Parameter] public EventCallback OnGuardado { get; set; }
+    // Le pasa a la página un aviso especial (cliente recuperado) o null si fue un guardado común.
+    [Parameter] public EventCallback<string?> OnGuardado { get; set; }
 
     private bool visible;
     private bool esAlta;
@@ -213,11 +206,18 @@
         mensajeError = string.Empty;
         try
         {
-            if (esAlta) await ClienteApiClient.AddAsync(dto, Sesion.Token);
+            string? aviso = null;
+            if (esAlta)
+            {
+                var creado = await ClienteApiClient.AddAsync(dto, Sesion.Token);
+                // Si el DNI era de un cliente eliminado, el servidor lo recuperó en vez de crear otro.
+                if (creado.Recuperado)
+                    aviso = "Ese DNI era de un cliente eliminado: se lo recuperó con los datos nuevos y conserva sus reservas anteriores.";
+            }
             else await ClienteApiClient.UpdateAsync(dto, Sesion.Token);
 
             visible = false;
-            await OnGuardado.InvokeAsync();
+            await OnGuardado.InvokeAsync(aviso);
         }
         catch (Exception ex)
         {

@@ -12,5 +12,7 @@ namespace Data
 
         // Evita doble reserva: misma cancha, mismo turno, misma fecha, ya activa.
         Task<bool> ExisteReservaActivaAsync(int idCancha, int idTurno, DateTime fecha, int? excludeId = null);
+
+        // DeleteAsync es una baja lógica: pasa la reserva a Cancelada, no la borra.
     }
 }

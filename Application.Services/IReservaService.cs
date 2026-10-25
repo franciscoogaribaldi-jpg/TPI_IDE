@@ -4,7 +4,8 @@ namespace Application.Services
 {
     public interface IReservaService
     {
-        Task<ReservaDTO> AddAsync(ReservaDTO dto);
+        // idUsuarioQueRegistra sale del token (lo pasa el endpoint), nunca del cuerpo del pedido.
+        Task<ReservaDTO> AddAsync(ReservaDTO dto, int? idUsuarioQueRegistra = null);
         Task<bool> DeleteAsync(int id);
         Task<ReservaDTO?> GetAsync(int id);
         Task<IEnumerable<ReservaDTO>> GetAllAsync();

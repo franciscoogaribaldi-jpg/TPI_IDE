@@ -21,8 +21,6 @@ namespace WindowsForms
             txtNombre = new TextBox();
             lblPrecioPorHora = new Label();
             numPrecioPorHora = new NumericUpDown();
-            lblEstado = new Label();
-            cmbEstado = new ComboBox();
             chkTechada = new CheckBox();
             grpTipo = new GroupBox();
             radPadel = new RadioButton();
@@ -77,27 +75,10 @@ namespace WindowsForms
             numPrecioPorHora.Size = new Size(150, 23);
             numPrecioPorHora.TabIndex = 3;
             //
-            // lblEstado
-            //
-            lblEstado.AutoSize = true;
-            lblEstado.Location = new Point(20, 103);
-            lblEstado.Name = "lblEstado";
-            lblEstado.Size = new Size(45, 15);
-            lblEstado.TabIndex = 4;
-            lblEstado.Text = "Estado:";
-            //
-            // cmbEstado
-            //
-            cmbEstado.DropDownStyle = ComboBoxStyle.DropDownList;
-            cmbEstado.Location = new Point(150, 100);
-            cmbEstado.Name = "cmbEstado";
-            cmbEstado.Size = new Size(210, 23);
-            cmbEstado.TabIndex = 5;
-            //
             // chkTechada
             //
             chkTechada.AutoSize = true;
-            chkTechada.Location = new Point(150, 137);
+            chkTechada.Location = new Point(150, 97);
             chkTechada.Name = "chkTechada";
             chkTechada.Size = new Size(108, 19);
             chkTechada.TabIndex = 6;
@@ -108,7 +89,7 @@ namespace WindowsForms
             //
             grpTipo.Controls.Add(radPadel);
             grpTipo.Controls.Add(radFutbol);
-            grpTipo.Location = new Point(20, 170);
+            grpTipo.Location = new Point(20, 130);
             grpTipo.Name = "grpTipo";
             grpTipo.Size = new Size(340, 60);
             grpTipo.TabIndex = 7;
@@ -145,7 +126,7 @@ namespace WindowsForms
             pnlFutbol.Controls.Add(cmbTipoFutbol);
             pnlFutbol.Controls.Add(lblSuperficie);
             pnlFutbol.Controls.Add(cmbSuperficie);
-            pnlFutbol.Location = new Point(20, 240);
+            pnlFutbol.Location = new Point(20, 200);
             pnlFutbol.Name = "pnlFutbol";
             pnlFutbol.Size = new Size(345, 75);
             pnlFutbol.TabIndex = 8;
@@ -188,7 +169,7 @@ namespace WindowsForms
             //
             pnlPadel.Controls.Add(lblTipoPared);
             pnlPadel.Controls.Add(cmbTipoPared);
-            pnlPadel.Location = new Point(20, 240);
+            pnlPadel.Location = new Point(20, 200);
             pnlPadel.Name = "pnlPadel";
             pnlPadel.Size = new Size(345, 40);
             pnlPadel.TabIndex = 9;
@@ -212,7 +193,7 @@ namespace WindowsForms
             //
             // btnGuardar
             //
-            btnGuardar.Location = new Point(190, 335);
+            btnGuardar.Location = new Point(190, 295);
             btnGuardar.Name = "btnGuardar";
             btnGuardar.Size = new Size(85, 30);
             btnGuardar.TabIndex = 10;
@@ -222,7 +203,7 @@ namespace WindowsForms
             //
             // btnCancelar
             //
-            btnCancelar.Location = new Point(280, 335);
+            btnCancelar.Location = new Point(280, 295);
             btnCancelar.Name = "btnCancelar";
             btnCancelar.Size = new Size(85, 30);
             btnCancelar.TabIndex = 11;
@@ -234,13 +215,11 @@ namespace WindowsForms
             //
             AcceptButton = btnGuardar;
             CancelButton = btnCancelar;
-            ClientSize = new Size(449, 390);
+            ClientSize = new Size(449, 350);
             Controls.Add(lblNombre);
             Controls.Add(txtNombre);
             Controls.Add(lblPrecioPorHora);
             Controls.Add(numPrecioPorHora);
-            Controls.Add(lblEstado);
-            Controls.Add(cmbEstado);
             Controls.Add(chkTechada);
             Controls.Add(grpTipo);
             Controls.Add(pnlFutbol);
@@ -271,8 +250,6 @@ namespace WindowsForms
         private System.Windows.Forms.TextBox txtNombre;
         private System.Windows.Forms.Label lblPrecioPorHora;
         private System.Windows.Forms.NumericUpDown numPrecioPorHora;
-        private System.Windows.Forms.Label lblEstado;
-        private System.Windows.Forms.ComboBox cmbEstado;
         private System.Windows.Forms.CheckBox chkTechada;
         private System.Windows.Forms.GroupBox grpTipo;
         private System.Windows.Forms.RadioButton radPadel;

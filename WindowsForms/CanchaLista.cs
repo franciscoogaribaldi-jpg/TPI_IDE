@@ -109,20 +109,12 @@ namespace WindowsForms
             };
             colPrecioHora.DefaultCellStyle.Format = "C2";
             dgvCanchas.Columns.Add(colPrecioHora);
-
-            dgvCanchas.Columns.Add(new DataGridViewTextBoxColumn { 
-                Name = "Estado", HeaderText = "Estado", DataPropertyName = "Estado" 
-            });
+            // Sin columna Estado: la lista solo trae canchas activas (las eliminadas son baja lógica).
         }
 
         private void dgvCanchas_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
-            if (dgvCanchas.Columns[e.ColumnIndex].Name == "Estado" && e.Value is int estado)
-            {
-                e.Value = estado == 1 ? "Activo" : "Inactivo";
-                e.FormattingApplied = true;
-            }
-            else if (dgvCanchas.Columns[e.ColumnIndex].Name == "EsTechada" && e.Value is bool techada)
+            if (dgvCanchas.Columns[e.ColumnIndex].Name == "EsTechada" && e.Value is bool techada)
             {
                 e.Value = techada ? "Sí" : "No";
                 e.FormattingApplied = true;

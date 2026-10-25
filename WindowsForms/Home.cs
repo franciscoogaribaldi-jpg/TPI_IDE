@@ -15,6 +15,8 @@ namespace WindowsForms
             menuCanchas.Visible = esAdministrador;
             menuTurnos.Visible = esAdministrador;
             menuReservas.Visible = esAdministrador;
+            menuAdministradores.Visible = esAdministrador;
+            menuUsuarios.Visible = esAdministrador;
 
             if (!esAdministrador)
             {
@@ -73,6 +75,31 @@ namespace WindowsForms
             }
 
             var form = new ReservaLista { MdiParent = this };
+            form.Show();
+        }
+
+        private void menuAdministradores_Click(object sender, EventArgs e)
+        {
+            AbrirLista<AdministradorLista>();
+        }
+
+        private void menuUsuarios_Click(object sender, EventArgs e)
+        {
+            AbrirLista<UsuarioLista>();
+        }
+
+        // Igual que los demás menús: si la lista ya está abierta la trae al frente, si no la abre
+        // como ventana hija (MDI).
+        private void AbrirLista<T>() where T : Form, new()
+        {
+            var existente = MdiChildren.OfType<T>().FirstOrDefault();
+            if (existente != null)
+            {
+                existente.Activate();
+                return;
+            }
+
+            var form = new T { MdiParent = this };
             form.Show();
         }
 

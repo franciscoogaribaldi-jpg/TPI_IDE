@@ -25,8 +25,6 @@ namespace WindowsForms
             this.txtTelefono = new System.Windows.Forms.TextBox();
             this.lblFechaNacimiento = new System.Windows.Forms.Label();
             this.dtpFechaNacimiento = new System.Windows.Forms.DateTimePicker();
-            this.lblEstado = new System.Windows.Forms.Label();
-            this.cmbEstado = new System.Windows.Forms.ComboBox();
             this.lblUsuario = new System.Windows.Forms.Label();
             this.txtUsuario = new System.Windows.Forms.TextBox();
             this.lblEmail = new System.Windows.Forms.Label();
@@ -119,27 +117,10 @@ namespace WindowsForms
             this.dtpFechaNacimiento.Format = System.Windows.Forms.DateTimePickerFormat.Short;
             this.dtpFechaNacimiento.Value = new System.DateTime(2000, 1, 1);
             //
-            // lblEstado
-            //
-            this.lblEstado.AutoSize = true;
-            this.lblEstado.Location = new System.Drawing.Point(20, 223);
-            this.lblEstado.Name = "lblEstado";
-            this.lblEstado.Size = new System.Drawing.Size(100, 15);
-            this.lblEstado.TabIndex = 10;
-            this.lblEstado.Text = "Estado:";
-            //
-            // cmbEstado
-            //
-            this.cmbEstado.Location = new System.Drawing.Point(150, 220);
-            this.cmbEstado.Name = "cmbEstado";
-            this.cmbEstado.Size = new System.Drawing.Size(220, 23);
-            this.cmbEstado.TabIndex = 11;
-            this.cmbEstado.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            //
             // lblUsuario
             //
             this.lblUsuario.AutoSize = true;
-            this.lblUsuario.Location = new System.Drawing.Point(20, 263);
+            this.lblUsuario.Location = new System.Drawing.Point(20, 223);
             this.lblUsuario.Name = "lblUsuario";
             this.lblUsuario.Size = new System.Drawing.Size(100, 15);
             this.lblUsuario.TabIndex = 12;
@@ -147,7 +128,7 @@ namespace WindowsForms
             //
             // txtUsuario
             //
-            this.txtUsuario.Location = new System.Drawing.Point(150, 260);
+            this.txtUsuario.Location = new System.Drawing.Point(150, 220);
             this.txtUsuario.Name = "txtUsuario";
             this.txtUsuario.Size = new System.Drawing.Size(220, 23);
             this.txtUsuario.TabIndex = 13;
@@ -155,7 +136,7 @@ namespace WindowsForms
             // lblEmail
             //
             this.lblEmail.AutoSize = true;
-            this.lblEmail.Location = new System.Drawing.Point(20, 303);
+            this.lblEmail.Location = new System.Drawing.Point(20, 263);
             this.lblEmail.Name = "lblEmail";
             this.lblEmail.Size = new System.Drawing.Size(100, 15);
             this.lblEmail.TabIndex = 14;
@@ -163,7 +144,7 @@ namespace WindowsForms
             //
             // txtEmail
             //
-            this.txtEmail.Location = new System.Drawing.Point(150, 300);
+            this.txtEmail.Location = new System.Drawing.Point(150, 260);
             this.txtEmail.Name = "txtEmail";
             this.txtEmail.Size = new System.Drawing.Size(220, 23);
             this.txtEmail.TabIndex = 15;
@@ -171,7 +152,7 @@ namespace WindowsForms
             // lblContrasena
             //
             this.lblContrasena.AutoSize = true;
-            this.lblContrasena.Location = new System.Drawing.Point(20, 343);
+            this.lblContrasena.Location = new System.Drawing.Point(20, 303);
             this.lblContrasena.Name = "lblContrasena";
             this.lblContrasena.Size = new System.Drawing.Size(100, 15);
             this.lblContrasena.TabIndex = 16;
@@ -179,7 +160,7 @@ namespace WindowsForms
             //
             // txtContrasena
             //
-            this.txtContrasena.Location = new System.Drawing.Point(150, 340);
+            this.txtContrasena.Location = new System.Drawing.Point(150, 300);
             this.txtContrasena.Name = "txtContrasena";
             this.txtContrasena.Size = new System.Drawing.Size(220, 23);
             this.txtContrasena.TabIndex = 17;
@@ -187,7 +168,7 @@ namespace WindowsForms
             //
             // btnGuardar
             //
-            this.btnGuardar.Location = new System.Drawing.Point(190, 390);
+            this.btnGuardar.Location = new System.Drawing.Point(190, 350);
             this.btnGuardar.Name = "btnGuardar";
             this.btnGuardar.Size = new System.Drawing.Size(85, 30);
             this.btnGuardar.TabIndex = 18;
@@ -197,7 +178,7 @@ namespace WindowsForms
             //
             // btnCancelar
             //
-            this.btnCancelar.Location = new System.Drawing.Point(285, 390);
+            this.btnCancelar.Location = new System.Drawing.Point(285, 350);
             this.btnCancelar.Name = "btnCancelar";
             this.btnCancelar.Size = new System.Drawing.Size(85, 30);
             this.btnCancelar.TabIndex = 19;
@@ -209,7 +190,7 @@ namespace WindowsForms
             //
             this.AcceptButton = this.btnGuardar;
             this.CancelButton = this.btnCancelar;
-            this.ClientSize = new System.Drawing.Size(390, 445);
+            this.ClientSize = new System.Drawing.Size(390, 405);
             this.Controls.Add(this.lblNombre);
             this.Controls.Add(this.txtNombre);
             this.Controls.Add(this.lblApellido);
@@ -220,8 +201,6 @@ namespace WindowsForms
             this.Controls.Add(this.txtTelefono);
             this.Controls.Add(this.lblFechaNacimiento);
             this.Controls.Add(this.dtpFechaNacimiento);
-            this.Controls.Add(this.lblEstado);
-            this.Controls.Add(this.cmbEstado);
             this.Controls.Add(this.lblUsuario);
             this.Controls.Add(this.txtUsuario);
             this.Controls.Add(this.lblEmail);
@@ -251,8 +230,6 @@ namespace WindowsForms
         private System.Windows.Forms.TextBox txtTelefono;
         private System.Windows.Forms.Label lblFechaNacimiento;
         private System.Windows.Forms.DateTimePicker dtpFechaNacimiento;
-        private System.Windows.Forms.Label lblEstado;
-        private System.Windows.Forms.ComboBox cmbEstado;
         private System.Windows.Forms.Label lblUsuario;
         private System.Windows.Forms.TextBox txtUsuario;
         private System.Windows.Forms.Label lblEmail;

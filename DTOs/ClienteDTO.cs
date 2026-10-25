@@ -22,5 +22,9 @@ namespace DTOs
         // Solo de ENTRADA, y solo en el alta. El servidor nunca la devuelve.
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string? Contrasena { get; set; }
+
+        // Solo de SALIDA, en el alta: true si ese DNI era de un cliente eliminado y se lo
+        // recuperó (con sus reservas anteriores) en lugar de crear uno nuevo.
+        public bool Recuperado { get; set; }
     }
 }

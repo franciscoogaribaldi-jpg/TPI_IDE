@@ -82,13 +82,21 @@ namespace WebAPI
 
             app.MapDelete("/usuarios/{id}", async (int id, IUsuarioService usuarioService) =>
             {
-                var deleted = await usuarioService.DeleteAsync(id);
-                if (!deleted) return Results.NotFound();
-                return Results.NoContent();
+                try
+                {
+                    var deleted = await usuarioService.DeleteAsync(id);
+                    if (!deleted) return Results.NotFound();
+                    return Results.NoContent();
+                }
+                catch (ReglaDeNegocioException ex)
+                {
+                    return Results.BadRequest(new { error = ex.Message });
+                }
             })
             .WithName("DeleteUsuario")
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status404NotFound)
+            .Produces(StatusCodes.Status400BadRequest)
             .WithOpenApi()
             .RequireAuthorization(policy => policy.RequireRole("Administrador"));
         }

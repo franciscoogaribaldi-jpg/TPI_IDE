@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
+using System.Security.Claims;
 
 namespace WebAPI
 {
@@ -34,11 +35,15 @@ namespace WebAPI
             .WithOpenApi()
             .RequireAuthorization();
 
-            app.MapPost("/reservas", async (ReservaDTO dto, IReservaService reservaService) =>
+            app.MapPost("/reservas", async (ReservaDTO dto, IReservaService reservaService, ClaimsPrincipal usuarioLogueado) =>
             {
                 try
                 {
-                    ReservaDTO creada = await reservaService.AddAsync(dto);
+                    // Quién registra la reserva sale del token (claim NameIdentifier = IdUsuario),
+                    // no del cuerpo del pedido: así nadie puede cargarla a nombre de otro.
+                    int? idUsuario = int.TryParse(usuarioLogueado.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : null;
+
+                    ReservaDTO creada = await reservaService.AddAsync(dto, idUsuario);
                     return Results.Created($"/reservas/{creada.IdReserva}", creada);
                 }
                 catch (ReglaDeNegocioException ex)
@@ -80,6 +85,7 @@ namespace WebAPI
             .WithOpenApi()
             .RequireAuthorization(policy => policy.RequireRole("Administrador"));
 
+            // Baja lógica: la reserva pasa a Cancelada, no se borra.
             app.MapDelete("/reservas/{id}", async (int id, IReservaService reservaService) =>
             {
                 var deleted = await reservaService.DeleteAsync(id);

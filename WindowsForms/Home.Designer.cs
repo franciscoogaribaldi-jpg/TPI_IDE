@@ -22,6 +22,8 @@ namespace WindowsForms
             this.menuCanchas = new System.Windows.Forms.ToolStripMenuItem();
             this.menuTurnos = new System.Windows.Forms.ToolStripMenuItem();
             this.menuReservas = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuAdministradores = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuUsuarios = new System.Windows.Forms.ToolStripMenuItem();
             this.menuSesion = new System.Windows.Forms.ToolStripMenuItem();
             this.menuCerrarSesion = new System.Windows.Forms.ToolStripMenuItem();
             this.menuSalir = new System.Windows.Forms.ToolStripMenuItem();
@@ -36,6 +38,8 @@ namespace WindowsForms
             this.menuCanchas,
             this.menuTurnos,
             this.menuReservas,
+            this.menuAdministradores,
+            this.menuUsuarios,
             this.menuSesion,
             this.lblBienvenida});
             this.menuPrincipal.Location = new System.Drawing.Point(0, 0);
@@ -70,6 +74,20 @@ namespace WindowsForms
             this.menuReservas.Size = new System.Drawing.Size(75, 20);
             this.menuReservas.Text = "Reservas";
             this.menuReservas.Click += new System.EventHandler(this.menuReservas_Click);
+            //
+            // menuAdministradores
+            //
+            this.menuAdministradores.Name = "menuAdministradores";
+            this.menuAdministradores.Size = new System.Drawing.Size(110, 20);
+            this.menuAdministradores.Text = "Administradores";
+            this.menuAdministradores.Click += new System.EventHandler(this.menuAdministradores_Click);
+            //
+            // menuUsuarios
+            //
+            this.menuUsuarios.Name = "menuUsuarios";
+            this.menuUsuarios.Size = new System.Drawing.Size(64, 20);
+            this.menuUsuarios.Text = "Usuarios";
+            this.menuUsuarios.Click += new System.EventHandler(this.menuUsuarios_Click);
             //
             // menuSesion
             //
@@ -123,6 +141,8 @@ namespace WindowsForms
         private System.Windows.Forms.ToolStripMenuItem menuCanchas;
         private System.Windows.Forms.ToolStripMenuItem menuTurnos;
         private System.Windows.Forms.ToolStripMenuItem menuReservas;
+        private System.Windows.Forms.ToolStripMenuItem menuAdministradores;
+        private System.Windows.Forms.ToolStripMenuItem menuUsuarios;
         private System.Windows.Forms.ToolStripMenuItem menuSesion;
         private System.Windows.Forms.ToolStripMenuItem menuCerrarSesion;
         private System.Windows.Forms.ToolStripMenuItem menuSalir;

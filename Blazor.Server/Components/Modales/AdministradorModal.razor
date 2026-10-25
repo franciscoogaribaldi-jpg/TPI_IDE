@@ -1,0 +1,197 @@
+@inject SesionUsuario Sesion
+
+@if (visible)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">@(esAlta ? "Nuevo administrador" : "Editar administrador")</h5>
+                    <button type="button" class="btn-close" @onclick="Cerrar"></button>
+                </div>
+
+                <EditForm Model="administrador" OnSubmit="GuardarAsync">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Nombre *</label>
+                            <InputText class="form-control" @bind-Value="administrador.Nombre" />
+                            <div class="text-danger small">@Error("Nombre")</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Apellido *</label>
+                            <InputText class="form-control" @bind-Value="administrador.Apellido" />
+                            <div class="text-danger small">@Error("Apellido")</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Teléfono</label>
+                            <InputText class="form-control" @bind-Value="administrador.Telefono" />
+                        </div>
+
+                        <hr />
+                        @if (esAlta)
+                        {
+                            <p class="text-muted small mb-2">Usuario de acceso del administrador (rol Administrador)</p>
+
+                            <div class="mb-3">
+                                <label class="form-label">Usuario *</label>
+                                <InputText class="form-control" @bind-Value="administrador.NombreUsuario" />
+                                <div class="text-danger small">@Error("NombreUsuario")</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Email *</label>
+                                <InputText class="form-control" @bind-Value="administrador.Email" />
+                                <div class="text-danger small">@Error("Email")</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Contraseña inicial *</label>
+                                <InputText type="password" class="form-control" @bind-Value="administrador.Contrasena" />
+                                <div class="text-danger small">@Error("Contrasena")</div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="mb-3">
+                                <label class="form-label">Usuario</label>
+                                <input class="form-control" value="@administrador.NombreUsuario" disabled />
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Email</label>
+                                <input class="form-control" value="@administrador.Email" disabled />
+                            </div>
+                        }
+
+                        @if (!string.IsNullOrEmpty(mensajeError))
+                        {
+                            <div class="alert alert-danger">@mensajeError</div>
+                        }
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" @onclick="Cerrar">Cancelar</button>
+                        <button type="submit" class="btn btn-primary" disabled="@guardando">
+                            @if (guardando)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2"></span>
+                            }
+                            Guardar
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    // Le pasa a la página un aviso especial (administrador recuperado) o null si fue un guardado común.
+    [Parameter] public EventCallback<string?> OnGuardado { get; set; }
+
+    private bool visible;
+    private bool esAlta;
+    private bool guardando;
+    private string mensajeError = string.Empty;
+    private AdministradorDTO administrador = new();
+    private Dictionary<string, string> errores = new();
+
+    public void MostrarAlta()
+    {
+        esAlta = true;
+        administrador = new AdministradorDTO { Estado = 1, NombreUsuario = "", Email = "", Contrasena = "" };
+        Abrir();
+    }
+
+    public void MostrarEdicion(AdministradorDTO original)
+    {
+        esAlta = false;
+        administrador = new AdministradorDTO
+        {
+            IdAdministrador = original.IdAdministrador,
+            IdUsuario = original.IdUsuario,
+            Nombre = original.Nombre,
+            Apellido = original.Apellido,
+            Telefono = original.Telefono,
+            Estado = original.Estado,
+            NombreUsuario = original.NombreUsuario,
+            Email = original.Email
+        };
+        Abrir();
+    }
+
+    private void Abrir()
+    {
+        errores.Clear();
+        mensajeError = string.Empty;
+        visible = true;
+        StateHasChanged();
+    }
+
+    private void Cerrar() => visible = false;
+
+    private string? Error(string campo) => errores.GetValueOrDefault(campo);
+
+    // Mismas reglas que AdministradorDetalle.ValidarCampos() del WinForms.
+    private bool Validar()
+    {
+        errores.Clear();
+        if (string.IsNullOrWhiteSpace(administrador.Nombre)) errores["Nombre"] = "El nombre es obligatorio.";
+        if (string.IsNullOrWhiteSpace(administrador.Apellido)) errores["Apellido"] = "El apellido es obligatorio.";
+
+        if (esAlta)
+        {
+            if (string.IsNullOrWhiteSpace(administrador.NombreUsuario)) errores["NombreUsuario"] = "El usuario es obligatorio.";
+            if (string.IsNullOrWhiteSpace(administrador.Email) || !administrador.Email.Contains('@')) errores["Email"] = "Ingresá un email válido.";
+            if (string.IsNullOrWhiteSpace(administrador.Contrasena)) errores["Contrasena"] = "La contraseña inicial es obligatoria.";
+        }
+
+        return errores.Count == 0;
+    }
+
+    private async Task GuardarAsync()
+    {
+        if (!Validar()) return;
+
+        var dto = new AdministradorDTO
+        {
+            IdAdministrador = administrador.IdAdministrador,
+            IdUsuario = administrador.IdUsuario,
+            Nombre = administrador.Nombre.Trim(),
+            Apellido = administrador.Apellido.Trim(),
+            Telefono = (administrador.Telefono ?? "").Trim(),
+            Estado = administrador.Estado,
+            NombreUsuario = esAlta ? (administrador.NombreUsuario ?? "").Trim() : administrador.NombreUsuario,
+            Email = esAlta ? (administrador.Email ?? "").Trim() : administrador.Email,
+            Contrasena = esAlta ? administrador.Contrasena : null
+        };
+
+        guardando = true;
+        mensajeError = string.Empty;
+        try
+        {
+            string? aviso = null;
+            if (esAlta)
+            {
+                var creado = await AdministradorApiClient.AddAsync(dto, Sesion.Token);
+                // Si el usuario era de un administrador eliminado, el servidor lo recuperó en vez de crear otro.
+                if (creado.Recuperado)
+                    aviso = "Ese usuario era de un administrador eliminado: se lo recuperó con los datos nuevos y las reservas que había registrado siguen a su nombre.";
+            }
+            else await AdministradorApiClient.UpdateAsync(dto, Sesion.Token);
+
+            visible = false;
+            await OnGuardado.InvokeAsync(aviso);
+        }
+        catch (Exception ex)
+        {
+            mensajeError = ex.Message;
+        }
+        finally
+        {
+            guardando = false;
+        }
+    }
+}

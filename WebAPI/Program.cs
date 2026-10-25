@@ -63,6 +63,9 @@ builder.Services.AddScoped<ITurnoService, TurnoService>();
 builder.Services.AddScoped<IReservaRepository, ReservaRepository>();
 builder.Services.AddScoped<IReservaService, ReservaService>();
 
+builder.Services.AddScoped<IAdministradorRepository, AdministradorRepository>();
+builder.Services.AddScoped<IAdministradorService, AdministradorService>();
+
 // =========== Seguridad: autenticación con JWT (Entrega 3) ===========
 var jwtKey = builder.Configuration["Jwt:Key"]!;
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme) // a partir de ahora puede autenticar peticiones. esquema de seguridad bearer
@@ -127,6 +130,9 @@ using (var scope = app.Services.CreateScope())
         }
         context.SaveChanges();
     }
+
+    // Administradores, clientes, canchas y reservas de ejemplo (ver DatosDePrueba.cs).
+    DatosDePrueba.Cargar(context);
 }
 
 if (app.Environment.IsDevelopment())
@@ -149,5 +155,6 @@ app.MapClienteEndpoints();
 app.MapCanchaEndpoints();
 app.MapTurnoEndpoints();
 app.MapReservaEndpoints();
+app.MapAdministradorEndpoints();
 
 app.Run();

@@ -10,6 +10,9 @@ namespace Data
         Task<bool> NombreUsuarioExistsAsync(string nombreUsuario, int? excludeId = null);
         Task<bool> EmailExistsAsync(string email, int? excludeId = null);
         Task AddAsync(Usuario usuario);
+
+        // Guarda un usuario recuperado (ya modificado, el que devolvió GetByNombreUsuarioAsync).
+        Task RecuperarAsync(Usuario usuario);
         Task<bool> UpdateAsync(Usuario usuario);
         Task<bool> DeleteAsync(int id);
     }

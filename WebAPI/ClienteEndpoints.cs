@@ -99,6 +99,7 @@ namespace WebAPI
             .WithOpenApi()
             .RequireAuthorization(policy => policy.RequireRole("Administrador"));
 
+            // Baja lógica: el cliente (y su usuario) quedan Inactivos, no se borran.
             app.MapDelete("/clientes/{id}", async (int id, IClienteService clienteService) =>
             {
                 var deleted = await clienteService.DeleteAsync(id);

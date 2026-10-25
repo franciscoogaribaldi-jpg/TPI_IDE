@@ -80,6 +80,7 @@ namespace WebAPI
             .WithOpenApi()
             .RequireAuthorization(policy => policy.RequireRole("Administrador"));
 
+            // Baja lógica: la cancha queda Inactiva, no se borra.
             app.MapDelete("/canchas/{id}", async (int id, ICanchaService canchaService) =>
             {
                 var deleted = await canchaService.DeleteAsync(id);

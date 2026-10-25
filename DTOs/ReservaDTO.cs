@@ -17,5 +17,8 @@
         public string NombreCliente { get; set; } = string.Empty;
         public string NombreCancha { get; set; } = string.Empty;
         public string HorarioTurno { get; set; } = string.Empty;
+
+        // Solo lectura: administrador que registró la reserva (lo completa el servidor con el token).
+        public string NombreAdministrador { get; set; } = string.Empty;
     }
 }

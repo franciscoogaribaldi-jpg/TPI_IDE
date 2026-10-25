@@ -21,10 +21,15 @@ namespace Data
 
         public async Task<bool> DeleteAsync(int id)
         {
-            var cliente = await _context.Clientes.FindAsync(id); // busca el cliente en la bd
-            if (cliente == null) return false;
+            var cliente = await _context.Clientes
+                .Include(c => c.Usuario)
+                .FirstOrDefaultAsync(c => c.IdCliente == id); // busca el cliente en la bd, con su usuario
+            if (cliente == null || cliente.Estado == Estado.Inactivo) return false;
 
-            _context.Clientes.Remove(cliente);
+            // Baja lógica: el cliente queda en la base como Inactivo (sus reservas conservan el
+            // historial) y su usuario también, así no puede seguir iniciando sesión.
+            cliente.SetEstado(Estado.Inactivo);
+            cliente.Usuario?.SetEstado(Estado.Inactivo);
             await _context.SaveChangesAsync(); // guarda el estado de la bd con el cliente borrado
             return true;
         }
@@ -38,8 +43,10 @@ namespace Data
 
         public async Task<IEnumerable<Cliente>> GetAllAsync()
         {
+            // Solo los activos: los eliminados (baja lógica) siguen en la base pero no se muestran.
             return await _context.Clientes
                 .Include(c => c.Usuario)
+                .Where(c => c.Estado == Estado.Activo)
                 .ToListAsync();
         }
 
@@ -53,7 +60,7 @@ namespace Data
             existing.SetDni(cliente.Dni);
             existing.SetTelefono(cliente.Telefono);
             existing.SetFechaNacimiento(cliente.FechaNacimiento);
-            existing.SetEstado(cliente.Estado);
+            // El Estado no se cambia al editar: solo lo cambia la baja (DeleteAsync).
 
             await _context.SaveChangesAsync();
             return true;
@@ -68,6 +75,25 @@ namespace Data
                 query = query.Where(c => c.IdCliente != excludeId.Value); // lo que hace aqui es aniadir un filtro extra para cuando excludeId tiene valor
             }
             return await query.AnyAsync(); // devuelve un boleano que dice si existe algun cliente que cumple con la query(true) sino false
+        }
+
+        public async Task<bool> ExisteConUsuarioAsync(int idUsuario)
+        {
+            return await _context.Clientes.AnyAsync(c => c.IdUsuario == idUsuario);
+        }
+
+        public async Task<Cliente?> GetByDniAsync(string dni)
+        {
+            return await _context.Clientes
+                .Include(c => c.Usuario)
+                .FirstOrDefaultAsync(c => c.Dni.ToLower() == dni.Trim().ToLower());
+        }
+
+        public async Task RecuperarAsync(Cliente cliente)
+        {
+            // El cliente viene de GetByDniAsync, así que EF ya lo está siguiendo (a él y a su
+            // usuario): alcanza con guardar los cambios, los dos en un único SaveChangesAsync.
+            await _context.SaveChangesAsync();
         }
 
         /* 
@@ -90,9 +116,10 @@ namespace Data
                u.NombreUsuario, u.Contrasena, u.Email, u.Rol, u.Estado AS EstadoUsuario
         FROM Clientes c
         INNER JOIN Usuarios u ON u.IdUsuario = c.IdUsuario
-        WHERE c.Nombre LIKE @Busqueda
-           OR c.Apellido LIKE @Busqueda
-           OR c.Dni LIKE @Busqueda
+        WHERE c.Estado = 1
+          AND (c.Nombre LIKE @Busqueda
+               OR c.Apellido LIKE @Busqueda
+               OR c.Dni LIKE @Busqueda)
         ORDER BY c.Apellido, c.Nombre";
 
             var clientes = new List<Cliente>();

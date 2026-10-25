@@ -78,12 +78,7 @@ namespace WindowsForms
         {
             var columna = dgvTurnos.Columns[e.ColumnIndex].Name;
 
-            if (columna == "colEstado" && e.Value is int estado)
-            {
-                e.Value = estado == 1 ? "Activo" : "Inactivo";
-                e.FormattingApplied = true;
-            }
-            else if ((columna == "colHoraInicio" || columna == "colHoraFin") && e.Value is string hora)
+            if ((columna == "colHoraInicio" || columna == "colHoraFin") && e.Value is string hora)
             {
                 e.Value = RecortarHora(hora);
                 e.FormattingApplied = true;

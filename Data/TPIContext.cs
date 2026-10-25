@@ -13,6 +13,7 @@ namespace Data
     {
         public DbSet<Usuario> Usuarios { get; set; } = null!;
         public DbSet<Cliente> Clientes { get; set; } = null!;
+        public DbSet<Administrador> Administradores { get; set; } = null!;
         public DbSet<Cancha> Canchas { get; set; } = null!;
         public DbSet<Turno> Turnos { get; set; } = null!;
         public DbSet<Reserva> Reservas { get; set; } = null!;
@@ -67,6 +68,28 @@ namespace Data
                       .WithMany() // no lo tenemos en cuenta porque No me importa registrar la relación a la inversa adentro de la clase Usuario, solo me importa desde el lado del Cliente
                       .HasForeignKey(c => c.IdUsuario)
                       .OnDelete(DeleteBehavior.Restrict);   // para que cuando quieras borrar el usuario primero tengas que borrar el cliente asignado
+            });
+
+            // ---------- Administrador ----------
+            // Igual que Cliente: la ficha de la persona, con su propio Usuario (rol Administrador).
+            modelBuilder.Entity<Administrador>(entity =>
+            {
+                entity.ToTable("Administradores");
+                entity.HasKey(a => a.IdAdministrador);
+                entity.Property(a => a.IdAdministrador).ValueGeneratedOnAdd();
+
+                entity.Property(a => a.Nombre).IsRequired().HasMaxLength(100);
+                entity.Property(a => a.Apellido).IsRequired().HasMaxLength(100);
+                entity.Property(a => a.Telefono).HasMaxLength(30);
+                entity.Property(a => a.Estado).IsRequired().HasConversion<int>();
+
+                // Un usuario tiene como mucho una ficha de administrador.
+                entity.HasIndex(a => a.IdUsuario).IsUnique();
+
+                entity.HasOne(a => a.Usuario)
+                      .WithMany()
+                      .HasForeignKey(a => a.IdUsuario)
+                      .OnDelete(DeleteBehavior.Restrict);
             });
 
             // ---------- Cancha ----------
@@ -135,6 +158,7 @@ namespace Data
                 entity.HasOne(r => r.Cliente).WithMany().HasForeignKey(r => r.IdCliente).OnDelete(DeleteBehavior.Restrict);
                 entity.HasOne(r => r.Cancha).WithMany().HasForeignKey(r => r.IdCancha).OnDelete(DeleteBehavior.Restrict);
                 entity.HasOne(r => r.Turno).WithMany().HasForeignKey(r => r.IdTurno).OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(r => r.Administrador).WithMany().HasForeignKey(r => r.IdAdministrador).IsRequired(false).OnDelete(DeleteBehavior.Restrict);
             });
 
             // ---------- DetalleReserva ----------

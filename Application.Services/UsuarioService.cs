@@ -8,10 +8,14 @@ namespace Application.Services
     public class UsuarioService : IUsuarioService
     {
         private readonly IUsuarioRepository _repository;
+        private readonly IClienteRepository _clienteRepository;
+        private readonly IAdministradorRepository _administradorRepository;
 
-        public UsuarioService(IUsuarioRepository repository)
+        public UsuarioService(IUsuarioRepository repository, IClienteRepository clienteRepository, IAdministradorRepository administradorRepository)
         {
             _repository = repository;
+            _clienteRepository = clienteRepository;
+            _administradorRepository = administradorRepository;
         }
 
         public async Task<UsuarioDTO> AddAsync(UsuarioDTO dto)
@@ -19,10 +23,23 @@ namespace Application.Services
             if (!Enum.IsDefined(typeof(RolUsuario), dto.Rol))
                 throw new ArgumentException("El rol indicado no es válido.", nameof(dto.Rol));
 
-            // REGLAS DE NEGOCIO: usuario y email únicos (pedido explícito de la propuesta)
-            if (await _repository.NombreUsuarioExistsAsync(dto.NombreUsuario))
-                throw new ReglaDeNegocioException("Ya existe un usuario con ese nombre de usuario.");
+            // Si ese nombre de usuario es de un usuario eliminado (baja lógica), no se crea otro:
+            // se lo recupera.
+            var existente = await _repository.GetByNombreUsuarioAsync(dto.NombreUsuario.Trim());
+            if (existente != null)
+            {
+                if (existente.Estado == Estado.Activo)
+                    throw new ReglaDeNegocioException("Ya existe un usuario con ese nombre de usuario.");
 
+                // El usuario de un cliente o administrador se recupera desde su pantalla, junto con la persona.
+                if (await TieneFichaAsync(existente.IdUsuario))
+                    throw new ReglaDeNegocioException("Ese usuario es de un cliente o administrador eliminado: cargalo de nuevo desde la pantalla de Clientes o Administradores y se recupera solo.");
+
+                return await RecuperarAsync(existente, dto);
+            }
+
+            // REGLAS DE NEGOCIO: usuario y email únicos (pedido explícito de la propuesta)
+            // (los eliminados siguen guardados con baja lógica, así que también cuentan)
             if (await _repository.EmailExistsAsync(dto.Email))
                 throw new ReglaDeNegocioException("Ya existe un usuario con ese email.");
 
@@ -42,15 +59,49 @@ namespace Application.Services
             return dto;
         }
 
+        // Recupera un usuario eliminado por error: vuelve a Activo con el email, el rol y la
+        // contraseña nuevos del formulario.
+        private async Task<UsuarioDTO> RecuperarAsync(Usuario usuario, UsuarioDTO dto)
+        {
+            // El email puede ser el mismo que tenía; solo se rechaza si es de OTRO usuario.
+            if (await _repository.EmailExistsAsync(dto.Email, usuario.IdUsuario))
+                throw new ReglaDeNegocioException("Ya existe un usuario con ese email.");
+
+            usuario.SetEmail(dto.Email.Trim());
+            usuario.SetRol((RolUsuario)dto.Rol);
+            usuario.SetContrasena(PasswordHasher.Hash(dto.Contrasena));
+            usuario.SetEstado(Estado.Activo);
+
+            await _repository.RecuperarAsync(usuario);
+
+            var resultado = MapToDto(usuario);
+            resultado.Recuperado = true;
+            return resultado;
+        }
+
+        // Baja lógica (ver UsuarioRepository.DeleteAsync): no se borra, se marca Inactivo y ya
+        // no puede iniciar sesión.
         public async Task<bool> DeleteAsync(int id)
         {
+            // El usuario de un cliente o administrador se elimina desde esa pantalla, que da de
+            // baja a la persona y a su usuario juntos. Si no, quedaría una ficha activa sin acceso.
+            if (await TieneFichaAsync(id))
+                throw new ReglaDeNegocioException("El usuario pertenece a un cliente o administrador: eliminalo desde la pantalla de Clientes o Administradores.");
+
             return await _repository.DeleteAsync(id);
+        }
+
+        private async Task<bool> TieneFichaAsync(int idUsuario)
+        {
+            return await _clienteRepository.ExisteConUsuarioAsync(idUsuario)
+                || await _administradorRepository.ExisteConUsuarioAsync(idUsuario);
         }
 
         public async Task<UsuarioDTO?> GetAsync(int id)
         {
+            // Un usuario eliminado (Inactivo) ya no existe para el sistema.
             var usuario = await _repository.GetAsync(id);
-            return usuario == null ? null : MapToDto(usuario);
+            return usuario == null || usuario.Estado == Estado.Inactivo ? null : MapToDto(usuario);
         }
 
         public async Task<IEnumerable<UsuarioDTO>> GetAllAsync()
@@ -64,11 +115,8 @@ namespace Application.Services
             if (!Enum.IsDefined(typeof(RolUsuario), dto.Rol))
                 throw new ArgumentException("El rol indicado no es válido.", nameof(dto.Rol));
 
-            if (!Enum.IsDefined(typeof(Estado), dto.Estado))
-                throw new ArgumentException("El estado indicado no es válido.", nameof(dto.Estado));
-
             var existente = await _repository.GetAsync(dto.IdUsuario);
-            if (existente == null) return false;
+            if (existente == null || existente.Estado == Estado.Inactivo) return false;
 
             if (await _repository.NombreUsuarioExistsAsync(dto.NombreUsuario, dto.IdUsuario))
                 throw new ReglaDeNegocioException("Ese nombre de usuario ya está en uso por otro usuario.");
@@ -76,13 +124,18 @@ namespace Application.Services
             if (await _repository.EmailExistsAsync(dto.Email, dto.IdUsuario))
                 throw new ReglaDeNegocioException("Ese email ya está en uso por otro usuario.");
 
+            // Un cliente no puede pasar a ser administrador (ni al revés) cambiando solo el rol:
+            // quedaría con la ficha equivocada.
+            if (dto.Rol != (int)existente.Rol && await TieneFichaAsync(dto.IdUsuario))
+                throw new ReglaDeNegocioException("No se puede cambiar el rol de un usuario que tiene ficha de cliente o administrador.");
+
             var usuarioModificado = new Usuario(
                 idUsuario: dto.IdUsuario,
                 nombreUsuario: dto.NombreUsuario,
                 contrasena: existente.Contrasena, // este método no cambia la contraseña
                 email: dto.Email,
                 rol: (RolUsuario)dto.Rol,
-                estado: (Estado)dto.Estado);
+                estado: existente.Estado); // el Estado no se edita: solo lo cambia la baja
 
             return await _repository.UpdateAsync(usuarioModificado);
         }

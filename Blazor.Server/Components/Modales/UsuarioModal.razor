@@ -1,0 +1,160 @@
+@inject SesionUsuario Sesion
+
+@if (visible)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">@(esAlta ? "Nuevo usuario" : "Editar usuario")</h5>
+                    <button type="button" class="btn-close" @onclick="Cerrar"></button>
+                </div>
+
+                <EditForm Model="usuario" OnSubmit="GuardarAsync">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Usuario *</label>
+                            <InputText class="form-control" @bind-Value="usuario.NombreUsuario" />
+                            <div class="text-danger small">@Error("NombreUsuario")</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Email *</label>
+                            <InputText class="form-control" @bind-Value="usuario.Email" />
+                            <div class="text-danger small">@Error("Email")</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Rol</label>
+                            <InputSelect class="form-select" @bind-Value="usuario.Rol">
+                                <option value="1">Administrador</option>
+                                <option value="2">Cliente</option>
+                            </InputSelect>
+                        </div>
+
+                        @if (esAlta)
+                        {
+                            <div class="mb-3">
+                                <label class="form-label">Contraseña *</label>
+                                <InputText type="password" class="form-control" @bind-Value="usuario.Contrasena" />
+                                <div class="text-danger small">@Error("Contrasena")</div>
+                            </div>
+                        }
+
+                        @if (!string.IsNullOrEmpty(mensajeError))
+                        {
+                            <div class="alert alert-danger">@mensajeError</div>
+                        }
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" @onclick="Cerrar">Cancelar</button>
+                        <button type="submit" class="btn btn-primary" disabled="@guardando">
+                            @if (guardando)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2"></span>
+                            }
+                            Guardar
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    // Le pasa a la página un aviso especial (usuario recuperado) o null si fue un guardado común.
+    [Parameter] public EventCallback<string?> OnGuardado { get; set; }
+
+    private bool visible;
+    private bool esAlta;
+    private bool guardando;
+    private string mensajeError = string.Empty;
+    private UsuarioDTO usuario = new();
+    private Dictionary<string, string> errores = new();
+
+    public void MostrarAlta()
+    {
+        esAlta = true;
+        usuario = new UsuarioDTO { Rol = 2, Estado = 1 };
+        Abrir();
+    }
+
+    public void MostrarEdicion(UsuarioDTO original)
+    {
+        esAlta = false;
+        usuario = new UsuarioDTO
+        {
+            IdUsuario = original.IdUsuario,
+            NombreUsuario = original.NombreUsuario,
+            Email = original.Email,
+            Rol = original.Rol,
+            Estado = original.Estado
+        };
+        Abrir();
+    }
+
+    private void Abrir()
+    {
+        errores.Clear();
+        mensajeError = string.Empty;
+        visible = true;
+        StateHasChanged();
+    }
+
+    private void Cerrar() => visible = false;
+
+    private string? Error(string campo) => errores.GetValueOrDefault(campo);
+
+    // Mismas reglas que UsuarioDetalle.ValidarCampos() del WinForms.
+    private bool Validar()
+    {
+        errores.Clear();
+        if (string.IsNullOrWhiteSpace(usuario.NombreUsuario)) errores["NombreUsuario"] = "El usuario es obligatorio.";
+        if (string.IsNullOrWhiteSpace(usuario.Email) || !usuario.Email.Contains('@')) errores["Email"] = "Ingresá un email válido.";
+        if (esAlta && string.IsNullOrWhiteSpace(usuario.Contrasena)) errores["Contrasena"] = "La contraseña es obligatoria.";
+        return errores.Count == 0;
+    }
+
+    private async Task GuardarAsync()
+    {
+        if (!Validar()) return;
+
+        var dto = new UsuarioDTO
+        {
+            IdUsuario = usuario.IdUsuario,
+            NombreUsuario = usuario.NombreUsuario.Trim(),
+            Email = usuario.Email.Trim(),
+            Rol = usuario.Rol,
+            Estado = usuario.Estado,
+            Contrasena = esAlta ? usuario.Contrasena : string.Empty
+        };
+
+        guardando = true;
+        mensajeError = string.Empty;
+        try
+        {
+            string? aviso = null;
+            if (esAlta)
+            {
+                var creado = await UsuarioApiClient.AddAsync(dto, Sesion.Token);
+                // Si el nombre de usuario era de un usuario eliminado, el servidor lo recuperó en vez de crear otro.
+                if (creado.Recuperado)
+                    aviso = "Ese nombre de usuario era de un usuario eliminado: se lo recuperó con los datos nuevos.";
+            }
+            else await UsuarioApiClient.UpdateAsync(dto, Sesion.Token);
+
+            visible = false;
+            await OnGuardado.InvokeAsync(aviso);
+        }
+        catch (Exception ex)
+        {
+            mensajeError = ex.Message;
+        }
+        finally
+        {
+            guardando = false;
+        }
+    }
+}

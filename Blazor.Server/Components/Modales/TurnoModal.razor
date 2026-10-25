@@ -1,0 +1,131 @@
+@inject SesionUsuario Sesion
+
+@if (visible)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">@(esAlta ? "Nuevo turno" : "Editar turno")</h5>
+                    <button type="button" class="btn-close" @onclick="Cerrar"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Hora de inicio *</label>
+                        <input type="time" class="form-control" @bind="horaInicio" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Hora de fin *</label>
+                        <input type="time" class="form-control" @bind="horaFin" />
+                        <div class="text-danger small">@errorHorario</div>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(mensajeError))
+                    {
+                        <div class="alert alert-danger">@mensajeError</div>
+                    }
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="Cerrar">Cancelar</button>
+                    <button type="button" class="btn btn-primary" disabled="@guardando" @onclick="GuardarAsync">
+                        @if (guardando)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2"></span>
+                        }
+                        Guardar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public EventCallback OnGuardado { get; set; }
+
+    private bool visible;
+    private bool esAlta;
+    private bool guardando;
+    private string mensajeError = string.Empty;
+    private string errorHorario = string.Empty;
+
+    // <input type="time"> de Blazor se enlaza con TimeOnly; al guardar se pasa al texto "HH:mm:ss" de la API.
+    private int idTurno;
+    private TimeOnly horaInicio = new(8, 0);
+    private TimeOnly horaFin = new(9, 0);
+    private int estado = 1;
+
+    public void MostrarAlta()
+    {
+        esAlta = true;
+        idTurno = 0;
+        horaInicio = new TimeOnly(8, 0);
+        horaFin = new TimeOnly(9, 0);
+        estado = 1;
+        Abrir();
+    }
+
+    public void MostrarEdicion(TurnoDTO original)
+    {
+        esAlta = false;
+        idTurno = original.IdTurno;
+        horaInicio = TimeOnly.FromTimeSpan(TimeSpan.Parse(original.HoraInicio));
+        horaFin = TimeOnly.FromTimeSpan(TimeSpan.Parse(original.HoraFin));
+        estado = original.Estado;
+        Abrir();
+    }
+
+    private void Abrir()
+    {
+        mensajeError = string.Empty;
+        errorHorario = string.Empty;
+        visible = true;
+        StateHasChanged();
+    }
+
+    private void Cerrar() => visible = false;
+
+    // Misma regla que TurnoDetalle.cs del WinForms (el servidor la vuelve a validar).
+    private bool Validar()
+    {
+        errorHorario = horaInicio >= horaFin ? "La hora de inicio debe ser menor a la hora de fin." : string.Empty;
+        return errorHorario.Length == 0;
+    }
+
+    private async Task GuardarAsync()
+    {
+        if (!Validar()) return;
+
+        // La API espera "HH:mm:ss".
+        var dto = new TurnoDTO
+        {
+            IdTurno = idTurno,
+            HoraInicio = horaInicio.ToString("HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture),
+            HoraFin = horaFin.ToString("HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture),
+            Estado = estado
+        };
+
+        guardando = true;
+        mensajeError = string.Empty;
+        try
+        {
+            if (esAlta) await TurnoApiClient.AddAsync(dto, Sesion.Token);
+            else await TurnoApiClient.UpdateAsync(dto, Sesion.Token);
+
+            visible = false;
+            await OnGuardado.InvokeAsync();
+        }
+        catch (Exception ex)
+        {
+            // Por ejemplo: "Ya existe un turno que se superpone con ese horario."
+            mensajeError = ex.Message;
+        }
+        finally
+        {
+            guardando = false;
+        }
+    }
+}

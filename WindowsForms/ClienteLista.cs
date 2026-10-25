@@ -28,7 +28,7 @@ namespace WindowsForms
             colFecha.DefaultCellStyle.Format = "dd/MM/yyyy";
             dgvClientes.Columns.Add(colFecha);
 
-            dgvClientes.Columns.Add(new DataGridViewTextBoxColumn { Name = "Estado", HeaderText = "Estado", DataPropertyName = "Estado" });
+            // Sin columna Estado: la lista solo trae clientes activos (los eliminados son baja lógica).
 
             
             dgvClientes.Columns.Add(new DataGridViewTextBoxColumn { Name = "NombreUsuario", HeaderText = "Usuario", DataPropertyName = "NombreUsuario" });
@@ -122,17 +122,6 @@ namespace WindowsForms
         }
 
        
-
-        private void dgvClientes_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
-        {
-            if (dgvClientes.Columns[e.ColumnIndex].Name == "Estado" && e.Value is int estado)
-            {
-                // 1=Activo, 0=Inactivo (Domain.Model.Estado). No referenciamos Domain.Model
-                // desde la UI a propósito, para no acoplar el escritorio al dominio.
-                e.Value = estado == 1 ? "Activo" : "Inactivo";
-                e.FormattingApplied = true;
-            }
-        }
 
         private async Task EjecutarConEsperaAsync(Func<Task> accion)
         {

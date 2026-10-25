@@ -16,6 +16,11 @@ namespace Domain.Model
         public int IdTurno { get; private set; }
         public Turno? Turno { get; private set; }
 
+        // Administrador que registró la reserva. Es opcional: queda vacío si la cargó un
+        // usuario que no tiene ficha de administrador.
+        public int? IdAdministrador { get; private set; }
+        public Administrador? Administrador { get; private set; }
+
         public DateTime Fecha { get; private set; }
         public EstadoReserva EstadoReserva { get; private set; }
         public decimal ImporteTotal { get; private set; }
@@ -58,6 +63,13 @@ namespace Domain.Model
         {
             if (idTurno <= 0) throw new ArgumentException("Id de turno inválido.");
             IdTurno = idTurno;
+        }
+
+        public void SetIdAdministrador(int? idAdministrador)
+        {
+            if (idAdministrador.HasValue && idAdministrador.Value <= 0)
+                throw new ArgumentException("Id de administrador inválido.");
+            IdAdministrador = idAdministrador;
         }
 
         public void SetFecha(DateTime fecha)

@@ -1,0 +1,182 @@
+@page "/reservas"
+@inject SesionUsuario Sesion
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+<PageTitle>Reservas</PageTitle>
+
+<h3>Reservas</h3>
+
+@if (!string.IsNullOrEmpty(mensajeError))
+{
+    <div class="alert alert-danger alert-dismissible">
+        @mensajeError
+        <button type="button" class="btn-close" @onclick="() => mensajeError = string.Empty"></button>
+    </div>
+}
+@if (!string.IsNullOrEmpty(mensajeExito))
+{
+    <div class="alert alert-success alert-dismissible">
+        @mensajeExito
+        <button type="button" class="btn-close" @onclick="() => mensajeExito = string.Empty"></button>
+    </div>
+}
+
+<div class="row g-2 mb-3">
+    <div class="col-auto">
+        <select class="form-select" @bind="filtro">
+            <option value="todas">Todas</option>
+            <option value="proximas">Próximas (desde hoy)</option>
+            <option value="pasadas">Pasadas</option>
+        </select>
+    </div>
+    <div class="col-auto ms-auto">
+        <button class="btn btn-primary" @onclick="() => modal.MostrarAltaAsync()">+ Nueva reserva</button>
+    </div>
+</div>
+
+@if (cargando)
+{
+    <div class="d-flex justify-content-center">
+        <div class="spinner-border" role="status"></div>
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>Fecha</th>
+                    <th>Cliente</th>
+                    <th>Cancha</th>
+                    <th>Turno</th>
+                    <th>Estado</th>
+                    <th class="text-end">Importe total</th>
+                    <th class="text-end">Seña</th>
+                    <th>Líneas</th>
+                    <th>Registrada por</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!ReservasFiltradas.Any())
+                {
+                    <tr><td colspan="10" class="text-center text-muted">No hay reservas para mostrar.</td></tr>
+                }
+                @foreach (var r in ReservasFiltradas)
+                {
+                    <tr>
+                        <td class="text-nowrap">@r.Fecha.ToString("dd/MM/yyyy")</td>
+                        <td>@r.NombreCliente</td>
+                        <td>@r.NombreCancha</td>
+                        <td class="text-nowrap">@r.HorarioTurno</td>
+                        <td><span class="badge @ClaseEstado(r.EstadoReserva)">@TextoEstado(r.EstadoReserva)</span></td>
+                        <td class="text-end text-nowrap">@r.ImporteTotal.ToString("C2")</td>
+                        <td class="text-end text-nowrap">@r.Sena.ToString("C2")</td>
+                        <td>@r.Detalles.Count</td>
+                        <td>@r.NombreAdministrador</td>
+                        <td class="text-nowrap">
+                            <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => modal.MostrarEdicionAsync(r)">Editar</button>
+                            @* Baja lógica de una reserva = cancelarla (queda en la lista como Cancelada). *@
+                            <button class="btn btn-sm btn-outline-danger" disabled="@(r.EstadoReserva == 3)" @onclick="() => ConfirmarCancelarAsync(r)">Cancelar</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+<ReservaModal @ref="modal" OnGuardado="AlGuardarAsync" />
+
+@code {
+    private List<ReservaDTO> reservas = new();
+    private bool cargando = true;
+    private string filtro = "todas";
+    private string mensajeError = string.Empty;
+    private string mensajeExito = string.Empty;
+    private ReservaModal modal = null!;
+
+    // Las más nuevas primero; el filtro se aplica en pantalla sobre lo que ya trajo la API.
+    private IEnumerable<ReservaDTO> ReservasFiltradas => filtro switch
+    {
+        "proximas" => reservas.Where(r => r.Fecha.Date >= DateTime.Today).OrderBy(r => r.Fecha),
+        "pasadas" => reservas.Where(r => r.Fecha.Date < DateTime.Today).OrderByDescending(r => r.Fecha),
+        _ => reservas.OrderByDescending(r => r.Fecha)
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!Sesion.EsAdministrador)
+        {
+            Navigation.NavigateTo(Sesion.EstaLogueado ? "/" : "/login");
+            return;
+        }
+        await CargarTodosAsync();
+    }
+
+    // 1 Pendiente, 2 Confirmada, 3 Cancelada, 4 Finalizada (Domain.Model.EstadoReserva).
+    public static string TextoEstado(int estado) => estado switch
+    {
+        1 => "Pendiente",
+        2 => "Confirmada",
+        3 => "Cancelada",
+        4 => "Finalizada",
+        _ => estado.ToString()
+    };
+
+    private static string ClaseEstado(int estado) => estado switch
+    {
+        1 => "bg-warning text-dark",
+        2 => "bg-primary",
+        3 => "bg-secondary",
+        4 => "bg-success",
+        _ => "bg-light text-dark"
+    };
+
+    private async Task CargarTodosAsync()
+    {
+        await EjecutarConEsperaAsync(async () =>
+            reservas = (await ReservaApiClient.GetAllAsync(Sesion.Token)).ToList());
+    }
+
+    private async Task AlGuardarAsync()
+    {
+        mensajeExito = "Reserva guardada correctamente.";
+        await CargarTodosAsync();
+    }
+
+    // El DELETE de la API no borra la reserva: la pasa a Cancelada y libera la cancha y el turno.
+    private async Task ConfirmarCancelarAsync(ReservaDTO r)
+    {
+        bool confirmado = await JS.InvokeAsync<bool>("confirm",
+            $"¿Cancelar la reserva de {r.NombreCliente} del {r.Fecha:dd/MM/yyyy}? Queda registrada como Cancelada y libera la cancha y el turno.");
+        if (!confirmado) return;
+
+        await EjecutarConEsperaAsync(async () =>
+        {
+            await ReservaApiClient.DeleteAsync(r.IdReserva, Sesion.Token);
+            reservas = (await ReservaApiClient.GetAllAsync(Sesion.Token)).ToList();
+            mensajeExito = "Reserva cancelada.";
+        });
+    }
+
+    private async Task EjecutarConEsperaAsync(Func<Task> accion)
+    {
+        cargando = true;
+        mensajeError = string.Empty;
+        try
+        {
+            await accion();
+        }
+        catch (Exception ex)
+        {
+            mensajeError = ex.Message;
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+}

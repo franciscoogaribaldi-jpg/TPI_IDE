@@ -23,20 +23,16 @@ namespace WindowsForms
         private void TurnoDetalle_Load(object sender, EventArgs e)
         {
             Text = EsAlta ? "Nuevo turno" : "Editar turno";
-            cmbEstado.DataSource = new[] { "Activo", "Inactivo" };
 
             if (EsAlta)
             {
                 dtpHoraInicio.Value = DateTime.Today.AddHours(8);
                 dtpHoraFin.Value = DateTime.Today.AddHours(9);
-                cmbEstado.SelectedIndex = 0;
-                cmbEstado.Enabled = false; // el servidor siempre crea el turno como Activo
             }
             else if (_turnoOriginal != null)
             {
                 dtpHoraInicio.Value = DateTime.Today + TimeSpan.Parse(_turnoOriginal.HoraInicio);
                 dtpHoraFin.Value = DateTime.Today + TimeSpan.Parse(_turnoOriginal.HoraFin);
-                cmbEstado.SelectedIndex = _turnoOriginal.Estado == 1 ? 0 : 1;
             }
         }
 
@@ -60,7 +56,6 @@ namespace WindowsForms
                 IdTurno = _turnoOriginal?.IdTurno ?? 0,
                 HoraInicio = FormatearHora(dtpHoraInicio.Value),
                 HoraFin = FormatearHora(dtpHoraFin.Value),
-                Estado = cmbEstado.SelectedIndex == 0 ? 1 : 0
             };
 
             btnGuardar.Enabled = false;

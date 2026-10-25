@@ -44,7 +44,6 @@ namespace WindowsForms
             this.dgvClientes.Size = new System.Drawing.Size(860, 460);
             this.dgvClientes.TabIndex = 1;
             this.dgvClientes.CellDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvClientes_CellDoubleClick);
-            this.dgvClientes.CellFormatting += new System.Windows.Forms.DataGridViewCellFormattingEventHandler(this.dgvClientes_CellFormatting);
             //
             // pnlAcciones
             //

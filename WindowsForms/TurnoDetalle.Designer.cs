@@ -19,8 +19,6 @@ namespace WindowsForms
             this.dtpHoraInicio = new System.Windows.Forms.DateTimePicker();
             this.lblHoraFin = new System.Windows.Forms.Label();
             this.dtpHoraFin = new System.Windows.Forms.DateTimePicker();
-            this.lblEstado = new System.Windows.Forms.Label();
-            this.cmbEstado = new System.Windows.Forms.ComboBox();
             this.btnGuardar = new System.Windows.Forms.Button();
             this.btnCancelar = new System.Windows.Forms.Button();
             this.SuspendLayout();
@@ -63,26 +61,9 @@ namespace WindowsForms
             this.dtpHoraFin.Size = new System.Drawing.Size(100, 23);
             this.dtpHoraFin.TabIndex = 3;
             //
-            // lblEstado
-            //
-            this.lblEstado.AutoSize = true;
-            this.lblEstado.Location = new System.Drawing.Point(20, 103);
-            this.lblEstado.Name = "lblEstado";
-            this.lblEstado.Size = new System.Drawing.Size(45, 15);
-            this.lblEstado.TabIndex = 4;
-            this.lblEstado.Text = "Estado:";
-            //
-            // cmbEstado
-            //
-            this.cmbEstado.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cmbEstado.Location = new System.Drawing.Point(130, 100);
-            this.cmbEstado.Name = "cmbEstado";
-            this.cmbEstado.Size = new System.Drawing.Size(150, 23);
-            this.cmbEstado.TabIndex = 5;
-            //
             // btnGuardar
             //
-            this.btnGuardar.Location = new System.Drawing.Point(120, 155);
+            this.btnGuardar.Location = new System.Drawing.Point(120, 115);
             this.btnGuardar.Name = "btnGuardar";
             this.btnGuardar.Size = new System.Drawing.Size(85, 30);
             this.btnGuardar.TabIndex = 6;
@@ -92,7 +73,7 @@ namespace WindowsForms
             //
             // btnCancelar
             //
-            this.btnCancelar.Location = new System.Drawing.Point(215, 155);
+            this.btnCancelar.Location = new System.Drawing.Point(215, 115);
             this.btnCancelar.Name = "btnCancelar";
             this.btnCancelar.Size = new System.Drawing.Size(85, 30);
             this.btnCancelar.TabIndex = 7;
@@ -104,13 +85,11 @@ namespace WindowsForms
             //
             this.AcceptButton = this.btnGuardar;
             this.CancelButton = this.btnCancelar;
-            this.ClientSize = new System.Drawing.Size(320, 205);
+            this.ClientSize = new System.Drawing.Size(320, 165);
             this.Controls.Add(this.lblHoraInicio);
             this.Controls.Add(this.dtpHoraInicio);
             this.Controls.Add(this.lblHoraFin);
             this.Controls.Add(this.dtpHoraFin);
-            this.Controls.Add(this.lblEstado);
-            this.Controls.Add(this.cmbEstado);
             this.Controls.Add(this.btnGuardar);
             this.Controls.Add(this.btnCancelar);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
@@ -128,8 +107,6 @@ namespace WindowsForms
         private System.Windows.Forms.DateTimePicker dtpHoraInicio;
         private System.Windows.Forms.Label lblHoraFin;
         private System.Windows.Forms.DateTimePicker dtpHoraFin;
-        private System.Windows.Forms.Label lblEstado;
-        private System.Windows.Forms.ComboBox cmbEstado;
         private System.Windows.Forms.Button btnGuardar;
         private System.Windows.Forms.Button btnCancelar;
     }

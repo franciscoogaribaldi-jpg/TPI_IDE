@@ -22,9 +22,6 @@ namespace Application.Services
 
         public async Task<ClienteDTO> AddAsync(ClienteDTO dto)
         {
-            if (!Enum.IsDefined(typeof(Estado), dto.Estado)) // dto.Estado esta definido en la lista Estado de enum
-                throw new ArgumentException("El estado del cliente no es válido.", nameof(dto.Estado));
-
             // El alta crea el cliente Y su usuario de acceso (rol Cliente) en una sola operación.
             if (string.IsNullOrWhiteSpace(dto.NombreUsuario))
                 throw new ArgumentException("El nombre de usuario es obligatorio.", nameof(dto.NombreUsuario));
@@ -33,9 +30,18 @@ namespace Application.Services
             if (string.IsNullOrWhiteSpace(dto.Contrasena))
                 throw new ArgumentException("La contraseña es obligatoria.", nameof(dto.Contrasena));
 
+            // Si ese DNI es de un cliente eliminado (baja lógica), no se crea otro: se lo recupera.
+            var existente = await _repository.GetByDniAsync(dto.Dni);
+            if (existente != null)
+            {
+                if (existente.Estado == Estado.Activo)
+                    throw new ReglaDeNegocioException("Ya existe un cliente con ese DNI.");
+
+                return await RecuperarAsync(existente, dto);
+            }
+
             // Reglas de negocio: se validan TODAS antes de guardar nada.
-            if (await _repository.DniExistsAsync(dto.Dni))
-                throw new ReglaDeNegocioException("Ya existe un cliente con ese DNI.");
+            // (los usuarios eliminados siguen guardados con baja lógica, así que también cuentan)
             if (await _usuarioRepository.NombreUsuarioExistsAsync(dto.NombreUsuario))
                 throw new ReglaDeNegocioException("Ya existe un usuario con ese nombre de usuario.");
             if (await _usuarioRepository.EmailExistsAsync(dto.Email))
@@ -58,7 +64,7 @@ namespace Application.Services
                 dni: dto.Dni,
                 telefono: dto.Telefono,
                 fechaNacimiento: dto.FechaNacimiento,
-                estado: (Estado)dto.Estado
+                estado: Estado.Activo // todo alta nueva queda Activa; solo la baja la pasa a Inactiva
             );
             cliente.SetUsuario(usuario);
 
@@ -69,7 +75,42 @@ namespace Application.Services
             return MapToDto(cliente);
         }
 
-        public async Task<bool> DeleteAsync(int id) // esta parte de la capa de servicios esta solo para cumplir con la arquitectura porque hasta ahora solo sirve para llamar a repository
+        // Recupera un cliente eliminado por error: vuelve a Activo con los datos nuevos del
+        // formulario, y su usuario también (con el usuario, email y contraseña nuevos). Como es
+        // el mismo registro, conserva su historial de reservas.
+        private async Task<ClienteDTO> RecuperarAsync(Cliente cliente, ClienteDTO dto)
+        {
+            // El usuario y el email pueden ser los mismos que tenía; solo se rechazan si son de OTRO usuario.
+            if (await _usuarioRepository.NombreUsuarioExistsAsync(dto.NombreUsuario!, cliente.IdUsuario))
+                throw new ReglaDeNegocioException("Ya existe un usuario con ese nombre de usuario.");
+            if (await _usuarioRepository.EmailExistsAsync(dto.Email!, cliente.IdUsuario))
+                throw new ReglaDeNegocioException("Ya existe un usuario con ese email.");
+
+            // Se usan los setters del dominio: las mismas validaciones que en un alta normal.
+            cliente.SetNombre(dto.Nombre);
+            cliente.SetApellido(dto.Apellido);
+            cliente.SetTelefono(dto.Telefono);
+            cliente.SetFechaNacimiento(dto.FechaNacimiento);
+            cliente.SetEstado(Estado.Activo);
+
+            if (cliente.Usuario != null)
+            {
+                cliente.Usuario.SetNombreUsuario(dto.NombreUsuario!.Trim());
+                cliente.Usuario.SetEmail(dto.Email!.Trim());
+                cliente.Usuario.SetContrasena(PasswordHasher.Hash(dto.Contrasena!));
+                cliente.Usuario.SetEstado(Estado.Activo);
+            }
+
+            // Cliente y usuario se guardan juntos, en un único SaveChangesAsync.
+            await _repository.RecuperarAsync(cliente);
+
+            var resultado = MapToDto(cliente);
+            resultado.Recuperado = true;
+            return resultado;
+        }
+
+        // Baja lógica (ver ClienteRepository.DeleteAsync): no se borra, se marca Inactivo.
+        public async Task<bool> DeleteAsync(int id)
         {
             return await _repository.DeleteAsync(id);
         }
@@ -82,17 +123,15 @@ namespace Application.Services
 
         public async Task<ClienteDTO?> GetAsync(int id)
         {
+            // Un cliente eliminado (Inactivo) ya no existe para el sistema.
             var cliente = await _repository.GetAsync(id);
-            return cliente == null ? null : MapToDto(cliente);
+            return cliente == null || cliente.Estado == Estado.Inactivo ? null : MapToDto(cliente);
         }
 
         public async Task<bool> UpdateAsync(ClienteDTO dto)
         {
             var clienteExistente = await _repository.GetAsync(dto.IdCliente);
-            if (clienteExistente == null) return false;
-
-            if (!Enum.IsDefined(typeof(Estado), dto.Estado))
-                throw new ArgumentException("El estado del cliente no es válido.", nameof(dto.Estado));
+            if (clienteExistente == null || clienteExistente.Estado == Estado.Inactivo) return false;
 
             var usuario = await _usuarioRepository.GetAsync(dto.IdUsuario);
             if (usuario == null)
@@ -110,7 +149,7 @@ namespace Application.Services
                 dni: dto.Dni,
                 telefono: dto.Telefono,
                 fechaNacimiento: dto.FechaNacimiento,
-                estado: (Estado)dto.Estado // casteo del estado
+                estado: clienteExistente.Estado // el Estado no se edita: solo lo cambia la baja
             );
             clienteModificado.SetUsuario(usuario);
 

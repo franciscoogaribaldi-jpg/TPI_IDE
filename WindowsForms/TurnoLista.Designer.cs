@@ -18,7 +18,6 @@ namespace WindowsForms
             this.dgvTurnos = new System.Windows.Forms.DataGridView();
             this.colHoraInicio = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.colHoraFin = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.colEstado = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.pnlAcciones = new System.Windows.Forms.FlowLayoutPanel();
             this.btnNuevo = new System.Windows.Forms.Button();
             this.btnEditar = new System.Windows.Forms.Button();
@@ -34,8 +33,7 @@ namespace WindowsForms
             this.dgvTurnos.AutoGenerateColumns = false;
             this.dgvTurnos.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.colHoraInicio,
-            this.colHoraFin,
-            this.colEstado});
+            this.colHoraFin});
             this.dgvTurnos.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dgvTurnos.Location = new System.Drawing.Point(0, 40);
             this.dgvTurnos.MultiSelect = false;
@@ -63,14 +61,6 @@ namespace WindowsForms
             this.colHoraFin.Name = "colHoraFin";
             this.colHoraFin.ReadOnly = true;
             this.colHoraFin.Width = 110;
-            //
-            // colEstado
-            //
-            this.colEstado.DataPropertyName = "Estado";
-            this.colEstado.HeaderText = "Estado";
-            this.colEstado.Name = "colEstado";
-            this.colEstado.ReadOnly = true;
-            this.colEstado.Width = 100;
             //
             // pnlAcciones
             //
@@ -132,7 +122,6 @@ namespace WindowsForms
         private System.Windows.Forms.DataGridView dgvTurnos;
         private System.Windows.Forms.DataGridViewTextBoxColumn colHoraInicio;
         private System.Windows.Forms.DataGridViewTextBoxColumn colHoraFin;
-        private System.Windows.Forms.DataGridViewTextBoxColumn colEstado;
         private System.Windows.Forms.FlowLayoutPanel pnlAcciones;
         private System.Windows.Forms.Button btnNuevo;
         private System.Windows.Forms.Button btnEditar;
