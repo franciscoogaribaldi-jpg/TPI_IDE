@@ -10,5 +10,11 @@ namespace Application.Services
         Task<ReservaDTO?> GetAsync(int id);
         Task<IEnumerable<ReservaDTO>> GetAllAsync();
         Task<bool> UpdateAsync(ReservaDTO dto);
+
+        // Rol Cliente: idUsuario sale del token, así cada cliente solo maneja lo suyo.
+        Task<IEnumerable<ReservaDTO>> GetMisReservasAsync(int idUsuario);
+        Task<ReservaDTO> ReservarComoClienteAsync(ReservaDTO dto, int idUsuario);
+        Task<bool> CancelarComoClienteAsync(int idReserva, int idUsuario);
+        Task<IEnumerable<TurnoLibreDTO>> GetTurnosLibresAsync(DateTime fecha);
     }
 }

@@ -77,6 +77,11 @@ namespace Data
             return await query.AnyAsync(); // devuelve un boleano que dice si existe algun cliente que cumple con la query(true) sino false
         }
 
+        public async Task<Cliente?> GetByIdUsuarioAsync(int idUsuario)
+        {
+            return await _context.Clientes.FirstOrDefaultAsync(c => c.IdUsuario == idUsuario);
+        }
+
         public async Task<bool> ExisteConUsuarioAsync(int idUsuario)
         {
             return await _context.Clientes.AnyAsync(c => c.IdUsuario == idUsuario);

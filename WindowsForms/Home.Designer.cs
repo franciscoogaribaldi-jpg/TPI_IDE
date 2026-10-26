@@ -26,6 +26,7 @@ namespace WindowsForms
             this.menuAdministradores = new System.Windows.Forms.ToolStripMenuItem();
             this.menuUsuarios = new System.Windows.Forms.ToolStripMenuItem();
             this.menuReportes = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuMisReservas = new System.Windows.Forms.ToolStripMenuItem();
             this.menuReporteOcupacion = new System.Windows.Forms.ToolStripMenuItem();
             this.menuReporteRecaudacion = new System.Windows.Forms.ToolStripMenuItem();
             this.menuSesion = new System.Windows.Forms.ToolStripMenuItem();
@@ -46,6 +47,7 @@ namespace WindowsForms
             this.menuAdministradores,
             this.menuUsuarios,
             this.menuReportes,
+            this.menuMisReservas,
             this.menuSesion,
             this.lblBienvenida});
             this.menuPrincipal.Location = new System.Drawing.Point(0, 0);
@@ -110,6 +112,13 @@ namespace WindowsForms
             this.menuReportes.Name = "menuReportes";
             this.menuReportes.Size = new System.Drawing.Size(65, 20);
             this.menuReportes.Text = "Reportes";
+            //
+            // menuMisReservas
+            //
+            this.menuMisReservas.Name = "menuMisReservas";
+            this.menuMisReservas.Size = new System.Drawing.Size(90, 20);
+            this.menuMisReservas.Text = "Mis reservas";
+            this.menuMisReservas.Click += new System.EventHandler(this.menuMisReservas_Click);
             // 
             // menuReporteOcupacion
             // 
@@ -181,6 +190,7 @@ namespace WindowsForms
         private System.Windows.Forms.ToolStripMenuItem menuAdministradores;
         private System.Windows.Forms.ToolStripMenuItem menuUsuarios;
         private System.Windows.Forms.ToolStripMenuItem menuReportes;
+        private System.Windows.Forms.ToolStripMenuItem menuMisReservas;
         private System.Windows.Forms.ToolStripMenuItem menuReporteOcupacion;
         private System.Windows.Forms.ToolStripMenuItem menuReporteRecaudacion;
         private System.Windows.Forms.ToolStripMenuItem menuSesion;

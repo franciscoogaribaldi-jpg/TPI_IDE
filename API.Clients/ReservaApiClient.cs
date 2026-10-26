@@ -41,5 +41,46 @@ namespace API.Clients
 
             if (!response.IsSuccessStatusCode) throw await CrearExcepcionAsync(response);
         }
+
+        // ---------- Rol Cliente ----------
+
+        public static async Task<IEnumerable<TurnoLibreDTO>> GetTurnosLibresAsync(DateTime fecha, string? token = null)
+        {
+            using var client = CreateHttpClient(token);
+            var response = await client.GetAsync($"turnos-libres?fecha={fecha:yyyy-MM-dd}");
+
+            if (!response.IsSuccessStatusCode) throw await CrearExcepcionAsync(response);
+
+            return await response.Content.ReadFromJsonAsync<IEnumerable<TurnoLibreDTO>>() ?? Enumerable.Empty<TurnoLibreDTO>();
+        }
+
+        public static async Task<IEnumerable<ReservaDTO>> GetMisReservasAsync(string? token = null)
+        {
+            using var client = CreateHttpClient(token);
+            var response = await client.GetAsync("mis-reservas");
+
+            if (!response.IsSuccessStatusCode) throw await CrearExcepcionAsync(response);
+
+            return await response.Content.ReadFromJsonAsync<IEnumerable<ReservaDTO>>() ?? Enumerable.Empty<ReservaDTO>();
+        }
+
+        public static async Task<ReservaDTO> ReservarAsync(int idCancha, int idTurno, DateTime fecha, string? token = null)
+        {
+            using var client = CreateHttpClient(token);
+            var pedido = new ReservaDTO { IdCancha = idCancha, IdTurno = idTurno, Fecha = fecha.Date };
+            var response = await client.PostAsJsonAsync("mis-reservas", pedido);
+
+            if (!response.IsSuccessStatusCode) throw await CrearExcepcionAsync(response);
+
+            return (await response.Content.ReadFromJsonAsync<ReservaDTO>())!;
+        }
+
+        public static async Task CancelarMiReservaAsync(int idReserva, string? token = null)
+        {
+            using var client = CreateHttpClient(token);
+            var response = await client.DeleteAsync($"mis-reservas/{idReserva}");
+
+            if (!response.IsSuccessStatusCode) throw await CrearExcepcionAsync(response);
+        }
     }
 }

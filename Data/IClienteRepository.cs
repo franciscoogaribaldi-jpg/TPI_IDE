@@ -25,6 +25,9 @@ namespace Data
         // ¿Ese usuario ya tiene ficha de cliente? (para no borrar un usuario en uso)
         Task<bool> ExisteConUsuarioAsync(int idUsuario);
 
+        // El cliente que corresponde al usuario logueado (el token trae el IdUsuario).
+        Task<Cliente?> GetByIdUsuarioAsync(int idUsuario);
+
         // Busca por DNI aunque esté eliminado (baja lógica), con su usuario: el alta lo usa para
         // recuperar a un cliente eliminado por error en lugar de crear otro.
         Task<Cliente?> GetByDniAsync(string dni);

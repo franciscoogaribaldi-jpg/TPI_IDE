@@ -117,6 +117,94 @@ namespace Application.Services
             return reservas.Select(MapToDto).ToList();
         }
 
+        // ---------- Funciones del rol Cliente ----------
+        // En todas, el cliente sale del usuario logueado (idUsuario viene del token, lo pasa el
+        // endpoint): un cliente solo puede ver, reservar y cancelar lo suyo.
+
+        public async Task<IEnumerable<ReservaDTO>> GetMisReservasAsync(int idUsuario)
+        {
+            var cliente = await ObtenerClienteDelUsuarioAsync(idUsuario);
+            var reservas = await _reservaRepository.GetByClienteAsync(cliente.IdCliente);
+            return reservas.Select(MapToDto).ToList();
+        }
+
+        public async Task<ReservaDTO> ReservarComoClienteAsync(ReservaDTO dto, int idUsuario)
+        {
+            var cliente = await ObtenerClienteDelUsuarioAsync(idUsuario);
+
+            // El cliente solo elige cancha, turno y fecha: el resto lo fija el sistema.
+            var reserva = new ReservaDTO
+            {
+                IdCliente = cliente.IdCliente,
+                IdCancha = dto.IdCancha,
+                IdTurno = dto.IdTurno,
+                Fecha = dto.Fecha,
+                EstadoReserva = (int)EstadoReserva.Pendiente,
+                Sena = 0
+            };
+
+            // Mismas reglas que cuando la carga un administrador (fecha, doble reserva, eliminados...).
+            return await AddAsync(reserva);
+        }
+
+        // Devuelve false si la reserva no existe o no es de este cliente (para el cliente es "no encontrada").
+        public async Task<bool> CancelarComoClienteAsync(int idReserva, int idUsuario)
+        {
+            var cliente = await ObtenerClienteDelUsuarioAsync(idUsuario);
+
+            var reserva = await _reservaRepository.GetAsync(idReserva);
+            if (reserva == null || reserva.IdCliente != cliente.IdCliente) return false;
+
+            if (reserva.EstadoReserva == EstadoReserva.Cancelada)
+                throw new ReglaDeNegocioException("La reserva ya está cancelada.");
+            if (reserva.EstadoReserva == EstadoReserva.Finalizada || reserva.Fecha.Date < DateTime.Today)
+                throw new ReglaDeNegocioException("No se puede cancelar una reserva que ya pasó.");
+
+            return await _reservaRepository.DeleteAsync(idReserva); // baja lógica = pasa a Cancelada
+        }
+
+        // Turnos libres de un día: todas las combinaciones cancha activa + turno activo que no
+        // tienen una reserva (no cancelada) ese día.
+        public async Task<IEnumerable<TurnoLibreDTO>> GetTurnosLibresAsync(DateTime fecha)
+        {
+            ValidarFechaNoPasada(fecha);
+
+            var canchas = await _canchaRepository.GetAllAsync();
+            var turnos = (await _turnoRepository.GetAllAsync()).OrderBy(t => t.HoraInicio).ToList();
+            var ocupadas = await _reservaRepository.GetActivasPorFechaAsync(fecha);
+
+            var libres = new List<TurnoLibreDTO>();
+            foreach (var cancha in canchas.OrderBy(c => c.Nombre))
+            {
+                foreach (var turno in turnos)
+                {
+                    bool ocupado = ocupadas.Any(r => r.IdCancha == cancha.IdCancha && r.IdTurno == turno.IdTurno);
+                    if (ocupado) continue;
+
+                    libres.Add(new TurnoLibreDTO
+                    {
+                        IdCancha = cancha.IdCancha,
+                        NombreCancha = cancha.Nombre,
+                        TipoCancha = cancha is CanchaPadel ? "Pádel" : "Fútbol",
+                        Caracteristicas = cancha.Caracteristicas,
+                        PrecioPorHora = cancha.PrecioPorHora,
+                        IdTurno = turno.IdTurno,
+                        Horario = $"{turno.HoraInicio:hh\\:mm} - {turno.HoraFin:hh\\:mm}"
+                    });
+                }
+            }
+
+            return libres;
+        }
+
+        private async Task<Cliente> ObtenerClienteDelUsuarioAsync(int idUsuario)
+        {
+            var cliente = await _clienteRepository.GetByIdUsuarioAsync(idUsuario);
+            if (cliente == null || cliente.Estado == Estado.Inactivo)
+                throw new ReglaDeNegocioException("Tu usuario no tiene una ficha de cliente activa.");
+            return cliente;
+        }
+
         // ---------- Privados ----------
 
         private static void ValidarFechaNoPasada(DateTime fecha)

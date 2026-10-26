@@ -20,12 +20,21 @@ namespace WindowsForms
             menuUsuarios.Visible = esAdministrador;
             menuReportes.Visible = esAdministrador;
 
-            if (!esAdministrador)
+            // Funciones propias del rol Cliente: ver, reservar y cancelar sus reservas.
+            menuMisReservas.Visible = !esAdministrador;
+        }
+
+        private void menuMisReservas_Click(object sender, EventArgs e)
+        {
+            var existente = MdiChildren.OfType<MisReservas>().FirstOrDefault();
+            if (existente != null)
             {
-                MessageBox.Show(
-                    "Tu usuario no tiene funcionalidades de administración disponibles en esta versión.",
-                    "Acceso limitado", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                existente.Activate();
+                return;
             }
+
+            var form = new MisReservas { MdiParent = this };
+            form.Show();
         }
 
         private void menuClientes_Click(object sender, EventArgs e)
@@ -64,7 +73,6 @@ namespace WindowsForms
             }
 
             var form = new TipoSuperficieLista { MdiParent = this };
-            form.Show();
             form.Show();
         }
 

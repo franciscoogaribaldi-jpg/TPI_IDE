@@ -121,13 +121,17 @@ namespace WebAPI
             for (int dia = -45; dia <= 14; dia++)
             {
                 var fecha = DateTime.Today.AddDays(dia);
-                int reservasDelDia = azar.Next(1, 5);
+                // Entre 18 y 29 intentos por día (si cae en un turno ya ocupado, se saltea):
+                // da una ocupación de alrededor del 25-30 %, como un complejo con movimiento.
+                int reservasDelDia = azar.Next(18, 30);
 
                 for (int i = 0; i < reservasDelDia; i++)
                 {
                     var cancha = canchas[azar.Next(canchas.Count)];
-                    // Más reservas a la tarde-noche, como en un complejo real.
-                    var turno = turnos[Math.Min(turnos.Count - 1, azar.Next(turnos.Count / 3, turnos.Count))];
+                    // 7 de cada 10 reservas son a la tarde-noche (los turnos de la última parte del
+                    // día), como en un complejo real; el resto, en cualquier horario.
+                    int indiceTurno = azar.Next(10) < 7 ? azar.Next(turnos.Count / 3, turnos.Count) : azar.Next(turnos.Count);
+                    var turno = turnos[indiceTurno];
                     if (!ocupados.Add((cancha.IdCancha, turno.IdTurno, fecha))) continue;
 
                     var cliente = clientes[azar.Next(clientes.Count)];

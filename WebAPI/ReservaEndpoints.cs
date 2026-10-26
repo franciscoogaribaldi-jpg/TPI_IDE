@@ -23,7 +23,7 @@ namespace WebAPI
             .Produces<ReservaDTO>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound)
             .WithOpenApi()
-            .RequireAuthorization();
+            .RequireAuthorization(policy => policy.RequireRole("Administrador"));
 
             app.MapGet("/reservas", async (IReservaService reservaService) =>
             {
@@ -33,7 +33,7 @@ namespace WebAPI
             .WithName("GetAllReservas")
             .Produces<IEnumerable<ReservaDTO>>(StatusCodes.Status200OK)
             .WithOpenApi()
-            .RequireAuthorization();
+            .RequireAuthorization(policy => policy.RequireRole("Administrador"));
 
             app.MapPost("/reservas", async (ReservaDTO dto, IReservaService reservaService, ClaimsPrincipal usuarioLogueado) =>
             {

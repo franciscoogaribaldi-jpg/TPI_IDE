@@ -1,4 +1,4 @@
-﻿@page "/"
+@page "/"
 @inject SesionUsuario Sesion
 @inject NavigationManager Navigation
 
@@ -10,12 +10,14 @@
 
     @if (Sesion.EsAdministrador)
     {
-        <p>Usá el menú lateral para gestionar clientes, canchas, turnos, reservas, administradores y usuarios.</p>
+        <p>Usá el menú lateral para gestionar clientes, canchas, tipos de cancha, turnos, reservas, administradores, usuarios y reportes.</p>
     }
     else
     {
-        <div class="alert alert-info">
-            Tu usuario no tiene funcionalidades de administración disponibles en esta versión.
+        <p class="text-muted">Desde el menú lateral podés consultar tus reservas vigentes o reservar un nuevo turno para tu deporte preferido.</p>
+        <div class="d-flex gap-2 mt-4">
+            <a href="mis-reservas" class="btn btn-outline-primary">Ver mis reservas</a>
+            <a href="reservar-turno" class="btn btn-primary">+ Reservar un turno</a>
         </div>
     }
 }

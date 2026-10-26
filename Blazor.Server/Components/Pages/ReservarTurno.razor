@@ -1,0 +1,162 @@
+@page "/reservar-turno"
+@inject SesionUsuario Sesion
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+<PageTitle>Reservar Turno</PageTitle>
+
+<h3>Reservar Turno</h3>
+
+@if (!string.IsNullOrEmpty(mensajeError))
+{
+    <div class="alert alert-danger alert-dismissible">
+        @mensajeError
+        <button type="button" class="btn-close" @onclick="() => mensajeError = string.Empty"></button>
+    </div>
+}
+@if (!string.IsNullOrEmpty(mensajeExito))
+{
+    <div class="alert alert-success alert-dismissible">
+        @mensajeExito
+        <a href="mis-reservas" class="alert-link ms-2">Ir a Mis Reservas</a>
+        <button type="button" class="btn-close" @onclick="() => mensajeExito = string.Empty"></button>
+    </div>
+}
+
+<div class="card p-3 mb-4 shadow-sm">
+    <div class="row align-items-end g-3">
+        <div class="col-12 col-md-4">
+            <label class="form-label fw-bold">Fecha de reserva</label>
+            <input type="date" class="form-control" @bind="fecha" min="@DateTime.Today.ToString("yyyy-MM-dd")" />
+        </div>
+        <div class="col-12 col-md-3">
+            <button class="btn btn-primary w-100" @onclick="BuscarTurnosAsync" disabled="@cargando">
+                @if (cargando)
+                {
+                    <span class="spinner-border spinner-border-sm me-2"></span>
+                }
+                Buscar turnos libres
+            </button>
+        </div>
+        <div class="col-12 col-md-5 text-md-end text-muted small">
+            @lblResultado
+        </div>
+    </div>
+</div>
+
+@if (cargando)
+{
+    <div class="d-flex justify-content-center my-4">
+        <div class="spinner-border" role="status"></div>
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>Cancha</th>
+                    <th>Deporte / Tipo</th>
+                    <th>Características</th>
+                    <th>Horario</th>
+                    <th class="text-end">Precio p/Hora</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!turnosLibres.Any())
+                {
+                    <tr><td colspan="6" class="text-center text-muted">No hay turnos disponibles para la fecha elegida.</td></tr>
+                }
+                @foreach (var t in turnosLibres)
+                {
+                    <tr>
+                        <td class="fw-bold">@t.NombreCancha</td>
+                        <td>
+                            <span class="badge @(t.TipoCancha == "Padel" ? "bg-warning text-dark" : "bg-success")">
+                                @t.TipoCancha
+                            </span>
+                        </td>
+                        <td>@t.Caracteristicas</td>
+                        <td><span class="badge bg-light text-dark border">@t.Horario</span></td>
+                        <td class="text-end text-nowrap">@t.PrecioPorHora.ToString("C2")</td>
+                        <td class="text-nowrap text-end">
+                            <button class="btn btn-sm btn-success" disabled="@reservando" @onclick="() => ConfirmarYReservarAsync(t)">
+                                Reservar
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@code {
+    private DateTime fecha = DateTime.Today.AddDays(1);
+    private List<TurnoLibreDTO> turnosLibres = new();
+    private bool cargando = false;
+    private bool reservando = false;
+    private string mensajeError = string.Empty;
+    private string mensajeExito = string.Empty;
+    private string lblResultado = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!Sesion.EstaLogueado)
+        {
+            Navigation.NavigateTo("/login");
+            return;
+        }
+
+        await BuscarTurnosAsync();
+    }
+
+    private async Task BuscarTurnosAsync()
+    {
+        cargando = true;
+        mensajeError = string.Empty;
+        mensajeExito = string.Empty;
+        try
+        {
+            turnosLibres = (await ReservaApiClient.GetTurnosLibresAsync(fecha, Sesion.Token)).ToList();
+            lblResultado = turnosLibres.Count == 0
+                ? "No hay turnos libres en esa fecha."
+                : $"{turnosLibres.Count} turno(s) libre(s) para el {fecha:dd/MM/yyyy}.";
+        }
+        catch (Exception ex)
+        {
+            mensajeError = ex.Message;
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+
+    private async Task ConfirmarYReservarAsync(TurnoLibreDTO turno)
+    {
+        bool confirm = await JS.InvokeAsync<bool>("confirm",
+            $"¿Confirmar reserva de {turno.NombreCancha} para el {fecha:dd/MM/yyyy} a las {turno.Horario} por {turno.PrecioPorHora:C2}?");
+        if (!confirm) return;
+
+        reservando = true;
+        mensajeError = string.Empty;
+        mensajeExito = string.Empty;
+        try
+        {
+            await ReservaApiClient.ReservarAsync(turno.IdCancha, turno.IdTurno, fecha, Sesion.Token);
+            mensajeExito = $"¡Reserva registrada con éxito para {turno.NombreCancha} ({turno.Horario})!";
+            await BuscarTurnosAsync();
+        }
+        catch (Exception ex)
+        {
+            mensajeError = ex.Message;
+        }
+        finally
+        {
+            reservando = false;
+        }
+    }
+}

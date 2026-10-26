@@ -162,5 +162,6 @@ app.MapTurnoEndpoints();
 app.MapReservaEndpoints();
 app.MapAdministradorEndpoints();
 app.MapReporteEndpoints();
+app.MapMisReservasEndpoints();
 
 app.Run();

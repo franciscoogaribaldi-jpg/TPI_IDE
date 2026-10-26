@@ -73,6 +73,10 @@ namespace Application.Services
             if (superficie == null || superficie.Estado == Estado.Inactivo)
                 throw new ReglaDeNegocioException("El tipo de cancha/superficie seleccionado no existe o está inactivo.");
 
+            // La superficie tiene que ser del mismo deporte que la cancha (no hay pádel con "Césped natural").
+            if (!superficie.Deporte.Equals(tipo.ToString(), StringComparison.OrdinalIgnoreCase))
+                throw new ReglaDeNegocioException($"La superficie \"{superficie.Nombre}\" es de {superficie.Deporte}: no se puede usar en una cancha de {tipo}.");
+
             if (tipo == TipoCancha.Futbol)
             {
                 if (dto.TipoFutbol == null || !Enum.IsDefined(typeof(TipoFutbol), dto.TipoFutbol.Value))

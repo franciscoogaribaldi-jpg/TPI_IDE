@@ -74,6 +74,26 @@ namespace Data
             return true;
         }
 
+        public async Task<IEnumerable<Reserva>> GetByClienteAsync(int idCliente)
+        {
+            return await _context.Reservas
+                .Include(r => r.Cliente)
+                .Include(r => r.Cancha)
+                .Include(r => r.Turno)
+                .Include(r => r.Administrador)
+                .Include(r => r.Detalles)
+                .Where(r => r.IdCliente == idCliente)
+                .OrderByDescending(r => r.Fecha)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Reserva>> GetActivasPorFechaAsync(DateTime fecha)
+        {
+            return await _context.Reservas
+                .Where(r => r.Fecha.Date == fecha.Date && r.EstadoReserva != EstadoReserva.Cancelada)
+                .ToListAsync();
+        }
+
         public async Task<bool> ExisteReservaActivaAsync(int idCancha, int idTurno, DateTime fecha, int? excludeId = null)
         {
             var query = _context.Reservas.Where(r =>
