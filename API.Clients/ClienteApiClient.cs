@@ -12,7 +12,7 @@ namespace API.Clients
             var response = await client.GetAsync($"clientes/{id}");
 
             if (response.StatusCode == HttpStatusCode.NotFound) return null;
-            if (!response.IsSuccessStatusCode) throw new Exception(await LeerMensajeDeErrorAsync(response));
+            if (!response.IsSuccessStatusCode) throw await CrearExcepcionAsync(response);
 
             return await response.Content.ReadFromJsonAsync<ClienteDTO>();
         }
@@ -22,7 +22,7 @@ namespace API.Clients
             using var client = CreateHttpClient(token);
             var response = await client.GetAsync("clientes");
 
-            if (!response.IsSuccessStatusCode) throw new Exception(await LeerMensajeDeErrorAsync(response));
+            if (!response.IsSuccessStatusCode) throw await CrearExcepcionAsync(response);
 
             return await response.Content.ReadFromJsonAsync<IEnumerable<ClienteDTO>>() ?? Enumerable.Empty<ClienteDTO>();
         }
@@ -32,7 +32,7 @@ namespace API.Clients
             using var client = CreateHttpClient(token);
             var response = await client.GetAsync($"clientes/buscar?texto={Uri.EscapeDataString(texto)}");
 
-            if (!response.IsSuccessStatusCode) throw new Exception(await LeerMensajeDeErrorAsync(response));
+            if (!response.IsSuccessStatusCode) throw await CrearExcepcionAsync(response);
 
             return await response.Content.ReadFromJsonAsync<IEnumerable<ClienteDTO>>() ?? Enumerable.Empty<ClienteDTO>();
         }
@@ -42,7 +42,7 @@ namespace API.Clients
             using var client = CreateHttpClient(token);
             var response = await client.PostAsJsonAsync("clientes", cliente);
 
-            if (!response.IsSuccessStatusCode) throw new Exception(await LeerMensajeDeErrorAsync(response));
+            if (!response.IsSuccessStatusCode) throw await CrearExcepcionAsync(response);
 
             return (await response.Content.ReadFromJsonAsync<ClienteDTO>())!;
         }
@@ -52,7 +52,7 @@ namespace API.Clients
             using var client = CreateHttpClient(token);
             var response = await client.PutAsJsonAsync("clientes", cliente);
 
-            if (!response.IsSuccessStatusCode) throw new Exception(await LeerMensajeDeErrorAsync(response));
+            if (!response.IsSuccessStatusCode) throw await CrearExcepcionAsync(response);
         }
 
         public static async Task DeleteAsync(int id, string? token = null)
@@ -60,7 +60,7 @@ namespace API.Clients
             using var client = CreateHttpClient(token);
             var response = await client.DeleteAsync($"clientes/{id}");
 
-            if (!response.IsSuccessStatusCode) throw new Exception(await LeerMensajeDeErrorAsync(response));
+            if (!response.IsSuccessStatusCode) throw await CrearExcepcionAsync(response);
         }
     }
 }

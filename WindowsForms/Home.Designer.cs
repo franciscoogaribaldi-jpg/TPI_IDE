@@ -24,6 +24,9 @@ namespace WindowsForms
             this.menuReservas = new System.Windows.Forms.ToolStripMenuItem();
             this.menuAdministradores = new System.Windows.Forms.ToolStripMenuItem();
             this.menuUsuarios = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuReportes = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuReporteOcupacion = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuReporteRecaudacion = new System.Windows.Forms.ToolStripMenuItem();
             this.menuSesion = new System.Windows.Forms.ToolStripMenuItem();
             this.menuCerrarSesion = new System.Windows.Forms.ToolStripMenuItem();
             this.menuSalir = new System.Windows.Forms.ToolStripMenuItem();
@@ -40,6 +43,7 @@ namespace WindowsForms
             this.menuReservas,
             this.menuAdministradores,
             this.menuUsuarios,
+            this.menuReportes,
             this.menuSesion,
             this.lblBienvenida});
             this.menuPrincipal.Location = new System.Drawing.Point(0, 0);
@@ -88,6 +92,29 @@ namespace WindowsForms
             this.menuUsuarios.Size = new System.Drawing.Size(64, 20);
             this.menuUsuarios.Text = "Usuarios";
             this.menuUsuarios.Click += new System.EventHandler(this.menuUsuarios_Click);
+            //
+            // menuReportes
+            //
+            this.menuReportes.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.menuReporteOcupacion,
+            this.menuReporteRecaudacion});
+            this.menuReportes.Name = "menuReportes";
+            this.menuReportes.Size = new System.Drawing.Size(65, 20);
+            this.menuReportes.Text = "Reportes";
+            //
+            // menuReporteOcupacion
+            //
+            this.menuReporteOcupacion.Name = "menuReporteOcupacion";
+            this.menuReporteOcupacion.Size = new System.Drawing.Size(220, 22);
+            this.menuReporteOcupacion.Text = "Ocupación de canchas";
+            this.menuReporteOcupacion.Click += new System.EventHandler(this.menuReporteOcupacion_Click);
+            //
+            // menuReporteRecaudacion
+            //
+            this.menuReporteRecaudacion.Name = "menuReporteRecaudacion";
+            this.menuReporteRecaudacion.Size = new System.Drawing.Size(220, 22);
+            this.menuReporteRecaudacion.Text = "Recaudación";
+            this.menuReporteRecaudacion.Click += new System.EventHandler(this.menuReporteRecaudacion_Click);
             //
             // menuSesion
             //
@@ -143,6 +170,9 @@ namespace WindowsForms
         private System.Windows.Forms.ToolStripMenuItem menuReservas;
         private System.Windows.Forms.ToolStripMenuItem menuAdministradores;
         private System.Windows.Forms.ToolStripMenuItem menuUsuarios;
+        private System.Windows.Forms.ToolStripMenuItem menuReportes;
+        private System.Windows.Forms.ToolStripMenuItem menuReporteOcupacion;
+        private System.Windows.Forms.ToolStripMenuItem menuReporteRecaudacion;
         private System.Windows.Forms.ToolStripMenuItem menuSesion;
         private System.Windows.Forms.ToolStripMenuItem menuCerrarSesion;
         private System.Windows.Forms.ToolStripMenuItem menuSalir;

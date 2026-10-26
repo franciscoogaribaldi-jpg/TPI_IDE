@@ -67,23 +67,25 @@ namespace Application.Services
             if (!Enum.TryParse<TipoCancha>(dto.TipoCancha, ignoreCase: true, out var tipo)) // nos fijamos si es valido y si lo es lo pasamos a Enum
                 throw new ArgumentException("Tipo de cancha inválido. Use 'Futbol' o 'Padel'.", nameof(dto.TipoCancha));
 
-            return tipo switch
+            // Los enums viajan como int en el DTO: se valida con Enum.IsDefined antes de castear.
+            if (tipo == TipoCancha.Futbol)
             {
-                TipoCancha.Futbol => new CanchaFutbol(idCancha, dto.Nombre, estado, dto.PrecioPorHora, dto.EsTechada,
-                    ValidarEnum<TipoFutbol>(dto.TipoFutbol, "Elegí si la cancha es de fútbol 5, 7 u 11."),
-                    ValidarEnum<TipoSuperficie>(dto.TipoSuperficie, "El tipo de superficie no es válido.")),
-                TipoCancha.Padel => new CanchaPadel(idCancha, dto.Nombre, estado, dto.PrecioPorHora, dto.EsTechada,
-                    ValidarEnum<TipoPared>(dto.TipoPared, "El tipo de pared no es válido.")),
-                _ => throw new ArgumentException("Tipo de cancha inválido. Use 'Futbol' o 'Padel'.", nameof(dto.TipoCancha))
-            };
-        }
+                if (dto.TipoFutbol == null || !Enum.IsDefined(typeof(TipoFutbol), dto.TipoFutbol.Value))
+                    throw new ArgumentException("Elegí si la cancha es de fútbol 5, 7 u 11.");
+                if (dto.TipoSuperficie == null || !Enum.IsDefined(typeof(TipoSuperficie), dto.TipoSuperficie.Value))
+                    throw new ArgumentException("El tipo de superficie no es válido.");
 
-        // Los enums viajan como int en el DTO: se valida con Enum.IsDefined antes de castear.
-        private static TEnum ValidarEnum<TEnum>(int? valor, string mensaje) where TEnum : struct, Enum
-        {
-            if (valor == null || !Enum.IsDefined(typeof(TEnum), valor.Value))
-                throw new ArgumentException(mensaje);
-            return (TEnum)Enum.ToObject(typeof(TEnum), valor.Value);
+                return new CanchaFutbol(idCancha, dto.Nombre, estado, dto.PrecioPorHora, dto.EsTechada,
+                    (TipoFutbol)dto.TipoFutbol.Value, (TipoSuperficie)dto.TipoSuperficie.Value);
+            }
+            else
+            {
+                if (dto.TipoPared == null || !Enum.IsDefined(typeof(TipoPared), dto.TipoPared.Value))
+                    throw new ArgumentException("El tipo de pared no es válido.");
+
+                return new CanchaPadel(idCancha, dto.Nombre, estado, dto.PrecioPorHora, dto.EsTechada,
+                    (TipoPared)dto.TipoPared.Value);
+            }
         }
 
         private static CanchaDTO MapToDto(Cancha c)

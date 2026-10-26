@@ -66,6 +66,8 @@ builder.Services.AddScoped<IReservaService, ReservaService>();
 builder.Services.AddScoped<IAdministradorRepository, AdministradorRepository>();
 builder.Services.AddScoped<IAdministradorService, AdministradorService>();
 
+builder.Services.AddScoped<IReporteService, ReporteService>();
+
 // =========== Seguridad: autenticación con JWT (Entrega 3) ===========
 var jwtKey = builder.Configuration["Jwt:Key"]!;
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme) // a partir de ahora puede autenticar peticiones. esquema de seguridad bearer
@@ -156,5 +158,6 @@ app.MapCanchaEndpoints();
 app.MapTurnoEndpoints();
 app.MapReservaEndpoints();
 app.MapAdministradorEndpoints();
+app.MapReporteEndpoints();
 
 app.Run();

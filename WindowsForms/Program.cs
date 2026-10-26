@@ -1,5 +1,5 @@
 using API.Clients;
-using System.Text.Json;
+using Microsoft.Extensions.Configuration;
 
 namespace WindowsForms
 {
@@ -34,26 +34,16 @@ namespace WindowsForms
         }
 
         // Lee la URL de la API del appsettings.json que está junto al .exe (se copia ahí al
-        // compilar, ver WindowsForms.csproj). Si el archivo no está o no trae "ApiUrl", queda
-        // la URL por defecto de BaseApiClient.
+        // compilar, ver WindowsForms.csproj), igual que el TPIContext de la cátedra lee su
+        // appsettings.json. Si no trae "ApiUrl", queda la URL por defecto de BaseApiClient.
         private static void CargarConfiguracion()
         {
-            string ruta = Path.Combine(AppContext.BaseDirectory, "appsettings.json");
-            if (!File.Exists(ruta)) return;
+            var configuracion = new ConfigurationBuilder()
+                .SetBasePath(AppContext.BaseDirectory)
+                .AddJsonFile("appsettings.json", optional: true)
+                .Build();
 
-            try
-            {
-                using var documento = JsonDocument.Parse(File.ReadAllText(ruta));
-                if (documento.RootElement.TryGetProperty("ApiUrl", out var apiUrl) && apiUrl.ValueKind == JsonValueKind.String)
-                {
-                    BaseApiClient.BaseUrl = apiUrl.GetString()!;
-                }
-            }
-            catch (JsonException)
-            {
-                MessageBox.Show("El archivo appsettings.json tiene un formato inválido. Se usará la URL de la API por defecto.",
-                    "Configuración", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            }
+            BaseApiClient.BaseUrl = configuracion["ApiUrl"] ?? BaseApiClient.BaseUrlPorDefecto;
         }
     }
 }

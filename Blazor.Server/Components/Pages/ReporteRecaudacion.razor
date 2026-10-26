@@ -1,0 +1,133 @@
+@page "/reportes/recaudacion"
+@inject SesionUsuario Sesion
+@inject NavigationManager Navigation
+
+<PageTitle>Reporte - Recaudación</PageTitle>
+
+<h3>Reporte: recaudación</h3>
+<p class="text-muted small">Solo cuentan las reservas Finalizadas (ya jugadas y cobradas).</p>
+
+@if (!string.IsNullOrEmpty(mensajeError))
+{
+    <div class="alert alert-danger alert-dismissible">
+        @mensajeError
+        <button type="button" class="btn-close" @onclick="() => mensajeError = string.Empty"></button>
+    </div>
+}
+
+<div class="row g-2 mb-3 align-items-end">
+    <div class="col-auto">
+        <label class="form-label">Desde</label>
+        <input type="date" class="form-control" @bind="desde" />
+    </div>
+    <div class="col-auto">
+        <label class="form-label">Hasta</label>
+        <input type="date" class="form-control" @bind="hasta" />
+    </div>
+    <div class="col-auto">
+        <button class="btn btn-primary" @onclick="GenerarAsync" disabled="@cargando">Generar</button>
+    </div>
+</div>
+
+@if (cargando)
+{
+    <div class="d-flex justify-content-center">
+        <div class="spinner-border" role="status"></div>
+    </div>
+}
+else if (datos.Any())
+{
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>Mes</th>
+                    <th>Tipo de cancha</th>
+                    <th class="text-end">Reservas</th>
+                    <th class="text-end">Alquiler de canchas</th>
+                    <th class="text-end">Adicionales</th>
+                    <th class="text-end">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var d in datos)
+                {
+                    <tr>
+                        <td>@($"{d.Mes:00}/{d.Anio}")</td>
+                        <td>@d.TipoCancha</td>
+                        <td class="text-end">@d.CantidadReservas</td>
+                        <td class="text-end text-nowrap">@d.ImporteCanchas.ToString("C2")</td>
+                        <td class="text-end text-nowrap">@d.ImporteAdicionales.ToString("C2")</td>
+                        <td class="text-end text-nowrap">@d.ImporteTotal.ToString("C2")</td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot>
+                @foreach (var tipo in datos.Select(d => d.TipoCancha).Distinct().OrderBy(t => t))
+                {
+                    <tr>
+                        <td colspan="2">Subtotal @tipo</td>
+                        <td class="text-end">@datos.Where(d => d.TipoCancha == tipo).Sum(d => d.CantidadReservas)</td>
+                        <td colspan="2"></td>
+                        <td class="text-end text-nowrap">@datos.Where(d => d.TipoCancha == tipo).Sum(d => d.ImporteTotal).ToString("C2")</td>
+                    </tr>
+                }
+                <tr class="fw-bold">
+                    <td colspan="2">Total del período</td>
+                    <td class="text-end">@datos.Sum(d => d.CantidadReservas)</td>
+                    <td class="text-end text-nowrap">@datos.Sum(d => d.ImporteCanchas).ToString("C2")</td>
+                    <td class="text-end text-nowrap">@datos.Sum(d => d.ImporteAdicionales).ToString("C2")</td>
+                    <td class="text-end text-nowrap">@datos.Sum(d => d.ImporteTotal).ToString("C2")</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+}
+else if (generado)
+{
+    <div class="alert alert-info">No hay reservas finalizadas en el período elegido.</div>
+}
+
+@code {
+    private List<ReporteRecaudacionDTO> datos = new();
+    private DateTime desde = new DateTime(DateTime.Today.AddMonths(-2).Year, DateTime.Today.AddMonths(-2).Month, 1);
+    private DateTime hasta = DateTime.Today;
+    private bool cargando;
+    private bool generado;
+    private string mensajeError = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!Sesion.EsAdministrador)
+        {
+            Navigation.NavigateTo(Sesion.EstaLogueado ? "/" : "/login");
+            return;
+        }
+        await GenerarAsync();
+    }
+
+    private async Task GenerarAsync()
+    {
+        mensajeError = string.Empty;
+        if (desde.Date > hasta.Date)
+        {
+            mensajeError = "La fecha 'desde' no puede ser posterior a la fecha 'hasta'.";
+            return;
+        }
+
+        cargando = true;
+        try
+        {
+            datos = (await ReporteApiClient.GetRecaudacionAsync(desde, hasta, Sesion.Token)).ToList();
+            generado = true;
+        }
+        catch (Exception ex)
+        {
+            mensajeError = ex.Message;
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+}

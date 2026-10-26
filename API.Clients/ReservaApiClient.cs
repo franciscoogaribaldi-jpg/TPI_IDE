@@ -11,7 +11,7 @@ namespace API.Clients
             using var client = CreateHttpClient(token);
             var response = await client.GetAsync("reservas");
 
-            if (!response.IsSuccessStatusCode) throw new Exception(await LeerMensajeDeErrorAsync(response));
+            if (!response.IsSuccessStatusCode) throw await CrearExcepcionAsync(response);
 
             return await response.Content.ReadFromJsonAsync<IEnumerable<ReservaDTO>>() ?? Enumerable.Empty<ReservaDTO>();
         }
@@ -21,7 +21,7 @@ namespace API.Clients
             using var client = CreateHttpClient(token);
             var response = await client.PostAsJsonAsync("reservas", reserva);
 
-            if (!response.IsSuccessStatusCode) throw new Exception(await LeerMensajeDeErrorAsync(response));
+            if (!response.IsSuccessStatusCode) throw await CrearExcepcionAsync(response);
 
             return (await response.Content.ReadFromJsonAsync<ReservaDTO>())!;
         }
@@ -31,7 +31,7 @@ namespace API.Clients
             using var client = CreateHttpClient(token);
             var response = await client.PutAsJsonAsync("reservas", reserva);
 
-            if (!response.IsSuccessStatusCode) throw new Exception(await LeerMensajeDeErrorAsync(response));
+            if (!response.IsSuccessStatusCode) throw await CrearExcepcionAsync(response);
         }
 
         public static async Task DeleteAsync(int id, string? token = null)
@@ -39,7 +39,7 @@ namespace API.Clients
             using var client = CreateHttpClient(token);
             var response = await client.DeleteAsync($"reservas/{id}");
 
-            if (!response.IsSuccessStatusCode) throw new Exception(await LeerMensajeDeErrorAsync(response));
+            if (!response.IsSuccessStatusCode) throw await CrearExcepcionAsync(response);
         }
     }
 }

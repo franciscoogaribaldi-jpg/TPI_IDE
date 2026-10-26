@@ -12,7 +12,7 @@ namespace API.Clients
             var response = await client.GetAsync($"administradores/{id}");
 
             if (response.StatusCode == HttpStatusCode.NotFound) return null;
-            if (!response.IsSuccessStatusCode) throw new Exception(await LeerMensajeDeErrorAsync(response));
+            if (!response.IsSuccessStatusCode) throw await CrearExcepcionAsync(response);
 
             return await response.Content.ReadFromJsonAsync<AdministradorDTO>();
         }
@@ -22,7 +22,7 @@ namespace API.Clients
             using var client = CreateHttpClient(token);
             var response = await client.GetAsync("administradores");
 
-            if (!response.IsSuccessStatusCode) throw new Exception(await LeerMensajeDeErrorAsync(response));
+            if (!response.IsSuccessStatusCode) throw await CrearExcepcionAsync(response);
 
             return await response.Content.ReadFromJsonAsync<IEnumerable<AdministradorDTO>>() ?? Enumerable.Empty<AdministradorDTO>();
         }
@@ -32,7 +32,7 @@ namespace API.Clients
             using var client = CreateHttpClient(token);
             var response = await client.PostAsJsonAsync("administradores", administrador);
 
-            if (!response.IsSuccessStatusCode) throw new Exception(await LeerMensajeDeErrorAsync(response));
+            if (!response.IsSuccessStatusCode) throw await CrearExcepcionAsync(response);
 
             return (await response.Content.ReadFromJsonAsync<AdministradorDTO>())!;
         }
@@ -42,7 +42,7 @@ namespace API.Clients
             using var client = CreateHttpClient(token);
             var response = await client.PutAsJsonAsync("administradores", administrador);
 
-            if (!response.IsSuccessStatusCode) throw new Exception(await LeerMensajeDeErrorAsync(response));
+            if (!response.IsSuccessStatusCode) throw await CrearExcepcionAsync(response);
         }
 
         public static async Task DeleteAsync(int id, string? token = null)
@@ -50,7 +50,7 @@ namespace API.Clients
             using var client = CreateHttpClient(token);
             var response = await client.DeleteAsync($"administradores/{id}");
 
-            if (!response.IsSuccessStatusCode) throw new Exception(await LeerMensajeDeErrorAsync(response));
+            if (!response.IsSuccessStatusCode) throw await CrearExcepcionAsync(response);
         }
     }
 }

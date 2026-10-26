@@ -17,7 +17,7 @@ namespace API.Clients
                 return null; // credenciales incorrectas: no es un error de conexión, es un "no"
 
             if (!response.IsSuccessStatusCode)
-                throw new Exception(await LeerMensajeDeErrorAsync(response));
+                throw await CrearExcepcionAsync(response);
 
             return await response.Content.ReadFromJsonAsync<LoginResponseDTO>();
         }

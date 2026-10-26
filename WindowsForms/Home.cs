@@ -17,6 +17,7 @@ namespace WindowsForms
             menuReservas.Visible = esAdministrador;
             menuAdministradores.Visible = esAdministrador;
             menuUsuarios.Visible = esAdministrador;
+            menuReportes.Visible = esAdministrador;
 
             if (!esAdministrador)
             {
@@ -80,26 +81,53 @@ namespace WindowsForms
 
         private void menuAdministradores_Click(object sender, EventArgs e)
         {
-            AbrirLista<AdministradorLista>();
-        }
-
-        private void menuUsuarios_Click(object sender, EventArgs e)
-        {
-            AbrirLista<UsuarioLista>();
-        }
-
-        // Igual que los demás menús: si la lista ya está abierta la trae al frente, si no la abre
-        // como ventana hija (MDI).
-        private void AbrirLista<T>() where T : Form, new()
-        {
-            var existente = MdiChildren.OfType<T>().FirstOrDefault();
+            var existente = MdiChildren.OfType<AdministradorLista>().FirstOrDefault();
             if (existente != null)
             {
                 existente.Activate();
                 return;
             }
 
-            var form = new T { MdiParent = this };
+            var form = new AdministradorLista { MdiParent = this };
+            form.Show();
+        }
+
+        private void menuUsuarios_Click(object sender, EventArgs e)
+        {
+            var existente = MdiChildren.OfType<UsuarioLista>().FirstOrDefault();
+            if (existente != null)
+            {
+                existente.Activate();
+                return;
+            }
+
+            var form = new UsuarioLista { MdiParent = this };
+            form.Show();
+        }
+
+        private void menuReporteOcupacion_Click(object sender, EventArgs e)
+        {
+            var existente = MdiChildren.OfType<ReporteOcupacion>().FirstOrDefault();
+            if (existente != null)
+            {
+                existente.Activate();
+                return;
+            }
+
+            var form = new ReporteOcupacion { MdiParent = this };
+            form.Show();
+        }
+
+        private void menuReporteRecaudacion_Click(object sender, EventArgs e)
+        {
+            var existente = MdiChildren.OfType<ReporteRecaudacion>().FirstOrDefault();
+            if (existente != null)
+            {
+                existente.Activate();
+                return;
+            }
+
+            var form = new ReporteRecaudacion { MdiParent = this };
             form.Show();
         }
 

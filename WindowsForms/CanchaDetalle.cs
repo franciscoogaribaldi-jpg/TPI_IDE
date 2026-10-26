@@ -5,14 +5,11 @@ namespace WindowsForms
 {
     public partial class CanchaDetalle : Form
     {
-        // Opciones de los combos: el valor es el int del enum de Domain.Model (WinForms no lo
-        // referencia a propósito) y el texto es lo que ve el usuario.
-        private static readonly (int Valor, string Texto)[] TiposFutbol =
-            { (5, "Fútbol 5"), (7, "Fútbol 7"), (11, "Fútbol 11") };
-        private static readonly (int Valor, string Texto)[] Superficies =
-            { (1, "Césped sintético"), (2, "Césped natural"), (3, "Cemento") };
-        private static readonly (int Valor, string Texto)[] Paredes =
-            { (1, "Vidrio"), (2, "Muro") };
+        // Valores del enum TipoFutbol (Domain.Model) en el mismo orden que el combo: la posición
+        // 0 es Fútbol 5, la 1 es Fútbol 7 y la 2 es Fútbol 11. Superficie y Pared no lo
+        // necesitan porque sus valores son 1, 2, 3... (alcanza con SelectedIndex + 1, como el
+        // estado en ReservaDetalle).
+        private static readonly int[] ValoresTipoFutbol = { 5, 7, 11 };
 
         private readonly CanchaDTO? _canchaOriginal;
         private bool EsAlta => _canchaOriginal == null;
@@ -33,10 +30,12 @@ namespace WindowsForms
         {
             Text = EsAlta ? "Nueva cancha" : "Editar cancha";
 
-
-            CargarCombo(cmbTipoFutbol, TiposFutbol);
-            CargarCombo(cmbSuperficie, Superficies);
-            CargarCombo(cmbTipoPared, Paredes);
+            cmbTipoFutbol.Items.AddRange(new object[] { "Fútbol 5", "Fútbol 7", "Fútbol 11" });
+            cmbSuperficie.Items.AddRange(new object[] { "Césped sintético", "Césped natural", "Cemento" });
+            cmbTipoPared.Items.AddRange(new object[] { "Vidrio", "Muro" });
+            cmbTipoFutbol.SelectedIndex = 0;
+            cmbSuperficie.SelectedIndex = 0;
+            cmbTipoPared.SelectedIndex = 0;
 
             if (EsAlta)
             {
@@ -61,35 +60,16 @@ namespace WindowsForms
 
                 if (esPadel)
                 {
-                    SeleccionarValor(cmbTipoPared, Paredes, _canchaOriginal.TipoPared);
+                    cmbTipoPared.SelectedIndex = (_canchaOriginal.TipoPared ?? 1) - 1;
                 }
                 else
                 {
-                    SeleccionarValor(cmbTipoFutbol, TiposFutbol, _canchaOriginal.TipoFutbol);
-                    SeleccionarValor(cmbSuperficie, Superficies, _canchaOriginal.TipoSuperficie);
+                    cmbTipoFutbol.SelectedIndex = Array.IndexOf(ValoresTipoFutbol, _canchaOriginal.TipoFutbol ?? 5);
+                    cmbSuperficie.SelectedIndex = (_canchaOriginal.TipoSuperficie ?? 1) - 1;
                 }
 
                 ActualizarVisibilidadPaneles();
             }
-        }
-
-        private static void CargarCombo(ComboBox combo, (int Valor, string Texto)[] opciones)
-        {
-            combo.Items.Clear();
-            foreach (var opcion in opciones)
-                combo.Items.Add(opcion.Texto);
-            combo.SelectedIndex = 0;
-        }
-
-        private static void SeleccionarValor(ComboBox combo, (int Valor, string Texto)[] opciones, int? valor)
-        {
-            int indice = Array.FindIndex(opciones, o => o.Valor == valor);
-            combo.SelectedIndex = indice >= 0 ? indice : 0;
-        }
-
-        private static int ValorSeleccionado(ComboBox combo, (int Valor, string Texto)[] opciones)
-        {
-            return opciones[combo.SelectedIndex].Valor;
         }
 
         private void radTipo_CheckedChanged(object sender, EventArgs e)
@@ -135,9 +115,9 @@ namespace WindowsForms
                 PrecioPorHora = numPrecioPorHora.Value,
                 TipoCancha = esPadel ? "Padel" : "Futbol",
                 EsTechada = chkTechada.Checked,
-                TipoFutbol = esPadel ? null : ValorSeleccionado(cmbTipoFutbol, TiposFutbol),
-                TipoSuperficie = esPadel ? null : ValorSeleccionado(cmbSuperficie, Superficies),
-                TipoPared = esPadel ? ValorSeleccionado(cmbTipoPared, Paredes) : null
+                TipoFutbol = esPadel ? null : ValoresTipoFutbol[cmbTipoFutbol.SelectedIndex],
+                TipoSuperficie = esPadel ? null : cmbSuperficie.SelectedIndex + 1,
+                TipoPared = esPadel ? cmbTipoPared.SelectedIndex + 1 : null
             };
 
             btnGuardar.Enabled = false;

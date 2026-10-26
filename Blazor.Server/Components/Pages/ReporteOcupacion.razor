@@ -1,0 +1,145 @@
+@page "/reportes/ocupacion"
+@inject SesionUsuario Sesion
+@inject NavigationManager Navigation
+
+<PageTitle>Reporte - Ocupación</PageTitle>
+
+<h3>Reporte: ocupación de canchas</h3>
+
+@if (!string.IsNullOrEmpty(mensajeError))
+{
+    <div class="alert alert-danger alert-dismissible">
+        @mensajeError
+        <button type="button" class="btn-close" @onclick="() => mensajeError = string.Empty"></button>
+    </div>
+}
+
+<div class="row g-2 mb-3 align-items-end">
+    <div class="col-auto">
+        <label class="form-label">Desde</label>
+        <input type="date" class="form-control" @bind="desde" />
+    </div>
+    <div class="col-auto">
+        <label class="form-label">Hasta</label>
+        <input type="date" class="form-control" @bind="hasta" />
+    </div>
+    <div class="col-auto">
+        <button class="btn btn-primary" @onclick="GenerarAsync" disabled="@cargando">Generar</button>
+    </div>
+</div>
+
+@if (cargando)
+{
+    <div class="d-flex justify-content-center">
+        <div class="spinner-border" role="status"></div>
+    </div>
+}
+else if (datos.Any())
+{
+    @* ---------- Gráfico de barras: la "barra de progreso" de Bootstrap, con el ancho en % ---------- *@
+    <div class="card mb-3">
+        <div class="card-body">
+            <h6 class="card-title">Reservas por cancha <span class="small text-muted">(verde: fútbol - amarillo: pádel)</span></h6>
+            @foreach (var d in datos)
+            {
+                <div class="row align-items-center mb-2">
+                    <div class="col-4 col-md-3 text-end small">@d.NombreCancha (@d.TipoCancha)</div>
+                    <div class="col">
+                        <div class="progress" style="height: 22px;">
+                            <div class="progress-bar @(d.TipoCancha == "Pádel" ? "bg-warning" : "bg-success")" style="width: @AnchoBarra(d)%;"></div>
+                        </div>
+                    </div>
+                    <div class="col-4 col-md-3 small text-muted">@d.CantidadReservas reservas (@d.PorcentajeOcupacion.ToString("0.0") %)</div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>Cancha</th>
+                    <th>Tipo</th>
+                    <th class="text-end">Reservas</th>
+                    <th class="text-end">Turnos disponibles</th>
+                    <th class="text-end">% Ocupación</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var d in datos)
+                {
+                    <tr>
+                        <td>@d.NombreCancha</td>
+                        <td>@d.TipoCancha</td>
+                        <td class="text-end">@d.CantidadReservas</td>
+                        <td class="text-end">@d.TurnosDisponibles</td>
+                        <td class="text-end">@d.PorcentajeOcupacion.ToString("0.0") %</td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot>
+                <tr class="fw-bold">
+                    <td colspan="2">Total (sin contar las canceladas)</td>
+                    <td class="text-end">@datos.Sum(d => d.CantidadReservas)</td>
+                    <td colspan="2"></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+}
+else if (generado)
+{
+    <div class="alert alert-info">No hay datos para el período elegido.</div>
+}
+
+@code {
+    private List<ReporteOcupacionDTO> datos = new();
+    private DateTime desde = DateTime.Today.AddDays(-30);
+    private DateTime hasta = DateTime.Today.AddDays(14);
+    private bool cargando;
+    private bool generado;
+    private string mensajeError = string.Empty;
+
+    // Ancho de cada barra, en %: la cancha con más reservas ocupa el 100 % (regla de tres).
+    private int AnchoBarra(ReporteOcupacionDTO d)
+    {
+        int maximo = datos.Max(x => x.CantidadReservas);
+        return maximo == 0 ? 0 : d.CantidadReservas * 100 / maximo;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!Sesion.EsAdministrador)
+        {
+            Navigation.NavigateTo(Sesion.EstaLogueado ? "/" : "/login");
+            return;
+        }
+        await GenerarAsync();
+    }
+
+    private async Task GenerarAsync()
+    {
+        mensajeError = string.Empty;
+        if (desde.Date > hasta.Date)
+        {
+            mensajeError = "La fecha 'desde' no puede ser posterior a la fecha 'hasta'.";
+            return;
+        }
+
+        cargando = true;
+        try
+        {
+            datos = (await ReporteApiClient.GetOcupacionAsync(desde, hasta, Sesion.Token)).ToList();
+            generado = true;
+        }
+        catch (Exception ex)
+        {
+            mensajeError = ex.Message;
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+}

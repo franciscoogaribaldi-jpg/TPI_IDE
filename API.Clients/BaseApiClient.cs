@@ -36,9 +36,7 @@ namespace API.Clients
 
         protected static HttpClient CreateHttpClient(string? token = null)
         {
-            // El handler revisa cada respuesta: si es 401 con token, la sesión venció (ver SesionExpiradaHandler).
-            var handler = new SesionExpiradaHandler { InnerHandler = new HttpClientHandler() };
-            var client = new HttpClient(handler) { BaseAddress = new Uri(BaseUrl) };
+            var client = new HttpClient { BaseAddress = new Uri(BaseUrl) };
             client.DefaultRequestHeaders.Accept.Clear();
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
@@ -53,10 +51,27 @@ namespace API.Clients
         }
 
         /// <summary>
+        /// Convierte una respuesta de error de la API en la excepción que corresponde. Todos los
+        /// ApiClient la usan igual: if (!response.IsSuccessStatusCode) throw await CrearExcepcionAsync(response);
+        /// - 401 en un pedido que llevaba token: el token venció -> SesionExpiradaException
+        ///   (el escritorio vuelve al login, ver ErroresUI). El login no lleva token, así que una
+        ///   contraseña incorrecta nunca se confunde con una sesión vencida.
+        /// - Cualquier otro error: Exception con el mensaje de la regla de negocio.
+        /// </summary>
+        protected static async Task<Exception> CrearExcepcionAsync(HttpResponseMessage response)
+        {
+            bool llevabaToken = response.RequestMessage?.Headers.Authorization != null;
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized && llevabaToken)
+                return new SesionExpiradaException();
+
+            return new Exception(await LeerMensajeDeErrorAsync(response));
+        }
+
+        /// <summary>
         /// Lee el { "error": "..." } que devuelven nuestros endpoints en los BadRequest,
         /// para mostrar el mensaje de la regla de negocio en vez de un código HTTP pelado.
         /// </summary>
-        protected static async Task<string> LeerMensajeDeErrorAsync(HttpResponseMessage response)
+        private static async Task<string> LeerMensajeDeErrorAsync(HttpResponseMessage response)
         {
             try
             {

@@ -13,6 +13,11 @@
     <ProjectReference Include="..\DTOs\DTOs.csproj" />
   </ItemGroup>
 
+  <!-- Para leer appsettings.json con ConfigurationBuilder (el mismo paquete y versión que usa la cátedra). -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
+  </ItemGroup>
+
   <!-- Se copia junto al .exe: Program.cs lee de acá la URL de la API ("ApiUrl"). -->
   <ItemGroup>
     <None Update="appsettings.json">

@@ -11,7 +11,7 @@ namespace API.Clients
             using var client = CreateHttpClient(token);
             var response = await client.GetAsync("usuarios");
 
-            if (!response.IsSuccessStatusCode) throw new Exception(await LeerMensajeDeErrorAsync(response));
+            if (!response.IsSuccessStatusCode) throw await CrearExcepcionAsync(response);
 
             return await response.Content.ReadFromJsonAsync<IEnumerable<UsuarioDTO>>() ?? Enumerable.Empty<UsuarioDTO>();
         }
@@ -22,7 +22,7 @@ namespace API.Clients
             var response = await client.GetAsync($"usuarios/{id}");
 
             if (response.StatusCode == HttpStatusCode.NotFound) return null;
-            if (!response.IsSuccessStatusCode) throw new Exception(await LeerMensajeDeErrorAsync(response));
+            if (!response.IsSuccessStatusCode) throw await CrearExcepcionAsync(response);
 
             return await response.Content.ReadFromJsonAsync<UsuarioDTO>();
         }
@@ -32,7 +32,7 @@ namespace API.Clients
             using var client = CreateHttpClient(token);
             var response = await client.PostAsJsonAsync("usuarios", usuario);
 
-            if (!response.IsSuccessStatusCode) throw new Exception(await LeerMensajeDeErrorAsync(response));
+            if (!response.IsSuccessStatusCode) throw await CrearExcepcionAsync(response);
 
             return (await response.Content.ReadFromJsonAsync<UsuarioDTO>())!;
         }
@@ -42,7 +42,7 @@ namespace API.Clients
             using var client = CreateHttpClient(token);
             var response = await client.PutAsJsonAsync("usuarios", usuario);
 
-            if (!response.IsSuccessStatusCode) throw new Exception(await LeerMensajeDeErrorAsync(response));
+            if (!response.IsSuccessStatusCode) throw await CrearExcepcionAsync(response);
         }
 
         public static async Task DeleteAsync(int id, string? token = null)
@@ -50,7 +50,7 @@ namespace API.Clients
             using var client = CreateHttpClient(token);
             var response = await client.DeleteAsync($"usuarios/{id}");
 
-            if (!response.IsSuccessStatusCode) throw new Exception(await LeerMensajeDeErrorAsync(response));
+            if (!response.IsSuccessStatusCode) throw await CrearExcepcionAsync(response);
         }
     }
 }
