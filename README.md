@@ -52,6 +52,11 @@ Al arrancar la WebAPI, si las tablas están vacías, se cargan automáticamente:
 
 * **Usuario administrador:** usuario `Admin`, contraseña `admin123` (rol Administrador).
 * **15 turnos** de una hora, de 08:00 a 23:00.
+* **Segundo administrador:** usuario `lgomez`, contraseña `admin123`.
+* **Clientes de prueba:** 6 clientes con sus cuentas (`jperez`, `mgarcia`, `lfernandez`, `smartinez`, `drodriguez`, `vlopez`), contraseña `cliente123`.
+* **Tipos de cancha / superficies:** Césped sintético, Césped natural, Cemento, Parquet, Vidrio / Blindex y Muro / Cemento.
+* **Canchas:** 4 de fútbol y 2 de pádel vinculadas a sus tipos de superficie.
+* **Reservas:** ~1160 reservas con líneas de detalle (alquiler de raquetas, pelotas, pecheras, bebidas) y ocupación realista (20-28%) para alimentar los reportes.
 
 ### Ejecución
 
@@ -79,7 +84,7 @@ Las dos interfaces leen la dirección de la API de la clave `ApiUrl` de su `apps
 
 * Para entrar al sistema hay que iniciar sesión. La API devuelve un token JWT que las interfaces mandan en cada pedido (`Authorization: Bearer <token>`). El token vence a los 120 minutos (`Jwt:ExpiracionMinutos` en `WebAPI/appsettings.json`).
 * Cuando el token vence, el escritorio avisa y vuelve a la pantalla de login; la web muestra el aviso de sesión vencida.
-* Autorización por rol: **Administrador** accede a la gestión de clientes, canchas, turnos y reservas; **Cliente** no tiene acceso a esas pantallas.
+* Autorización por rol: **Administrador** accede a la gestión integral (clientes, canchas, tipos de cancha, turnos, reservas, administradores, usuarios y reportes). **Cliente** accede a "Mis reservas" y "Reservar turno" (la API obtiene el cliente del token, por lo que solo puede consultar, reservar y cancelar sus propias reservas).
 * Las contraseñas se guardan hasheadas (SHA-256) y nunca se devuelven en las respuestas de la API.
 * Para probar la API desde Swagger: ejecutar `POST /auth/login` con `{"nombreUsuario":"Admin","contrasena":"admin123"}`, copiar el `token` de la respuesta y pegarlo en el botón **Authorize** (sin escribir "Bearer").
 
