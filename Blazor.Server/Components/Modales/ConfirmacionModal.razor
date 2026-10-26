@@ -1,0 +1,89 @@
+@if (visible)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow border-0">
+                <div class="modal-header @headerClass">
+                    <h5 class="modal-title">@titulo</h5>
+                    <button type="button" class="btn-close @(headerClass.Contains("text-white") ? "btn-close-white" : "")" @onclick="Cerrar" disabled="@procesando"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="mb-0 fs-6">@mensaje</p>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" @onclick="Cerrar" disabled="@procesando">
+                        @textoCancelar
+                    </button>
+                    <button type="button" class="btn @botonConfirmarClass" @onclick="ConfirmarAsync" disabled="@procesando">
+                        @if (procesando)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2"></span>
+                        }
+                        @textoConfirmar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private bool visible;
+    private bool procesando;
+    private string titulo = "Confirmar acción";
+    private string mensaje = string.Empty;
+    private string textoConfirmar = "Aceptar";
+    private string textoCancelar = "Cancelar";
+    private string botonConfirmarClass = "btn-danger";
+    private string headerClass = "bg-danger text-white";
+    private Func<Task>? accionConfirmar;
+
+    public void Mostrar(
+        string mensajeModal,
+        Func<Task> onConfirmar,
+        string tituloModal = "Confirmar acción",
+        string btnConfirmarTexto = "Aceptar",
+        string btnConfirmarClase = "btn-danger",
+        string claseHeader = "bg-danger text-white",
+        string btnCancelarTexto = "Cancelar")
+    {
+        mensaje = mensajeModal;
+        accionConfirmar = onConfirmar;
+        titulo = tituloModal;
+        textoConfirmar = btnConfirmarTexto;
+        botonConfirmarClass = btnConfirmarClase;
+        headerClass = claseHeader;
+        textoCancelar = btnCancelarTexto;
+        procesando = false;
+        visible = true;
+        StateHasChanged();
+    }
+
+    public void Cerrar()
+    {
+        if (procesando) return;
+        visible = false;
+        StateHasChanged();
+    }
+
+    private async Task ConfirmarAsync()
+    {
+        if (accionConfirmar == null)
+        {
+            visible = false;
+            return;
+        }
+
+        procesando = true;
+        try
+        {
+            await accionConfirmar();
+            visible = false;
+        }
+        finally
+        {
+            procesando = false;
+            StateHasChanged();
+        }
+    }
+}

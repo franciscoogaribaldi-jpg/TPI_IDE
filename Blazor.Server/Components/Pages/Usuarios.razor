@@ -1,7 +1,6 @@
 @page "/usuarios"
 @inject SesionUsuario Sesion
 @inject NavigationManager Navigation
-@inject IJSRuntime JS
 
 <PageTitle>Usuarios</PageTitle>
 
@@ -59,7 +58,7 @@ else
                         <td>@(u.Rol == 1 ? "Administrador" : "Cliente")</td>
                         <td class="text-nowrap">
                             <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => modal.MostrarEdicion(u)">Editar</button>
-                            <button class="btn btn-sm btn-outline-danger" @onclick="() => ConfirmarEliminarAsync(u)">Eliminar</button>
+                            <button class="btn btn-sm btn-outline-danger" @onclick="() => ConfirmarEliminar(u)">Eliminar</button>
                         </td>
                     </tr>
                 }
@@ -69,6 +68,7 @@ else
 }
 
 <UsuarioModal @ref="modal" OnGuardado="AlGuardarAsync" />
+<ConfirmacionModal @ref="modalConfirmacion" />
 
 @code {
     private List<UsuarioDTO> usuarios = new();
@@ -76,6 +76,7 @@ else
     private string mensajeError = string.Empty;
     private string mensajeExito = string.Empty;
     private UsuarioModal modal = null!;
+    private ConfirmacionModal modalConfirmacion = null!;
 
     protected override async Task OnInitializedAsync()
     {
@@ -93,24 +94,31 @@ else
             usuarios = (await UsuarioApiClient.GetAllAsync(Sesion.Token)).ToList());
     }
 
-    // aviso: texto especial del modal (por ejemplo, "usuario recuperado") o null.
     private async Task AlGuardarAsync(string? aviso)
     {
         mensajeExito = aviso ?? "Usuario guardado correctamente.";
         await CargarTodosAsync();
     }
 
-    private async Task ConfirmarEliminarAsync(UsuarioDTO u)
+    private void ConfirmarEliminar(UsuarioDTO u)
     {
-        bool confirmado = await JS.InvokeAsync<bool>("confirm", $"¿Eliminar el usuario \"{u.NombreUsuario}\"? Ya no va a poder iniciar sesión.");
-        if (!confirmado) return;
+        mensajeError = string.Empty;
+        mensajeExito = string.Empty;
 
-        await EjecutarConEsperaAsync(async () =>
-        {
-            await UsuarioApiClient.DeleteAsync(u.IdUsuario, Sesion.Token);
-            usuarios = (await UsuarioApiClient.GetAllAsync(Sesion.Token)).ToList();
-            mensajeExito = "Usuario eliminado.";
-        });
+        modalConfirmacion.Mostrar(
+            $"¿Eliminar el usuario \"{u.NombreUsuario}\"? Ya no va a poder iniciar sesión.",
+            async () =>
+            {
+                await EjecutarConEsperaAsync(async () =>
+                {
+                    await UsuarioApiClient.DeleteAsync(u.IdUsuario, Sesion.Token);
+                    usuarios = (await UsuarioApiClient.GetAllAsync(Sesion.Token)).ToList();
+                    mensajeExito = "Usuario eliminado.";
+                });
+            },
+            tituloModal: "Eliminar usuario",
+            btnConfirmarTexto: "Eliminar"
+        );
     }
 
     private async Task EjecutarConEsperaAsync(Func<Task> accion)

@@ -71,6 +71,7 @@ else
 }
 
 <TipoSuperficieModal @ref="modal" OnGuardado="AlGuardarAsync" />
+<ConfirmacionModal @ref="modalConfirmacion" />
 
 @code {
     private List<TipoSuperficieDTO> tipos = new();
@@ -78,6 +79,7 @@ else
     private string mensajeError = string.Empty;
     private string mensajeExito = string.Empty;
     private TipoSuperficieModal modal = null!;
+    private ConfirmacionModal modalConfirmacion = null!;
 
     protected override async Task OnInitializedAsync()
     {
@@ -101,21 +103,25 @@ else
         await CargarTodosAsync();
     }
 
-    private async Task ConfirmarEliminarAsync(TipoSuperficieDTO tipo)
+    private void ConfirmarEliminarAsync(TipoSuperficieDTO tipo)
     {
         mensajeError = string.Empty;
         mensajeExito = string.Empty;
 
-        bool confirm = await JS.InvokeAsync<bool>("confirm",
-            $"¿Eliminar el tipo de cancha '{tipo.Nombre}' ({tipo.Deporte})?");
-        if (!confirm) return;
-
-        await EjecutarConEsperaAsync(async () =>
-        {
-            await TipoSuperficieApiClient.DeleteAsync(tipo.IdTipoSuperficie, Sesion.Token);
-            mensajeExito = "Tipo de cancha eliminado.";
-            await CargarTodosAsync();
-        });
+        modalConfirmacion.Mostrar(
+            $"¿Eliminar el tipo de cancha '{tipo.Nombre}' ({tipo.Deporte})?",
+            async () =>
+            {
+                await EjecutarConEsperaAsync(async () =>
+                {
+                    await TipoSuperficieApiClient.DeleteAsync(tipo.IdTipoSuperficie, Sesion.Token);
+                    mensajeExito = "Tipo de cancha eliminado.";
+                    await CargarTodosAsync();
+                });
+            },
+            tituloModal: "Eliminar tipo de cancha",
+            btnConfirmarTexto: "Eliminar"
+        );
     }
 
     private async Task EjecutarConEsperaAsync(Func<Task> accion)

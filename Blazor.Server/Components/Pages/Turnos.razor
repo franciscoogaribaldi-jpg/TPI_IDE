@@ -1,7 +1,6 @@
 @page "/turnos"
 @inject SesionUsuario Sesion
 @inject NavigationManager Navigation
-@inject IJSRuntime JS
 
 <PageTitle>Turnos</PageTitle>
 
@@ -57,7 +56,7 @@ else
                         <td>@HoraCorta(t.HoraFin)</td>
                         <td class="text-nowrap">
                             <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => modal.MostrarEdicion(t)">Editar</button>
-                            <button class="btn btn-sm btn-outline-danger" @onclick="() => ConfirmarEliminarAsync(t)">Eliminar</button>
+                            <button class="btn btn-sm btn-outline-danger" @onclick="() => ConfirmarEliminar(t)">Eliminar</button>
                         </td>
                     </tr>
                 }
@@ -67,6 +66,7 @@ else
 }
 
 <TurnoModal @ref="modal" OnGuardado="AlGuardarAsync" />
+<ConfirmacionModal @ref="modalConfirmacion" />
 
 @code {
     private List<TurnoDTO> turnos = new();
@@ -74,6 +74,7 @@ else
     private string mensajeError = string.Empty;
     private string mensajeExito = string.Empty;
     private TurnoModal modal = null!;
+    private ConfirmacionModal modalConfirmacion = null!;
 
     protected override async Task OnInitializedAsync()
     {
@@ -85,7 +86,6 @@ else
         await CargarTodosAsync();
     }
 
-    // "08:00:00" -> "08:00"
     private static string HoraCorta(string hora) => hora.Length >= 5 ? hora[..5] : hora;
 
     private async Task CargarTodosAsync()
@@ -100,17 +100,25 @@ else
         await CargarTodosAsync();
     }
 
-    private async Task ConfirmarEliminarAsync(TurnoDTO t)
+    private void ConfirmarEliminar(TurnoDTO t)
     {
-        bool confirmado = await JS.InvokeAsync<bool>("confirm", $"¿Eliminar el turno de {HoraCorta(t.HoraInicio)} a {HoraCorta(t.HoraFin)}?");
-        if (!confirmado) return;
+        mensajeError = string.Empty;
+        mensajeExito = string.Empty;
 
-        await EjecutarConEsperaAsync(async () =>
-        {
-            await TurnoApiClient.DeleteAsync(t.IdTurno, Sesion.Token);
-            turnos = (await TurnoApiClient.GetAllAsync(Sesion.Token)).OrderBy(x => x.HoraInicio).ToList();
-            mensajeExito = "Turno eliminado.";
-        });
+        modalConfirmacion.Mostrar(
+            $"¿Eliminar el turno de {HoraCorta(t.HoraInicio)} a {HoraCorta(t.HoraFin)}?",
+            async () =>
+            {
+                await EjecutarConEsperaAsync(async () =>
+                {
+                    await TurnoApiClient.DeleteAsync(t.IdTurno, Sesion.Token);
+                    turnos = (await TurnoApiClient.GetAllAsync(Sesion.Token)).OrderBy(x => x.HoraInicio).ToList();
+                    mensajeExito = "Turno eliminado.";
+                });
+            },
+            tituloModal: "Eliminar turno",
+            btnConfirmarTexto: "Eliminar"
+        );
     }
 
     private async Task EjecutarConEsperaAsync(Func<Task> accion)

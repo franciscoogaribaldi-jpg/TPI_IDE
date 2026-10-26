@@ -1,7 +1,6 @@
 @page "/reservar-turno"
 @inject SesionUsuario Sesion
 @inject NavigationManager Navigation
-@inject IJSRuntime JS
 
 <PageTitle>Reservar Turno</PageTitle>
 
@@ -9,14 +8,14 @@
 
 @if (!string.IsNullOrEmpty(mensajeError))
 {
-    <div class="alert alert-danger alert-dismissible">
+    <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
         @mensajeError
         <button type="button" class="btn-close" @onclick="() => mensajeError = string.Empty"></button>
     </div>
 }
 @if (!string.IsNullOrEmpty(mensajeExito))
 {
-    <div class="alert alert-success alert-dismissible">
+    <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
         @mensajeExito
         <a href="mis-reservas" class="alert-link ms-2">Ir a Mis Reservas</a>
         <button type="button" class="btn-close" @onclick="() => mensajeExito = string.Empty"></button>
@@ -82,7 +81,7 @@ else
                         <td><span class="badge bg-light text-dark border">@t.Horario</span></td>
                         <td class="text-end text-nowrap">@t.PrecioPorHora.ToString("C2")</td>
                         <td class="text-nowrap text-end">
-                            <button class="btn btn-sm btn-success" disabled="@reservando" @onclick="() => ConfirmarYReservarAsync(t)">
+                            <button class="btn btn-sm btn-success" disabled="@reservando" @onclick="() => AbrirConfirmacion(t)">
                                 Reservar
                             </button>
                         </td>
@@ -90,6 +89,69 @@ else
                 }
             </tbody>
         </table>
+    </div>
+}
+
+@if (mostrarModalConfirmacion && turnoSeleccionado != null)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow border-0">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">Confirmar Reserva de Turno</h5>
+                    <button type="button" class="btn-close btn-close-white" @onclick="CerrarConfirmacion" disabled="@reservando"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="mb-3">¿Deseas confirmar la siguiente reserva?</p>
+                    <div class="card bg-light border-0 p-3 mb-3">
+                        <div class="row g-2">
+                            <div class="col-4 text-muted">Cancha:</div>
+                            <div class="col-8 fw-bold">@turnoSeleccionado.NombreCancha</div>
+
+                            <div class="col-4 text-muted">Deporte / Tipo:</div>
+                            <div class="col-8">
+                                <span class="badge @(turnoSeleccionado.TipoCancha == "Padel" ? "bg-warning text-dark" : "bg-success")">
+                                    @turnoSeleccionado.TipoCancha
+                                </span>
+                                <span class="ms-1 small text-muted">@turnoSeleccionado.Caracteristicas</span>
+                            </div>
+
+                            <div class="col-4 text-muted">Fecha:</div>
+                            <div class="col-8 fw-bold">@fecha.ToString("dd/MM/yyyy")</div>
+
+                            <div class="col-4 text-muted">Horario:</div>
+                            <div class="col-8">
+                                <span class="badge bg-dark">@turnoSeleccionado.Horario</span>
+                            </div>
+
+                            <div class="col-12"><hr class="my-2" /></div>
+
+                            <div class="col-6 fw-bold">Total a abonar:</div>
+                            <div class="col-6 text-end fw-bold fs-5 text-success">@turnoSeleccionado.PrecioPorHora.ToString("C2")</div>
+                        </div>
+                    </div>
+                    <div class="small text-muted">
+                        Podrás ver y gestionar tu reserva en <strong>Mis Reservas</strong>.
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" @onclick="CerrarConfirmacion" disabled="@reservando">
+                        Cancelar
+                    </button>
+                    <button type="button" class="btn btn-success px-4" @onclick="ConfirmarReservaAsync" disabled="@reservando">
+                        @if (reservando)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2"></span>
+                            <span>Reservando...</span>
+                        }
+                        else
+                        {
+                            <span>Aceptar</span>
+                        }
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 }
 
@@ -101,6 +163,9 @@ else
     private string mensajeError = string.Empty;
     private string mensajeExito = string.Empty;
     private string lblResultado = string.Empty;
+
+    private TurnoLibreDTO? turnoSeleccionado;
+    private bool mostrarModalConfirmacion = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -135,24 +200,38 @@ else
         }
     }
 
-    private async Task ConfirmarYReservarAsync(TurnoLibreDTO turno)
+    private void AbrirConfirmacion(TurnoLibreDTO turno)
     {
-        bool confirm = await JS.InvokeAsync<bool>("confirm",
-            $"¿Confirmar reserva de {turno.NombreCancha} para el {fecha:dd/MM/yyyy} a las {turno.Horario} por {turno.PrecioPorHora:C2}?");
-        if (!confirm) return;
+        turnoSeleccionado = turno;
+        mostrarModalConfirmacion = true;
+    }
+
+    private void CerrarConfirmacion()
+    {
+        if (reservando) return;
+        mostrarModalConfirmacion = false;
+        turnoSeleccionado = null;
+    }
+
+    private async Task ConfirmarReservaAsync()
+    {
+        if (turnoSeleccionado == null) return;
 
         reservando = true;
         mensajeError = string.Empty;
         mensajeExito = string.Empty;
         try
         {
-            await ReservaApiClient.ReservarAsync(turno.IdCancha, turno.IdTurno, fecha, Sesion.Token);
-            mensajeExito = $"¡Reserva registrada con éxito para {turno.NombreCancha} ({turno.Horario})!";
+            await ReservaApiClient.ReservarAsync(turnoSeleccionado.IdCancha, turnoSeleccionado.IdTurno, fecha, Sesion.Token);
+            mensajeExito = $"¡Reserva registrada con éxito para {turnoSeleccionado.NombreCancha} ({turnoSeleccionado.Horario})!";
+            mostrarModalConfirmacion = false;
+            turnoSeleccionado = null;
             await BuscarTurnosAsync();
         }
         catch (Exception ex)
         {
             mensajeError = ex.Message;
+            mostrarModalConfirmacion = false;
         }
         finally
         {

@@ -1,7 +1,6 @@
-﻿@page "/clientes"
+@page "/clientes"
 @inject SesionUsuario Sesion
 @inject NavigationManager Navigation
-@inject IJSRuntime JS
 
 <PageTitle>Clientes</PageTitle>
 
@@ -74,7 +73,7 @@ else
                         <td>@c.NombreUsuario</td>
                         <td class="text-nowrap">
                             <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => modal.MostrarEdicion(c)">Editar</button>
-                            <button class="btn btn-sm btn-outline-danger" @onclick="() => ConfirmarEliminarAsync(c)">Eliminar</button>
+                            <button class="btn btn-sm btn-outline-danger" @onclick="() => ConfirmarEliminar(c)">Eliminar</button>
                         </td>
                     </tr>
                 }
@@ -84,6 +83,7 @@ else
 }
 
 <ClienteModal @ref="modal" OnGuardado="AlGuardarAsync" />
+<ConfirmacionModal @ref="modalConfirmacion" />
 
 @code {
     private List<ClienteDTO> clientes = new();
@@ -92,10 +92,10 @@ else
     private string mensajeError = string.Empty;
     private string mensajeExito = string.Empty;
     private ClienteModal modal = null!;
+    private ConfirmacionModal modalConfirmacion = null!;
 
     protected override async Task OnInitializedAsync()
     {
-        // Autorización de la página: solo Administrador (la WebAPI también lo exige con el token).
         if (!Sesion.EsAdministrador)
         {
             Navigation.NavigateTo(Sesion.EstaLogueado ? "/" : "/login");
@@ -114,7 +114,7 @@ else
     {
         mensajeExito = string.Empty;
         await EjecutarConEsperaAsync(async () =>
-            clientes = (await ClienteApiClient.BuscarAsync(textoBusqueda.Trim(),Sesion.Token)).ToList());
+            clientes = (await ClienteApiClient.BuscarAsync(textoBusqueda.Trim(), Sesion.Token)).ToList());
     }
 
     private async Task MostrarTodosAsync()
@@ -124,28 +124,33 @@ else
         await CargarTodosAsync();
     }
 
-    // aviso: texto especial del modal (por ejemplo, "cliente recuperado") o null.
     private async Task AlGuardarAsync(string? aviso)
     {
         mensajeExito = aviso ?? "Cliente guardado correctamente.";
         await CargarTodosAsync();
     }
 
-    private async Task ConfirmarEliminarAsync(ClienteDTO c)
+    private void ConfirmarEliminar(ClienteDTO c)
     {
-        bool confirmado = await JS.InvokeAsync<bool>("confirm",
-            $"¿Eliminar a {c.Nombre} {c.Apellido} (DNI {c.Dni})?");
-        if (!confirmado) return;
+        mensajeError = string.Empty;
+        mensajeExito = string.Empty;
 
-        await EjecutarConEsperaAsync(async () =>
-        {
-            await ClienteApiClient.DeleteAsync(c.IdCliente,Sesion.Token);
-            clientes = (await ClienteApiClient.GetAllAsync(Sesion.Token)).ToList();
-            mensajeExito = "Cliente eliminado.";
-        });
+        modalConfirmacion.Mostrar(
+            $"¿Eliminar a {c.Nombre} {c.Apellido} (DNI {c.Dni})?",
+            async () =>
+            {
+                await EjecutarConEsperaAsync(async () =>
+                {
+                    await ClienteApiClient.DeleteAsync(c.IdCliente, Sesion.Token);
+                    clientes = (await ClienteApiClient.GetAllAsync(Sesion.Token)).ToList();
+                    mensajeExito = "Cliente eliminado.";
+                });
+            },
+            tituloModal: "Eliminar cliente",
+            btnConfirmarTexto: "Eliminar"
+        );
     }
 
-    // Mismo helper que en ClienteLista.cs: spinner mientras espera y errores en pantalla.
     private async Task EjecutarConEsperaAsync(Func<Task> accion)
     {
         cargando = true;

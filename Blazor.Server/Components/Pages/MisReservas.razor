@@ -1,7 +1,6 @@
 @page "/mis-reservas"
 @inject SesionUsuario Sesion
 @inject NavigationManager Navigation
-@inject IJSRuntime JS
 
 <PageTitle>Mis Reservas</PageTitle>
 
@@ -9,14 +8,14 @@
 
 @if (!string.IsNullOrEmpty(mensajeError))
 {
-    <div class="alert alert-danger alert-dismissible">
+    <div class="alert alert-danger alert-dismissible fade show shadow-sm">
         @mensajeError
         <button type="button" class="btn-close" @onclick="() => mensajeError = string.Empty"></button>
     </div>
 }
 @if (!string.IsNullOrEmpty(mensajeExito))
 {
-    <div class="alert alert-success alert-dismissible">
+    <div class="alert alert-success alert-dismissible fade show shadow-sm">
         @mensajeExito
         <button type="button" class="btn-close" @onclick="() => mensajeExito = string.Empty"></button>
     </div>
@@ -35,7 +34,7 @@
 else
 {
     <div class="table-responsive">
-        <table class="table table-striped table-hover">
+        <table class="table table-striped table-hover align-middle">
             <thead class="table-dark">
                 <tr>
                     <th>Fecha</th>
@@ -56,8 +55,8 @@ else
                 {
                     <tr>
                         <td class="text-nowrap">@r.Fecha.ToString("dd/MM/yyyy")</td>
-                        <td>@r.NombreCancha</td>
-                        <td>@r.HorarioTurno</td>
+                        <td class="fw-bold">@r.NombreCancha</td>
+                        <td><span class="badge bg-light text-dark border">@r.HorarioTurno</span></td>
                         <td>
                             <span class="badge @BadgeColor(r.EstadoReserva)">
                                 @NombreEstado(r.EstadoReserva)
@@ -68,7 +67,7 @@ else
                         <td class="text-nowrap text-end">
                             @if (PuedeCancelar(r))
                             {
-                                <button class="btn btn-sm btn-outline-danger" @onclick="() => CancelarAsync(r)">
+                                <button class="btn btn-sm btn-outline-danger" @onclick="() => AbrirModalCancelar(r)">
                                     Cancelar
                                 </button>
                             }
@@ -80,11 +79,64 @@ else
     </div>
 }
 
+@if (mostrarModalCancelar && reservaACancelar != null)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow border-0">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">Cancelar Reserva</h5>
+                    <button type="button" class="btn-close btn-close-white" @onclick="CerrarModalCancelar" disabled="@cancelando"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="mb-3">¿Estás seguro de que deseas cancelar la siguiente reserva?</p>
+                    <div class="card bg-light border-0 p-3 mb-3">
+                        <div class="row g-2">
+                            <div class="col-4 text-muted">Fecha:</div>
+                            <div class="col-8 fw-bold">@reservaACancelar.Fecha.ToString("dd/MM/yyyy")</div>
+
+                            <div class="col-4 text-muted">Cancha:</div>
+                            <div class="col-8 fw-bold">@reservaACancelar.NombreCancha</div>
+
+                            <div class="col-4 text-muted">Horario:</div>
+                            <div class="col-8"><span class="badge bg-dark">@reservaACancelar.HorarioTurno</span></div>
+
+                            <div class="col-4 text-muted">Total:</div>
+                            <div class="col-8 fw-bold">@reservaACancelar.ImporteTotal.ToString("C2")</div>
+                        </div>
+                    </div>
+                    <p class="small text-danger mb-0">Esta acción liberará el turno para que otros clientes puedan reservarlo.</p>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" @onclick="CerrarModalCancelar" disabled="@cancelando">
+                        Volver
+                    </button>
+                    <button type="button" class="btn btn-danger px-4" @onclick="ConfirmarCancelacionAsync" disabled="@cancelando">
+                        @if (cancelando)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2"></span>
+                            <span>Cancelando...</span>
+                        }
+                        else
+                        {
+                            <span>Sí, cancelar reserva</span>
+                        }
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
 @code {
     private List<ReservaDTO> reservas = new();
     private bool cargando = true;
+    private bool cancelando = false;
     private string mensajeError = string.Empty;
     private string mensajeExito = string.Empty;
+
+    private ReservaDTO? reservaACancelar;
+    private bool mostrarModalCancelar = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -117,28 +169,46 @@ else
 
     private bool PuedeCancelar(ReservaDTO r)
     {
-        // 1 = Pendiente, 2 = Confirmada. Solo las no jugadas y de fecha futura o de hoy se pueden cancelar.
         return (r.EstadoReserva == 1 || r.EstadoReserva == 2) && r.Fecha.Date >= DateTime.Today;
     }
 
-    private async Task CancelarAsync(ReservaDTO r)
+    private void AbrirModalCancelar(ReservaDTO r)
     {
+        reservaACancelar = r;
+        mostrarModalCancelar = true;
+    }
+
+    private void CerrarModalCancelar()
+    {
+        if (cancelando) return;
+        mostrarModalCancelar = false;
+        reservaACancelar = null;
+    }
+
+    private async Task ConfirmarCancelacionAsync()
+    {
+        if (reservaACancelar == null) return;
+
+        cancelando = true;
         mensajeError = string.Empty;
         mensajeExito = string.Empty;
 
-        bool confirm = await JS.InvokeAsync<bool>("confirm",
-            $"¿Cancelar tu reserva del {r.Fecha:dd/MM/yyyy} en {r.NombreCancha} ({r.HorarioTurno})?");
-        if (!confirm) return;
-
         try
         {
-            await ReservaApiClient.CancelarMiReservaAsync(r.IdReserva, Sesion.Token);
+            await ReservaApiClient.CancelarMiReservaAsync(reservaACancelar.IdReserva, Sesion.Token);
             mensajeExito = "Reserva cancelada correctamente.";
+            mostrarModalCancelar = false;
+            reservaACancelar = null;
             await CargarAsync();
         }
         catch (Exception ex)
         {
             mensajeError = ex.Message;
+            mostrarModalCancelar = false;
+        }
+        finally
+        {
+            cancelando = false;
         }
     }
 

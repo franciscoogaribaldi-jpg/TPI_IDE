@@ -1,7 +1,6 @@
 @page "/canchas"
 @inject SesionUsuario Sesion
 @inject NavigationManager Navigation
-@inject IJSRuntime JS
 
 <PageTitle>Canchas</PageTitle>
 
@@ -65,7 +64,7 @@ else
                         <td>@c.PrecioPorHora.ToString("C2")</td>
                         <td class="text-nowrap">
                             <button class="btn btn-sm btn-outline-primary me-1" @onclick="async () => await modal.MostrarEdicionAsync(c)">Editar</button>
-                            <button class="btn btn-sm btn-outline-danger" @onclick="() => ConfirmarEliminarAsync(c)">Eliminar</button>
+                            <button class="btn btn-sm btn-outline-danger" @onclick="() => ConfirmarEliminar(c)">Eliminar</button>
                         </td>
                     </tr>
                 }
@@ -75,6 +74,7 @@ else
 }
 
 <CanchaModal @ref="modal" OnGuardado="AlGuardarAsync" />
+<ConfirmacionModal @ref="modalConfirmacion" />
 
 @code {
     private List<CanchaDTO> canchas = new();
@@ -82,6 +82,7 @@ else
     private string mensajeError = string.Empty;
     private string mensajeExito = string.Empty;
     private CanchaModal modal = null!;
+    private ConfirmacionModal modalConfirmacion = null!;
 
     protected override async Task OnInitializedAsync()
     {
@@ -105,17 +106,25 @@ else
         await CargarTodosAsync();
     }
 
-    private async Task ConfirmarEliminarAsync(CanchaDTO c)
+    private void ConfirmarEliminar(CanchaDTO c)
     {
-        bool confirmado = await JS.InvokeAsync<bool>("confirm", $"¿Eliminar la cancha \"{c.Nombre}\"?");
-        if (!confirmado) return;
+        mensajeError = string.Empty;
+        mensajeExito = string.Empty;
 
-        await EjecutarConEsperaAsync(async () =>
-        {
-            await CanchaApiClient.DeleteAsync(c.IdCancha,Sesion.Token);
-            canchas = (await CanchaApiClient.GetAllAsync(Sesion.Token)).ToList();
-            mensajeExito = "Cancha eliminada.";
-        });
+        modalConfirmacion.Mostrar(
+            $"¿Eliminar la cancha \"{c.Nombre}\"?",
+            async () =>
+            {
+                await EjecutarConEsperaAsync(async () =>
+                {
+                    await CanchaApiClient.DeleteAsync(c.IdCancha, Sesion.Token);
+                    canchas = (await CanchaApiClient.GetAllAsync(Sesion.Token)).ToList();
+                    mensajeExito = "Cancha eliminada.";
+                });
+            },
+            tituloModal: "Eliminar cancha",
+            btnConfirmarTexto: "Eliminar"
+        );
     }
 
     private async Task EjecutarConEsperaAsync(Func<Task> accion)
