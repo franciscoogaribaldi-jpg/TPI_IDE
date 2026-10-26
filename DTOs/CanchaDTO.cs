@@ -1,19 +1,27 @@
-﻿namespace DTOs
+namespace DTOs
 {
     public class CanchaDTO
     {
         public int IdCancha { get; set; }
-        public string Nombre { get; set; }
+        public string Nombre { get; set; } = string.Empty;
         public int Estado { get; set; }
         public decimal PrecioPorHora { get; set; }
-        public string TipoCancha { get; set; }
+        public string TipoCancha { get; set; } = string.Empty;
         public bool EsTechada { get; set; }
 
-        // Solo fútbol (Domain.Model.TipoFutbol y TipoSuperficie, viajan como int).
-        public int? TipoFutbol { get; set; }
-        public int? TipoSuperficie { get; set; }
+        public int IdTipoSuperficie { get; set; }
+        public string? NombreSuperficie { get; set; }
 
-        // Solo pádel (Domain.Model.TipoPared).
+        // Solo fútbol (Domain.Model.TipoFutbol viaja como int).
+        public int? TipoFutbol { get; set; }
+
+        // Compatibilidad con vistas previas
+        public int? TipoSuperficie
+        {
+            get => IdTipoSuperficie;
+            set => IdTipoSuperficie = value ?? 0;
+        }
+
         public int? TipoPared { get; set; }
 
         // Solo lectura: los calcula el dominio (polimorfismo). Al guardar se ignoran.

@@ -1,0 +1,136 @@
+@inject SesionUsuario Sesion
+
+@if (visible)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">@(esAlta ? "Nuevo tipo de cancha" : "Editar tipo de cancha")</h5>
+                    <button type="button" class="btn-close" @onclick="Cerrar"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Nombre / Superficie *</label>
+                        <input type="text" class="form-control" @bind="nombre" placeholder="Ej: Césped sintético, Vidrio / Blindex" />
+                        <div class="text-danger small">@errorNombre</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Deporte *</label>
+                        <select class="form-select" @bind="deporte">
+                            <option value="Futbol">Fútbol</option>
+                            <option value="Padel">Pádel</option>
+                        </select>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(mensajeError))
+                    {
+                        <div class="alert alert-danger">@mensajeError</div>
+                    }
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="Cerrar">Cancelar</button>
+                    <button type="button" class="btn btn-primary" disabled="@guardando" @onclick="GuardarAsync">
+                        @if (guardando)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2"></span>
+                        }
+                        Guardar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public EventCallback OnGuardado { get; set; }
+
+    private bool visible;
+    private bool esAlta;
+    private bool guardando;
+    private string mensajeError = string.Empty;
+    private string errorNombre = string.Empty;
+
+    private int idTipoSuperficie;
+    private string nombre = string.Empty;
+    private string deporte = "Futbol";
+    private int estado = 1;
+
+    public void MostrarAlta()
+    {
+        esAlta = true;
+        idTipoSuperficie = 0;
+        nombre = string.Empty;
+        deporte = "Futbol";
+        estado = 1;
+        Abrir();
+    }
+
+    public void MostrarEdicion(TipoSuperficieDTO original)
+    {
+        esAlta = false;
+        idTipoSuperficie = original.IdTipoSuperficie;
+        nombre = original.Nombre;
+        deporte = original.Deporte;
+        estado = original.Estado;
+        Abrir();
+    }
+
+    private void Abrir()
+    {
+        mensajeError = string.Empty;
+        errorNombre = string.Empty;
+        visible = true;
+        StateHasChanged();
+    }
+
+    private void Cerrar() => visible = false;
+
+    private bool Validar()
+    {
+        if (string.IsNullOrWhiteSpace(nombre))
+        {
+            errorNombre = "El nombre es obligatorio.";
+            return false;
+        }
+
+        errorNombre = string.Empty;
+        return true;
+    }
+
+    private async Task GuardarAsync()
+    {
+        if (!Validar()) return;
+
+        var dto = new TipoSuperficieDTO
+        {
+            IdTipoSuperficie = idTipoSuperficie,
+            Nombre = nombre.Trim(),
+            Deporte = deporte,
+            Estado = estado
+        };
+
+        guardando = true;
+        mensajeError = string.Empty;
+        try
+        {
+            if (esAlta) await TipoSuperficieApiClient.AddAsync(dto, Sesion.Token);
+            else await TipoSuperficieApiClient.UpdateAsync(dto, Sesion.Token);
+
+            visible = false;
+            await OnGuardado.InvokeAsync();
+        }
+        catch (Exception ex)
+        {
+            mensajeError = ex.Message;
+        }
+        finally
+        {
+            guardando = false;
+        }
+    }
+}

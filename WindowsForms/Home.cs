@@ -13,6 +13,7 @@ namespace WindowsForms
             bool esAdministrador = SesionActual.Usuario?.Rol == 1;
             menuClientes.Visible = esAdministrador;
             menuCanchas.Visible = esAdministrador;
+            menuTiposCancha.Visible = esAdministrador;
             menuTurnos.Visible = esAdministrador;
             menuReservas.Visible = esAdministrador;
             menuAdministradores.Visible = esAdministrador;
@@ -50,6 +51,20 @@ namespace WindowsForms
             }
 
             var form = new CanchaLista { MdiParent = this };
+            form.Show();
+        }
+
+        private void menuTiposCancha_Click(object sender, EventArgs e)
+        {
+            var existente = MdiChildren.OfType<TipoSuperficieLista>().FirstOrDefault();
+            if (existente != null)
+            {
+                existente.Activate();
+                return;
+            }
+
+            var form = new TipoSuperficieLista { MdiParent = this };
+            form.Show();
             form.Show();
         }
 

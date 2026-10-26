@@ -9,17 +9,18 @@ namespace Data
     /// La base se autogenera si no existe (Database.EnsureCreated, llamado una
     /// única vez al iniciar la app en Program.cs).
     /// </summary>
-    public class TPIContext : DbContext // TPIContext hereda de DbContext
+    public class TPIContext : DbContext
     {
         public DbSet<Usuario> Usuarios { get; set; } = null!;
         public DbSet<Cliente> Clientes { get; set; } = null!;
         public DbSet<Administrador> Administradores { get; set; } = null!;
+        public DbSet<TipoSuperficie> TiposSuperficie { get; set; } = null!;
         public DbSet<Cancha> Canchas { get; set; } = null!;
         public DbSet<Turno> Turnos { get; set; } = null!;
         public DbSet<Reserva> Reservas { get; set; } = null!;
         public DbSet<DetalleReserva> DetallesReserva { get; set; } = null!;
 
-        public TPIContext(DbContextOptions<TPIContext> options) : base(options) // Constructor de TPIContext que recibe las opciones y se las envía a la clase padre DbContext
+        public TPIContext(DbContextOptions<TPIContext> options) : base(options)
         {
         }
 
@@ -35,7 +36,6 @@ namespace Data
                 entity.Property(u => u.IdUsuario).ValueGeneratedOnAdd();
 
                 entity.Property(u => u.NombreUsuario).IsRequired().HasMaxLength(50);
-                // Guardamos el HASH de la contrasenia, hecho en applicationServices
                 entity.Property(u => u.Contrasena).IsRequired().HasMaxLength(255);
                 entity.Property(u => u.Email).IsRequired().HasMaxLength(150);
                 entity.Property(u => u.Rol).IsRequired().HasConversion<int>();
@@ -43,8 +43,6 @@ namespace Data
 
                 entity.HasIndex(u => u.NombreUsuario).IsUnique();
                 entity.HasIndex(u => u.Email).IsUnique();
-
-
             });
 
             // ---------- Cliente ----------
@@ -62,16 +60,13 @@ namespace Data
 
                 entity.HasIndex(c => c.Dni).IsUnique();
 
-                // Cliente.Usuario e IdUsuario tienen setter privado: EF puede usarlo igual
-                // por reflexión, no hace falta HasField() como en el ejemplo de cátedra.
                 entity.HasOne(c => c.Usuario)
-                      .WithMany() // no lo tenemos en cuenta porque No me importa registrar la relación a la inversa adentro de la clase Usuario, solo me importa desde el lado del Cliente
+                      .WithMany()
                       .HasForeignKey(c => c.IdUsuario)
-                      .OnDelete(DeleteBehavior.Restrict);   // para que cuando quieras borrar el usuario primero tengas que borrar el cliente asignado
+                      .OnDelete(DeleteBehavior.Restrict);
             });
 
             // ---------- Administrador ----------
-            // Igual que Cliente: la ficha de la persona, con su propio Usuario (rol Administrador).
             modelBuilder.Entity<Administrador>(entity =>
             {
                 entity.ToTable("Administradores");
@@ -83,13 +78,24 @@ namespace Data
                 entity.Property(a => a.Telefono).HasMaxLength(30);
                 entity.Property(a => a.Estado).IsRequired().HasConversion<int>();
 
-                // Un usuario tiene como mucho una ficha de administrador.
                 entity.HasIndex(a => a.IdUsuario).IsUnique();
 
                 entity.HasOne(a => a.Usuario)
                       .WithMany()
                       .HasForeignKey(a => a.IdUsuario)
                       .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // ---------- TipoSuperficie (Tipo de Cancha) ----------
+            modelBuilder.Entity<TipoSuperficie>(entity =>
+            {
+                entity.ToTable("TiposSuperficie");
+                entity.HasKey(t => t.IdTipoSuperficie);
+                entity.Property(t => t.IdTipoSuperficie).ValueGeneratedOnAdd();
+
+                entity.Property(t => t.Nombre).IsRequired().HasMaxLength(100);
+                entity.Property(t => t.Deporte).IsRequired().HasMaxLength(50);
+                entity.Property(t => t.Estado).IsRequired().HasConversion<int>();
             });
 
             // ---------- Cancha ----------
@@ -101,13 +107,16 @@ namespace Data
 
                 entity.Property(c => c.Nombre).IsRequired().HasMaxLength(100);
                 entity.Property(c => c.Estado).IsRequired().HasConversion<int>();
-                entity.Property(c => c.PrecioPorHora).HasColumnType("decimal(18,2)"); // nro de 18 digitos con 2 decimales que representan los centavos
-
+                entity.Property(c => c.PrecioPorHora).HasColumnType("decimal(18,2)");
                 entity.Property(c => c.EsTechada).IsRequired();
 
-                // Se calculan en cada clase hija (polimorfismo), no son columnas.
                 entity.Ignore(c => c.CantidadJugadores);
                 entity.Ignore(c => c.Caracteristicas);
+
+                entity.HasOne(c => c.TipoSuperficie)
+                      .WithMany()
+                      .HasForeignKey(c => c.IdTipoSuperficie)
+                      .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasDiscriminator<string>("TipoCancha")
                       .HasValue<CanchaFutbol>("Futbol")
@@ -115,19 +124,13 @@ namespace Data
             });
 
             // ---------- Cancha Futbol ----------
-            // Con TPH estas columnas quedan en la misma tabla Canchas y valen NULL en las filas de pádel.
             modelBuilder.Entity<CanchaFutbol>(entity =>
             {
                 entity.Property(c => c.TipoFutbol).HasConversion<int>();
-                entity.Property(c => c.TipoSuperficie).HasConversion<int>();
             });
 
             // ---------- Cancha Padel ----------
-            modelBuilder.Entity<CanchaPadel>(entity =>
-            {
-                entity.Property(c => c.TipoPared).HasConversion<int>();
-            });
-
+            modelBuilder.Entity<CanchaPadel>();
 
             // ---------- Turno ----------
             modelBuilder.Entity<Turno>(entity =>
@@ -139,10 +142,7 @@ namespace Data
                 entity.Property(t => t.Estado).IsRequired().HasConversion<int>();
                 entity.Property(t => t.HoraInicio).IsRequired();
                 entity.Property(t => t.HoraFin).IsRequired();
-            }
-            
-            );
-
+            });
 
             // ---------- Reserva ----------
             modelBuilder.Entity<Reserva>(entity =>

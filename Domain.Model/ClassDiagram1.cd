@@ -1,30 +1,30 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ClassDiagram MajorVersion="1" MinorVersion="1">
-  <Class Name="Domain.Model.Administrador" Collapsed="true">
-    <Position X="11" Y="1.5" Width="1.5" />
+  <Class Name="Domain.Model.Administrador">
+    <Position X="16.5" Y="0.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAQEAAAAAAQEIAgAgAAAAEAAAAAAAAAECgAEBAg=</HashCode>
       <FileName>Administrador.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="Domain.Model.Cancha" Collapsed="true">
+  <Class Name="Domain.Model.Cancha">
     <Position X="7" Y="0.75" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAAAAgAiAAAAAAAACAAACAACAgAAAg=</HashCode>
+      <HashCode>AAACAAAAAAAAAAACAAgAiCKAAAAAQCAQACEACAgAAAg=</HashCode>
       <FileName>Cancha.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="Domain.Model.CanchaFutbol" Collapsed="true">
-    <Position X="4.75" Y="1.75" Width="1.5" />
+  <Class Name="Domain.Model.CanchaFutbol">
+    <Position X="5" Y="5.25" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAIAAAAAQAAAAAAAAAAAQAA=</HashCode>
       <FileName>CanchaFutbol.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="Domain.Model.CanchaPadel" Collapsed="true">
-    <Position X="9.25" Y="1.75" Width="1.5" />
+  <Class Name="Domain.Model.CanchaPadel">
+    <Position X="9" Y="5.25" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAQAAAAAAAAAAAAAAEAAAAIAAAAAAAAAAAAAAA=</HashCode>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAIAAAAAQAAAAAAAAAAAAAA=</HashCode>
       <FileName>CanchaPadel.cs</FileName>
     </TypeIdentifier>
   </Class>
@@ -35,25 +35,32 @@
       <FileName>Cliente.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="Domain.Model.Reserva" Collapsed="true">
+  <Class Name="Domain.Model.Reserva">
     <Position X="11" Y="0.75" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AIAAAAAgMAAAAAEAAAKKABAAACAACCAAACABhAAAAAA=</HashCode>
+      <HashCode>AIAAAAAgMAAAAAEAAAKKABEAACAQCCAAACABhAAFBAA=</HashCode>
       <FileName>Reserva.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="Domain.Model.Turno">
-    <Position X="11" Y="3" Width="1.5" />
+    <Position X="14" Y="0.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>BAAAAAAAAAAABAAAAAAIAAAEAAAACAAAAAAACAAAAAg=</HashCode>
       <FileName>Turno.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="Domain.Model.Usuario" Collapsed="true">
-    <Position X="11" Y="2.25" Width="1.5" />
+  <Class Name="Domain.Model.Usuario">
+    <Position X="14" Y="4" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAACAAQEAKAAAEIAAAAAAAAACAAACgAAAIAACAAAAAg=</HashCode>
       <FileName>Usuario.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Domain.Model.TipoSuperficie">
+    <Position X="1" Y="5.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAACAAAAAgAgCAAAAAAAAAQAAEACAAAAAg=</HashCode>
+      <FileName>TipoSuperficie.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Font Name="Segoe UI" Size="9" />

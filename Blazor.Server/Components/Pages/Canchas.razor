@@ -1,4 +1,4 @@
-﻿@page "/canchas"
+@page "/canchas"
 @inject SesionUsuario Sesion
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
@@ -23,7 +23,7 @@
 }
 
 <div class="mb-3">
-    <button class="btn btn-primary" @onclick="() => modal.MostrarAlta()">+ Nueva cancha</button>
+    <button class="btn btn-primary" @onclick="async () => await modal.MostrarAltaAsync()">+ Nueva cancha</button>
 </div>
 
 @if (cargando)
@@ -64,7 +64,7 @@ else
                         <td>@(c.EsTechada ? "Sí" : "No")</td>
                         <td>@c.PrecioPorHora.ToString("C2")</td>
                         <td class="text-nowrap">
-                            <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => modal.MostrarEdicion(c)">Editar</button>
+                            <button class="btn btn-sm btn-outline-primary me-1" @onclick="async () => await modal.MostrarEdicionAsync(c)">Editar</button>
                             <button class="btn btn-sm btn-outline-danger" @onclick="() => ConfirmarEliminarAsync(c)">Eliminar</button>
                         </td>
                     </tr>

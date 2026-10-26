@@ -6,9 +6,9 @@ namespace WebAPI
 {
     /// <summary>
     /// Datos de prueba representativos (requisito de la Entrega Final): administradores,
-    /// clientes con su usuario, canchas de los dos tipos y reservas pasadas y futuras con líneas,
-    /// para que todas las pantallas y los reportes muestren algo. Cada bloque se carga solo si
-    /// su tabla está vacía, así no se duplica nada al reiniciar la API.
+    /// clientes con su usuario, tipos de cancha/superficie, canchas de los dos tipos y reservas
+    /// pasadas y futuras con líneas, para que todas las pantallas y los reportes muestren algo.
+    /// Cada bloque se carga solo si su tabla está vacía, así no se duplica nada al reiniciar la API.
     /// Contraseñas: administradores "admin123", clientes "cliente123".
     /// </summary>
     public static class DatosDePrueba
@@ -17,6 +17,7 @@ namespace WebAPI
         {
             CargarAdministradores(context);
             CargarClientes(context);
+            CargarTiposSuperficie(context);
             CargarCanchas(context);
             CargarReservas(context);
         }
@@ -65,17 +66,39 @@ namespace WebAPI
             context.SaveChanges();
         }
 
+        private static void CargarTiposSuperficie(TPIContext context)
+        {
+            if (context.TiposSuperficie.Any()) return;
+
+            context.TiposSuperficie.AddRange(
+                new TipoSuperficie(0, "Césped sintético", "Futbol", Estado.Activo),
+                new TipoSuperficie(0, "Césped natural", "Futbol", Estado.Activo),
+                new TipoSuperficie(0, "Cemento", "Futbol", Estado.Activo),
+                new TipoSuperficie(0, "Parquet", "Futbol", Estado.Activo),
+                new TipoSuperficie(0, "Vidrio / Blindex", "Padel", Estado.Activo),
+                new TipoSuperficie(0, "Muro / Cemento", "Padel", Estado.Activo));
+
+            context.SaveChanges();
+        }
+
         private static void CargarCanchas(TPIContext context)
         {
             if (context.Canchas.Any()) return;
 
+            var tipos = context.TiposSuperficie.ToList();
+            int idSintetico = tipos.FirstOrDefault(t => t.Nombre == "Césped sintético")?.IdTipoSuperficie ?? 1;
+            int idNatural = tipos.FirstOrDefault(t => t.Nombre == "Césped natural")?.IdTipoSuperficie ?? 2;
+            int idCemento = tipos.FirstOrDefault(t => t.Nombre == "Cemento")?.IdTipoSuperficie ?? 3;
+            int idVidrio = tipos.FirstOrDefault(t => t.Nombre.StartsWith("Vidrio"))?.IdTipoSuperficie ?? 5;
+            int idMuro = tipos.FirstOrDefault(t => t.Nombre.StartsWith("Muro"))?.IdTipoSuperficie ?? 6;
+
             context.Canchas.AddRange(
-                new CanchaFutbol(0, "Cancha 1", Estado.Activo, 30000, true, TipoFutbol.Futbol5, TipoSuperficie.CespedSintetico),
-                new CanchaFutbol(0, "Cancha 2", Estado.Activo, 28000, false, TipoFutbol.Futbol5, TipoSuperficie.CespedSintetico),
-                new CanchaFutbol(0, "Cancha 3", Estado.Activo, 45000, false, TipoFutbol.Futbol7, TipoSuperficie.CespedNatural),
-                new CanchaFutbol(0, "Cancha 4", Estado.Inactivo, 25000, true, TipoFutbol.Futbol5, TipoSuperficie.Cemento),
-                new CanchaPadel(0, "Pádel 1", Estado.Activo, 20000, true, TipoPared.Vidrio),
-                new CanchaPadel(0, "Pádel 2", Estado.Activo, 16000, false, TipoPared.Muro));
+                new CanchaFutbol(0, "Cancha 1", Estado.Activo, 30000, true, idSintetico, TipoFutbol.Futbol5),
+                new CanchaFutbol(0, "Cancha 2", Estado.Activo, 28000, false, idSintetico, TipoFutbol.Futbol5),
+                new CanchaFutbol(0, "Cancha 3", Estado.Activo, 45000, false, idNatural, TipoFutbol.Futbol7),
+                new CanchaFutbol(0, "Cancha 4", Estado.Inactivo, 25000, true, idCemento, TipoFutbol.Futbol5),
+                new CanchaPadel(0, "Pádel 1", Estado.Activo, 20000, true, idVidrio),
+                new CanchaPadel(0, "Pádel 2", Estado.Activo, 16000, false, idMuro));
 
             context.SaveChanges();
         }
@@ -131,31 +154,49 @@ namespace WebAPI
             context.SaveChanges();
         }
 
-        // Líneas de detalle típicas: raquetas y pelotas en pádel; pelota, pecheras y bebidas en fútbol.
         private static List<DetalleReserva> ArmarLineas(Cancha cancha, Random azar)
         {
             var lineas = new List<DetalleReserva>();
 
             if (cancha is CanchaPadel)
             {
-                int raquetas = azar.Next(0, 5);
-                if (raquetas > 0) lineas.Add(new DetalleReserva(0, 0, "Alquiler de raqueta", raquetas, 3000));
-                if (azar.Next(2) == 0) lineas.Add(new DetalleReserva(0, 0, "Tubo de pelotas", 1, 6000));
+                // En pádel casi siempre se alquilan raquetas o se compran pelotas.
+                if (azar.Next(10) < 7)
+                {
+                    int raquetas = azar.Next(1, 5); // 1 a 4 raquetas
+                    lineas.Add(new DetalleReserva(0, 0, "Alquiler raqueta de pádel", raquetas, 2500));
+                }
+                if (azar.Next(10) < 4)
+                {
+                    lineas.Add(new DetalleReserva(0, 0, "Tubo de pelotas de pádel", 1, 6000));
+                }
             }
             else
             {
-                if (azar.Next(3) == 0) lineas.Add(new DetalleReserva(0, 0, "Pelota", 1, 2500));
-                if (azar.Next(3) == 0) lineas.Add(new DetalleReserva(0, 0, "Pecheras", 10, 500));
+                // En fútbol pecheras o pelota.
+                if (azar.Next(10) < 5)
+                {
+                    lineas.Add(new DetalleReserva(0, 0, "Alquiler juego de pecheras", 1, 3000));
+                }
+                if (azar.Next(10) < 4)
+                {
+                    lineas.Add(new DetalleReserva(0, 0, "Alquiler pelota de fútbol", 1, 2000));
+                }
             }
 
-            if (azar.Next(3) == 0) lineas.Add(new DetalleReserva(0, 0, "Bebida", azar.Next(2, 7), 1500));
+            // Bebidas en cualquier tipo de cancha.
+            if (azar.Next(10) < 6)
+            {
+                int aguas = azar.Next(1, 4);
+                lineas.Add(new DetalleReserva(0, 0, "Agua mineral 500ml", aguas, 1200));
+            }
 
             return lineas;
         }
 
-        private static Usuario NuevoUsuario(string nombreUsuario, string email, string contrasena, RolUsuario rol)
+        private static Usuario NuevoUsuario(string nombreUsuario, string email, string contrasenaPlana, RolUsuario rol)
         {
-            return new Usuario(0, nombreUsuario, PasswordHasher.Hash(contrasena), email, rol, Estado.Activo);
+            return new Usuario(0, nombreUsuario, PasswordHasher.Hash(contrasenaPlana), email, rol, Estado.Activo);
         }
     }
 }

@@ -54,6 +54,8 @@ builder.Services.AddScoped<IUsuarioService, UsuarioService>(); //crea un Servici
 builder.Services.AddScoped<IClienteRepository, ClienteRepository>();
 builder.Services.AddScoped<IClienteService, ClienteService>();
 
+builder.Services.AddScoped<ITipoSuperficieRepository, TipoSuperficieRepository>();
+builder.Services.AddScoped<ITipoSuperficieService, TipoSuperficieService>();
 builder.Services.AddScoped<ICanchaRepository, CanchaRepository>();
 builder.Services.AddScoped<ICanchaService, CanchaService>();
 
@@ -154,6 +156,7 @@ app.UseAuthorization();
 app.MapAuthEndpoints();
 app.MapUsuarioEndpoints();
 app.MapClienteEndpoints();
+app.MapTipoSuperficieEndpoints();
 app.MapCanchaEndpoints();
 app.MapTurnoEndpoints();
 app.MapReservaEndpoints();

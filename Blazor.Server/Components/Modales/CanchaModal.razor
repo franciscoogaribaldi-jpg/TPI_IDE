@@ -1,4 +1,4 @@
-﻿@inject SesionUsuario Sesion
+@inject SesionUsuario Sesion
 @if (visible)
 {
     <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
@@ -46,16 +46,18 @@
                             <label class="form-check-label" for="chkTechada">Cancha techada</label>
                         </div>
 
-                        @* Cada tipo de cancha muestra solo sus datos propios. Los valores son los int de los enums de Domain.Model. *@
                         @if (EsPadel)
                         {
                             <div class="mb-3">
-                                <label class="form-label">Paredes *</label>
-                                <InputSelect class="form-select" @bind-Value="cancha.TipoPared">
-                                    <option value="1">Vidrio</option>
-                                    <option value="2">Muro</option>
+                                <label class="form-label">Tipo / Pared de pádel *</label>
+                                <InputSelect class="form-select" @bind-Value="idSuperficieSeleccionada">
+                                    <option value="0">-- Seleccioná tipo/pared --</option>
+                                    @foreach (var t in tiposSuperficie.Where(t => t.Deporte.Equals("Padel", StringComparison.OrdinalIgnoreCase)))
+                                    {
+                                        <option value="@t.IdTipoSuperficie">@t.Nombre</option>
+                                    }
                                 </InputSelect>
-                                <div class="text-danger small">@Error("TipoPared")</div>
+                                <div class="text-danger small">@Error("TipoSuperficie")</div>
                             </div>
                         }
                         else
@@ -71,10 +73,12 @@
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Superficie *</label>
-                                <InputSelect class="form-select" @bind-Value="cancha.TipoSuperficie">
-                                    <option value="1">Césped sintético</option>
-                                    <option value="2">Césped natural</option>
-                                    <option value="3">Cemento</option>
+                                <InputSelect class="form-select" @bind-Value="idSuperficieSeleccionada">
+                                    <option value="0">-- Seleccioná superficie --</option>
+                                    @foreach (var t in tiposSuperficie.Where(t => t.Deporte.Equals("Futbol", StringComparison.OrdinalIgnoreCase)))
+                                    {
+                                        <option value="@t.IdTipoSuperficie">@t.Nombre</option>
+                                    }
                                 </InputSelect>
                                 <div class="text-danger small">@Error("TipoSuperficie")</div>
                             </div>
@@ -110,19 +114,22 @@
     private bool guardando;
     private string mensajeError = string.Empty;
     private CanchaDTO cancha = new();
+    private int idSuperficieSeleccionada;
+    private List<TipoSuperficieDTO> tiposSuperficie = new();
     private Dictionary<string, string> errores = new();
 
     private bool EsPadel => cancha.TipoCancha == "Padel";
 
-    public void MostrarAlta()
+    public async Task MostrarAltaAsync()
     {
         esAlta = true;
-        // Se precargan valores válidos para los dos tipos, así al cambiar de Fútbol a Pádel el combo ya tiene algo elegido.
-        cancha = new CanchaDTO { Nombre = "", TipoCancha = "Futbol", Estado = 1, TipoFutbol = 5, TipoSuperficie = 1, TipoPared = 1 };
+        cancha = new CanchaDTO { Nombre = "", TipoCancha = "Futbol", Estado = 1, TipoFutbol = 5 };
+        await CargarTiposAsync();
+        idSuperficieSeleccionada = tiposSuperficie.FirstOrDefault(t => t.Deporte == "Futbol")?.IdTipoSuperficie ?? 0;
         Abrir();
     }
 
-    public void MostrarEdicion(CanchaDTO original)
+    public async Task MostrarEdicionAsync(CanchaDTO original)
     {
         esAlta = false;
         cancha = new CanchaDTO
@@ -134,10 +141,23 @@
             TipoCancha = original.TipoCancha,
             EsTechada = original.EsTechada,
             TipoFutbol = original.TipoFutbol,
-            TipoSuperficie = original.TipoSuperficie,
-            TipoPared = original.TipoPared
+            IdTipoSuperficie = original.IdTipoSuperficie > 0 ? original.IdTipoSuperficie : (original.TipoSuperficie ?? 0)
         };
+        await CargarTiposAsync();
+        idSuperficieSeleccionada = cancha.IdTipoSuperficie;
         Abrir();
+    }
+
+    private async Task CargarTiposAsync()
+    {
+        try
+        {
+            tiposSuperficie = (await TipoSuperficieApiClient.GetAllAsync(Sesion.Token)).ToList();
+        }
+        catch
+        {
+            tiposSuperficie = new();
+        }
     }
 
     private void Abrir()
@@ -157,9 +177,8 @@
         errores.Clear();
         if (string.IsNullOrWhiteSpace(cancha.Nombre)) errores["Nombre"] = "El nombre es obligatorio.";
         if (cancha.PrecioPorHora <= 0) errores["PrecioPorHora"] = "El precio por hora debe ser mayor a cero.";
-        if (EsPadel && cancha.TipoPared == null) errores["TipoPared"] = "Elegí el tipo de pared.";
         if (!EsPadel && cancha.TipoFutbol == null) errores["TipoFutbol"] = "Elegí si es fútbol 5, 7 u 11.";
-        if (!EsPadel && cancha.TipoSuperficie == null) errores["TipoSuperficie"] = "Elegí la superficie.";
+        if (idSuperficieSeleccionada <= 0) errores["TipoSuperficie"] = "Elegí el tipo/superficie de cancha.";
         return errores.Count == 0;
     }
 
@@ -175,17 +194,16 @@
             PrecioPorHora = cancha.PrecioPorHora,
             TipoCancha = EsPadel ? "Padel" : "Futbol",
             EsTechada = cancha.EsTechada,
-            TipoFutbol = EsPadel ? null : cancha.TipoFutbol,
-            TipoSuperficie = EsPadel ? null : cancha.TipoSuperficie,
-            TipoPared = EsPadel ? cancha.TipoPared : null
+            IdTipoSuperficie = idSuperficieSeleccionada,
+            TipoFutbol = EsPadel ? null : cancha.TipoFutbol
         };
 
         guardando = true;
         mensajeError = string.Empty;
         try
         {
-            if (esAlta) await CanchaApiClient.AddAsync(dto,Sesion.Token);
-            else await CanchaApiClient.UpdateAsync(dto,Sesion.Token);
+            if (esAlta) await CanchaApiClient.AddAsync(dto, Sesion.Token);
+            else await CanchaApiClient.UpdateAsync(dto, Sesion.Token);
 
             visible = false;
             await OnGuardado.InvokeAsync();

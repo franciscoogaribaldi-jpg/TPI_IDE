@@ -12,16 +12,18 @@ namespace Application.Services
     public class CanchaService : ICanchaService
     {
         private readonly ICanchaRepository _repository;
+        private readonly ITipoSuperficieRepository _superficieRepository;
 
-        public CanchaService(ICanchaRepository repository)
+        public CanchaService(ICanchaRepository repository, ITipoSuperficieRepository superficieRepository)
         {
             _repository = repository;
+            _superficieRepository = superficieRepository;
         }
 
         public async Task<CanchaDTO> AddAsync(CanchaDTO dto)
         {
             // Toda alta nueva queda Activa; solo la baja la pasa a Inactiva.
-            Cancha cancha = CrearCancha(dto, idCancha: 0, Estado.Activo);
+            Cancha cancha = await CrearCanchaAsync(dto, idCancha: 0, Estado.Activo);
 
             await _repository.AddAsync(cancha);
             return MapToDto(cancha);
@@ -52,39 +54,36 @@ namespace Application.Services
             if (existing == null || existing.Estado == Estado.Inactivo) return false;
 
             // El Estado no se edita: se conserva el que tiene.
-            Cancha canchaModificada = CrearCancha(dto, dto.IdCancha, existing.Estado);
+            Cancha canchaModificada = await CrearCanchaAsync(dto, dto.IdCancha, existing.Estado);
 
             return await _repository.UpdateAsync(canchaModificada);
         }
 
         // Valida el DTO y arma la clase hija que corresponde (CanchaFutbol o CanchaPadel).
-        // La usan el alta y la modificación, así las reglas están en un solo lugar.
-        // El Estado no viene del DTO: lo decide el servicio (ver AddAsync y UpdateAsync).
-        private static Cancha CrearCancha(CanchaDTO dto, int idCancha, Estado estado)
+        private async Task<Cancha> CrearCanchaAsync(CanchaDTO dto, int idCancha, Estado estado)
         {
-            // VALIDACIÓN: Enum.TryParse centraliza los valores válidos en un solo lugar
-            // (Domain.Model.TipoCancha) y rechaza cualquier otra cosa de forma prolija.
-            if (!Enum.TryParse<TipoCancha>(dto.TipoCancha, ignoreCase: true, out var tipo)) // nos fijamos si es valido y si lo es lo pasamos a Enum
+            if (!Enum.TryParse<TipoCancha>(dto.TipoCancha, ignoreCase: true, out var tipo))
                 throw new ArgumentException("Tipo de cancha inválido. Use 'Futbol' o 'Padel'.", nameof(dto.TipoCancha));
 
-            // Los enums viajan como int en el DTO: se valida con Enum.IsDefined antes de castear.
+            int idSuperficie = dto.IdTipoSuperficie > 0 ? dto.IdTipoSuperficie : (dto.TipoSuperficie ?? 0);
+            if (idSuperficie <= 0)
+                throw new ReglaDeNegocioException("Debe seleccionar un tipo de cancha/superficie válido.");
+
+            var superficie = await _superficieRepository.GetAsync(idSuperficie);
+            if (superficie == null || superficie.Estado == Estado.Inactivo)
+                throw new ReglaDeNegocioException("El tipo de cancha/superficie seleccionado no existe o está inactivo.");
+
             if (tipo == TipoCancha.Futbol)
             {
                 if (dto.TipoFutbol == null || !Enum.IsDefined(typeof(TipoFutbol), dto.TipoFutbol.Value))
                     throw new ArgumentException("Elegí si la cancha es de fútbol 5, 7 u 11.");
-                if (dto.TipoSuperficie == null || !Enum.IsDefined(typeof(TipoSuperficie), dto.TipoSuperficie.Value))
-                    throw new ArgumentException("El tipo de superficie no es válido.");
 
                 return new CanchaFutbol(idCancha, dto.Nombre, estado, dto.PrecioPorHora, dto.EsTechada,
-                    (TipoFutbol)dto.TipoFutbol.Value, (TipoSuperficie)dto.TipoSuperficie.Value);
+                    idSuperficie, (TipoFutbol)dto.TipoFutbol.Value);
             }
             else
             {
-                if (dto.TipoPared == null || !Enum.IsDefined(typeof(TipoPared), dto.TipoPared.Value))
-                    throw new ArgumentException("El tipo de pared no es válido.");
-
-                return new CanchaPadel(idCancha, dto.Nombre, estado, dto.PrecioPorHora, dto.EsTechada,
-                    (TipoPared)dto.TipoPared.Value);
+                return new CanchaPadel(idCancha, dto.Nombre, estado, dto.PrecioPorHora, dto.EsTechada, idSuperficie);
             }
         }
 
@@ -97,7 +96,8 @@ namespace Application.Services
                 Estado = (int)c.Estado,
                 PrecioPorHora = c.PrecioPorHora,
                 EsTechada = c.EsTechada,
-                // Polimorfismo: cada hija responde a su manera, el servicio no pregunta el tipo.
+                IdTipoSuperficie = c.IdTipoSuperficie,
+                NombreSuperficie = c.TipoSuperficie?.Nombre,
                 CantidadJugadores = c.CantidadJugadores,
                 Caracteristicas = c.Caracteristicas
             };
@@ -106,12 +106,10 @@ namespace Application.Services
             {
                 dto.TipoCancha = nameof(TipoCancha.Futbol);
                 dto.TipoFutbol = (int)futbol.TipoFutbol;
-                dto.TipoSuperficie = (int)futbol.TipoSuperficie;
             }
-            else if (c is CanchaPadel padel)
+            else if (c is CanchaPadel)
             {
                 dto.TipoCancha = nameof(TipoCancha.Padel);
-                dto.TipoPared = (int)padel.TipoPared;
             }
 
             return dto;

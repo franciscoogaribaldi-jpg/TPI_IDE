@@ -5,14 +5,13 @@ namespace WindowsForms
 {
     public partial class CanchaDetalle : Form
     {
-        // Valores del enum TipoFutbol (Domain.Model) en el mismo orden que el combo: la posición
-        // 0 es Fútbol 5, la 1 es Fútbol 7 y la 2 es Fútbol 11. Superficie y Pared no lo
-        // necesitan porque sus valores son 1, 2, 3... (alcanza con SelectedIndex + 1, como el
-        // estado en ReservaDetalle).
         private static readonly int[] ValoresTipoFutbol = { 5, 7, 11 };
 
         private readonly CanchaDTO? _canchaOriginal;
         private bool EsAlta => _canchaOriginal == null;
+
+        private List<TipoSuperficieDTO> _tiposFutbol = new();
+        private List<TipoSuperficieDTO> _tiposPadel = new();
 
         public CanchaDetalle()
         {
@@ -26,16 +25,31 @@ namespace WindowsForms
             _canchaOriginal = cancha;
         }
 
-        private void CanchaDetalle_Load(object sender, EventArgs e)
+        private async void CanchaDetalle_Load(object sender, EventArgs e)
         {
             Text = EsAlta ? "Nueva cancha" : "Editar cancha";
 
             cmbTipoFutbol.Items.AddRange(new object[] { "Fútbol 5", "Fútbol 7", "Fútbol 11" });
-            cmbSuperficie.Items.AddRange(new object[] { "Césped sintético", "Césped natural", "Cemento" });
-            cmbTipoPared.Items.AddRange(new object[] { "Vidrio", "Muro" });
             cmbTipoFutbol.SelectedIndex = 0;
-            cmbSuperficie.SelectedIndex = 0;
-            cmbTipoPared.SelectedIndex = 0;
+
+            try
+            {
+                var todosTipos = (await TipoSuperficieApiClient.GetAllAsync()).ToList();
+                _tiposFutbol = todosTipos.Where(t => t.Deporte.Equals("Futbol", StringComparison.OrdinalIgnoreCase)).ToList();
+                _tiposPadel = todosTipos.Where(t => t.Deporte.Equals("Padel", StringComparison.OrdinalIgnoreCase)).ToList();
+
+                cmbSuperficie.DataSource = _tiposFutbol;
+                cmbSuperficie.DisplayMember = "Nombre";
+                cmbSuperficie.ValueMember = "IdTipoSuperficie";
+
+                cmbTipoPared.DataSource = _tiposPadel;
+                cmbTipoPared.DisplayMember = "Nombre";
+                cmbTipoPared.ValueMember = "IdTipoSuperficie";
+            }
+            catch (Exception ex)
+            {
+                ErroresUI.Mostrar(this, ex, "Error al cargar tipos de cancha");
+            }
 
             if (EsAlta)
             {
@@ -52,20 +66,18 @@ namespace WindowsForms
                 radFutbol.Checked = !esPadel;
                 radPadel.Checked = esPadel;
 
-                // No se puede cambiar el tipo de una cancha ya creada (limitación conocida
-                // del repositorio, ver comentario en CanchaRepository.UpdateAsync). Se
-                // muestran los radios así el usuario ve el tipo, pero no los puede tocar.
                 radFutbol.Enabled = false;
                 radPadel.Enabled = false;
 
+                int idSup = _canchaOriginal.IdTipoSuperficie > 0 ? _canchaOriginal.IdTipoSuperficie : (_canchaOriginal.TipoSuperficie ?? 0);
                 if (esPadel)
                 {
-                    cmbTipoPared.SelectedIndex = (_canchaOriginal.TipoPared ?? 1) - 1;
+                    if (idSup > 0) cmbTipoPared.SelectedValue = idSup;
                 }
                 else
                 {
                     cmbTipoFutbol.SelectedIndex = Array.IndexOf(ValoresTipoFutbol, _canchaOriginal.TipoFutbol ?? 5);
-                    cmbSuperficie.SelectedIndex = (_canchaOriginal.TipoSuperficie ?? 1) - 1;
+                    if (idSup > 0) cmbSuperficie.SelectedValue = idSup;
                 }
 
                 ActualizarVisibilidadPaneles();
@@ -100,6 +112,18 @@ namespace WindowsForms
                 return false;
             }
 
+            bool esPadel = radPadel.Checked;
+            if (esPadel && cmbTipoPared.SelectedValue == null)
+            {
+                MessageBox.Show("Seleccioná el tipo de cancha/pared.", "Dato incompleto", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return false;
+            }
+            if (!esPadel && cmbSuperficie.SelectedValue == null)
+            {
+                MessageBox.Show("Seleccioná la superficie de fútbol.", "Dato incompleto", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return false;
+            }
+
             return true;
         }
 
@@ -108,6 +132,8 @@ namespace WindowsForms
             if (!ValidarCampos()) return;
 
             bool esPadel = radPadel.Checked;
+            int idSuperficie = esPadel ? (int)cmbTipoPared.SelectedValue! : (int)cmbSuperficie.SelectedValue!;
+
             var dto = new CanchaDTO
             {
                 IdCancha = _canchaOriginal?.IdCancha ?? 0,
@@ -115,9 +141,8 @@ namespace WindowsForms
                 PrecioPorHora = numPrecioPorHora.Value,
                 TipoCancha = esPadel ? "Padel" : "Futbol",
                 EsTechada = chkTechada.Checked,
-                TipoFutbol = esPadel ? null : ValoresTipoFutbol[cmbTipoFutbol.SelectedIndex],
-                TipoSuperficie = esPadel ? null : cmbSuperficie.SelectedIndex + 1,
-                TipoPared = esPadel ? cmbTipoPared.SelectedIndex + 1 : null
+                IdTipoSuperficie = idSuperficie,
+                TipoFutbol = esPadel ? null : ValoresTipoFutbol[cmbTipoFutbol.SelectedIndex]
             };
 
             btnGuardar.Enabled = false;

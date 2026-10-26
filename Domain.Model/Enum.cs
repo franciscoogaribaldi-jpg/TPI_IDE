@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -38,18 +38,5 @@ namespace Domain.Model
         Futbol5 = 5,
         Futbol7 = 7,
         Futbol11 = 11
-    }
-
-    public enum TipoSuperficie
-    {
-        CespedSintetico = 1,
-        CespedNatural = 2,
-        Cemento = 3
-    }
-
-    public enum TipoPared
-    {
-        Vidrio = 1,
-        Muro = 2
     }
 }

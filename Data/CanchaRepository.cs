@@ -32,13 +32,18 @@ namespace Data
 
         public async Task<Cancha?> GetAsync(int id)
         {
-            return await _context.Canchas.FindAsync(id);
+            return await _context.Canchas
+                .Include(c => c.TipoSuperficie)
+                .FirstOrDefaultAsync(c => c.IdCancha == id);
         }
 
         // Solo las activas: las eliminadas (baja lógica) siguen en la base pero no se muestran.
         public async Task<IEnumerable<Cancha>> GetAllAsync()
         {
-            return await _context.Canchas.Where(c => c.Estado == Estado.Activo).ToListAsync();
+            return await _context.Canchas
+                .Include(c => c.TipoSuperficie)
+                .Where(c => c.Estado == Estado.Activo)
+                .ToListAsync();
         }
 
         public async Task<bool> UpdateAsync(Cancha cancha)
@@ -50,19 +55,11 @@ namespace Data
             existing.SetNombre(cancha.Nombre);
             existing.SetPrecioPorHora(cancha.PrecioPorHora);
             existing.SetEsTechada(cancha.EsTechada);
+            existing.SetIdTipoSuperficie(cancha.IdTipoSuperficie);
 
-            // Nota heredada de la Entrega 1: si cambia el TIPO de cancha (Futbol<->Padel)
-            // esto no lo contempla (ni lo contemplaba la versión en memoria). Cambiar el
-            // tipo de una entidad ya persistida en una jerarquía TPH requiere borrar y
-            // recrear la fila; lo dejamos afuera del alcance de la Entrega 2 a propósito.
             if (existing is CanchaFutbol futbolExistente && cancha is CanchaFutbol futbolNueva)
             {
                 futbolExistente.SetTipoFutbol(futbolNueva.TipoFutbol);
-                futbolExistente.SetTipoSuperficie(futbolNueva.TipoSuperficie);
-            }
-            else if (existing is CanchaPadel padelExistente && cancha is CanchaPadel padelNueva)
-            {
-                padelExistente.SetTipoPared(padelNueva.TipoPared);
             }
 
             await _context.SaveChangesAsync();
