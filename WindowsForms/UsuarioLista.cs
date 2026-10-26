@@ -58,6 +58,13 @@ namespace WindowsForms
             var seleccionado = ObtenerSeleccionadoOAvisar();
             if (seleccionado == null) return;
 
+            if (SesionActual.Usuario != null && seleccionado.IdUsuario == SesionActual.Usuario.IdUsuario)
+            {
+                MessageBox.Show("No podés eliminarte a vos mismo: te quedarías sin acceso al sistema.",
+                    "Operación no permitida", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             var confirmacion = MessageBox.Show(
                 $"¿Eliminar el usuario \"{seleccionado.NombreUsuario}\"? Ya no va a poder iniciar sesión.",
                 "Confirmar eliminación", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);

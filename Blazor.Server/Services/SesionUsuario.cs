@@ -1,4 +1,4 @@
-﻿using API.Clients;
+using API.Clients;
 using DTOs;
 
 namespace Blazor.Server.Services
@@ -16,6 +16,8 @@ namespace Blazor.Server.Services
         // Igual que en Home.cs del WinForms, no referenciamos Domain.Model desde la UI.
         public bool EsAdministrador => Usuario?.Rol == 1;
         public string? Token => Usuario?.Token;
+        public int IdUsuario => Usuario?.IdUsuario ?? 0;
+        public string NombreUsuario => Usuario?.NombreUsuario ?? string.Empty;
 
         // Aviso para que el menú y el layout se redibujen al entrar o salir.
         public event Action? OnCambio;

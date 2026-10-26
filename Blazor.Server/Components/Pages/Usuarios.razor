@@ -8,14 +8,14 @@
 
 @if (!string.IsNullOrEmpty(mensajeError))
 {
-    <div class="alert alert-danger alert-dismissible">
+    <div class="alert alert-danger alert-dismissible fade show shadow-sm">
         @mensajeError
         <button type="button" class="btn-close" @onclick="() => mensajeError = string.Empty"></button>
     </div>
 }
 @if (!string.IsNullOrEmpty(mensajeExito))
 {
-    <div class="alert alert-success alert-dismissible">
+    <div class="alert alert-success alert-dismissible fade show shadow-sm">
         @mensajeExito
         <button type="button" class="btn-close" @onclick="() => mensajeExito = string.Empty"></button>
     </div>
@@ -34,7 +34,7 @@
 else
 {
     <div class="table-responsive">
-        <table class="table table-striped table-hover">
+        <table class="table table-striped table-hover align-middle">
             <thead class="table-dark">
                 <tr>
                     <th>ID</th>
@@ -58,7 +58,14 @@ else
                         <td>@(u.Rol == 1 ? "Administrador" : "Cliente")</td>
                         <td class="text-nowrap">
                             <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => modal.MostrarEdicion(u)">Editar</button>
-                            <button class="btn btn-sm btn-outline-danger" @onclick="() => ConfirmarEliminar(u)">Eliminar</button>
+                            @if (u.IdUsuario == Sesion.IdUsuario)
+                            {
+                                <span class="badge bg-secondary">Tu usuario</span>
+                            }
+                            else
+                            {
+                                <button class="btn btn-sm btn-outline-danger" @onclick="() => ConfirmarEliminar(u)">Eliminar</button>
+                            }
                         </td>
                     </tr>
                 }
@@ -102,6 +109,13 @@ else
 
     private void ConfirmarEliminar(UsuarioDTO u)
     {
+        if (u.IdUsuario == Sesion.IdUsuario)
+        {
+            mensajeError = "No podés eliminarte a vos mismo: te quedarías sin acceso al sistema.";
+            StateHasChanged();
+            return;
+        }
+
         mensajeError = string.Empty;
         mensajeExito = string.Empty;
 
@@ -136,6 +150,7 @@ else
         finally
         {
             cargando = false;
+            StateHasChanged();
         }
     }
 }

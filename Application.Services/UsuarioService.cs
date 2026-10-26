@@ -80,13 +80,32 @@ namespace Application.Services
         }
 
         // Baja lógica (ver UsuarioRepository.DeleteAsync): no se borra, se marca Inactivo y ya
-        // no puede iniciar sesión.
-        public async Task<bool> DeleteAsync(int id)
+        // no puede iniciar sesión. Si está asociado a un cliente o administrador, da de baja
+        // también a la persona para que no quede una ficha activa sin acceso.
+        public async Task<bool> DeleteAsync(int id, int? idUsuarioLogueado = null)
         {
-            // El usuario de un cliente o administrador se elimina desde esa pantalla, que da de
-            // baja a la persona y a su usuario juntos. Si no, quedaría una ficha activa sin acceso.
-            if (await TieneFichaAsync(id))
-                throw new ReglaDeNegocioException("El usuario pertenece a un cliente o administrador: eliminalo desde la pantalla de Clientes o Administradores.");
+            if (idUsuarioLogueado.HasValue && id == idUsuarioLogueado.Value)
+                throw new ReglaDeNegocioException("No podés eliminarte a vos mismo: te quedarías sin acceso al sistema.");
+
+            var usuario = await _repository.GetAsync(id);
+            if (usuario == null || usuario.Estado == Estado.Inactivo)
+                return false;
+
+            // Si el usuario pertenece a un administrador activo, damos de baja la ficha también
+            var admin = await _administradorRepository.GetByIdUsuarioAsync(id);
+            if (admin != null && admin.Estado == Estado.Activo)
+            {
+                await _administradorRepository.DeleteAsync(admin.IdAdministrador);
+                return true;
+            }
+
+            // Si el usuario pertenece a un cliente activo, damos de baja la ficha también
+            var cliente = await _clienteRepository.GetByIdUsuarioAsync(id);
+            if (cliente != null && cliente.Estado == Estado.Activo)
+            {
+                await _clienteRepository.DeleteAsync(cliente.IdCliente);
+                return true;
+            }
 
             return await _repository.DeleteAsync(id);
         }

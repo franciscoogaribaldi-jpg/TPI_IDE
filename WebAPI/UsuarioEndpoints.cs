@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
+using System.Security.Claims;
 
 namespace WebAPI
 {
@@ -80,11 +81,12 @@ namespace WebAPI
             .WithOpenApi()
             .RequireAuthorization(policy => policy.RequireRole("Administrador"));
 
-            app.MapDelete("/usuarios/{id}", async (int id, IUsuarioService usuarioService) =>
+            app.MapDelete("/usuarios/{id}", async (int id, IUsuarioService usuarioService, ClaimsPrincipal usuarioLogueado) =>
             {
                 try
                 {
-                    var deleted = await usuarioService.DeleteAsync(id);
+                    int? idUsuario = int.TryParse(usuarioLogueado.FindFirstValue(ClaimTypes.NameIdentifier), out var idLogueado) ? idLogueado : null;
+                    var deleted = await usuarioService.DeleteAsync(id, idUsuario);
                     if (!deleted) return Results.NotFound();
                     return Results.NoContent();
                 }
